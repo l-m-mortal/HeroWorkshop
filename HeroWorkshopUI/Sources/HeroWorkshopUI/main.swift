@@ -143,6 +143,13 @@ struct Candidate: Codable, Hashable, Identifiable {
     var how: String
     var id: String { file }
 }
+struct CommonIcon: Codable, Hashable, Identifiable {
+    var key: String
+    var name: String
+    var base: String
+    var icon: IconInfo
+    var id: String { key }
+}
 struct MapState: Codable {
     var map: String
     var game_root: String
@@ -151,6 +158,7 @@ struct MapState: Codable {
     var heroes: [Hero]
     var items: [Item]
     var shops: [Shop]?
+    var common: [CommonIcon]?
 }
 
 // MARK: - Store
@@ -617,6 +625,35 @@ struct HeroConsole: View {
     }
 }
 
+// MARK: - Common icons (command card buttons shared by every unit, plus Attribute Bonus)
+
+struct CommonIconsView: View {
+    @ObservedObject var store: Store
+    var common: [CommonIcon] { store.state?.common ?? [] }
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Общие иконки").font(.title.bold())
+                    Spacer()
+                    Toggle("Серые (DISBTN)", isOn: $store.showDisabled).toggleStyle(.switch).controlSize(.small)
+                }
+                Text("Кнопки команд, одинаковые у всех юнитов, и плюс к атрибутам. Файл кладётся в карту по стандартному пути и подменяет иконку игры.")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                LazyVGrid(columns: Array(repeating: GridItem(.fixed(84)), count: 6), spacing: 10) {
+                    ForEach(common) { c in
+                        IconSlot(store: store, key: c.key, title: c.name, subtitle: "Путь: \(c.icon.art ?? "—")", icon: c.icon, size: 64)
+                    }
+                }
+
+                Text("Перетащите PNG или BLP на любую ячейку: файл сразу конвертируется в BLP 64×64, серая версия создаётся автоматически и всё записывается в карту или в папку мода по текущему пути иконки.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }.padding()
+        }
+    }
+}
+
 // MARK: - Items / shops
 
 /// One filled cell of a shop's 4×3 command card: the dummy unit sold there and the item it drops.
@@ -850,12 +887,17 @@ struct ContentView: View {
                     VStack(spacing: 0) {
                         TextField("Поиск героя", text: $search).textFieldStyle(.roundedBorder).padding(8)
                         List(selection: $selection) {
+                            Section("Общие") {
+                                Label("Общие иконки", systemImage: "square.grid.3x3").tag("__common__" as String?)
+                            }
                             Section("Герои (\(heroes.filter { $0.group != "other" }.count))") { ForEach(heroes.filter { $0.group != "other" }) { h in heroRow(h) } }
                             let others = heroes.filter { $0.group == "other" }
                             if !others.isEmpty { Section("Прочие юниты с геройскими способностями (\(others.count))") { ForEach(others) { h in heroRow(h) } } }
                         }
                     }.frame(minWidth: 230, maxWidth: 300)
-                    if let hero = heroes.first(where: { $0.code == selection }) ?? heroes.first {
+                    if selection == "__common__" {
+                        CommonIconsView(store: store)
+                    } else if let hero = heroes.first(where: { $0.code == selection }) ?? heroes.first {
                         HeroConsole(store: store, hero: hero).id(hero.code + (store.state?.generated ?? ""))
                     } else {
                         VStack { Image(systemName: "person.3").font(.largeTitle); Text(store.busy ? "Читаю карту…" : "Нет героев") }.frame(maxWidth: .infinity, maxHeight: .infinity)
