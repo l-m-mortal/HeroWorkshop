@@ -129,6 +129,7 @@ def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: 
         for tex in mdx_textures(p.read_bytes()):
             t = tex.replace('/', '\\')
             if t.lower() in files or t.lower() in extra: continue
+            if w.mpq.has(t) or w.resolve(t)['where'] in ('standard', 'disk'): continue  # already reachable
             cand = a_root / t.replace('\\', '/')
             if cand.is_file(): extra[t.lower()] = (t, cand); continue
             if index is None:
