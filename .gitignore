@@ -1,0 +1,17 @@
+# macOS / exFAT junk
+._*
+.DS_Store
+# local environments and build products
+.venv/
+__pycache__/
+.work/
+HeroWorkshopUI/.build/
+workshop.local.json
+# maps and backups never go to git
+*.w3x
+Backups/
+# inventory: heavy parts stay local (manifest.zip 159 MB, thumbs ~1 GB)
+HeroWorkshop_inventory/manifest/
+HeroWorkshop_inventory/manifest.zip
+HeroWorkshop_inventory/FILES_ALL.json
+HeroWorkshop_inventory.zip

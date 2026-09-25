@@ -1,0 +1,2443 @@
+# TREE: /Volumes/Data/RECOVERY/Games/Warcraft 3/Warcraft III macOS 64bit/Warcraft III
+
+Generated 2026-09-26 00:03. Total files: 71855, total size: 54.0 GB.
+Excluded from every listing: AppleDouble `._*` files, `.DS_Store`, and contents of `.git`, `__pycache__`, `.venv`, `.build`.
+Symlinked directories are listed but not traversed (their targets are listed at the target location).
+
+## Skipped / symlinked directories
+
+- `Dota2 -> /Volumes/Data/RECOVERY/Games/Warcraft 3/Warcraft III macOS 64bit/Warcraft III/Dota Mod Project/Sources/Packs/DOTA 2 mod/Wardota 2 Compilation V2 - Creative's ArT - 2014/Dota2`
+- `Dota Mod Project/Build/DotaHQ/__pycache__`
+- `Dota Mod Project/Tools/HeroWorkshop/.git`
+- `Dota Mod Project/Tools/HeroWorkshop/HeroWorkshopUI/.build`
+- `Dota Mod Project/Tools/HeroWorkshop2/.git`
+- `Dota Mod Project/Tools/HeroWorkshop2/__pycache__`
+- `Dota Mod Project/Tools/HeroWorkshop2/HeroWorkshopUI/.build`
+- `x86_64/WC3_Native_Integration_0.7.6/.git`
+
+## Root files
+
+- `.build.info` (443 B)
+- `CustomKeyInfo.txt` (5.3 KB)
+- `CustomKeys.txt` (18.3 KB)
+- `CustomKeysSample.txt` (56.3 KB)
+- `Launcher.db` (4 B)
+- `TideTonucki.blp` (25.0 KB)
+- `dire_tree007_moss.blp` (132.8 KB)
+- `dire_tree007c.blp` (82.6 KB)
+
+## Top-level folders
+
+| folder | files | size | top extensions |
+|---|---:|---:|---|
+| `Abilities` | 5 | 257.4 KB | .blp:5 |
+| `Buildings` | 22 | 2.9 MB | .blp:22 |
+| `Data` | 428 | 1.8 GB | .index:379, .idx:32, (none):14, .000:1, .001:1, .0:1 |
+| `Doodads` | 69 | 6.9 MB | .mdx:59, .blp:10 |
+| `Dota Mod Project` | 54957 | 49.7 GB | .mp3:21849, .blp:19013, .png:6303, .txt:2565, .mdx:2548, .wav:942 |
+| `Environment` | 1 | 77.9 KB | .blp:1 |
+| `Maps` | 4 | 91.7 MB | .w3x:3, .zip:1 |
+| `Objects` | 2 | 161.7 KB | .blp:2 |
+| `ReplaceableTextures` | 1 | 308.3 KB | .blp:1 |
+| `SPELLS` | 2 | 65.8 KB | .blp:2 |
+| `TerrainArt` | 22 | 8.7 MB | .blp:11, .tga:10, .slk:1 |
+| `Textures` | 4 | 41.2 KB | .blp:4 |
+| `Ton_ucki` | 12 | 786.8 KB | .blp:12 |
+| `UI` | 5 | 591 B | .slk:5 |
+| `Units` | 144 | 13.4 MB | .blp:140, .tga:2, .mdx:2 |
+| `WC3Dota2Test` | 2039 | 674.3 MB | .blp:1561, .mdx:434, .wav:37, .db:3, .tsv:1, .reg:1 |
+| `WC3DotaHQTest` | 12006 | 1.0 GB | .mp3:5414, .blp:4541, .mdx:1244, .wav:722, .fdf:43, .tga:26 |
+| `WC3WardotaTest` | 1291 | 409.0 MB | .blp:1051, .mdx:238, .slk:2 |
+| `Warcraft III Public Test Launcher.app` | 48 | 5.7 MB | .png:32, .json:6, (none):3, .icns:3, .plist:1, .ttf:1 |
+| `effects` | 1 | 5.7 KB | .blp:1 |
+| `ssance` | 1 | 208.4 KB | .blp:1 |
+| `x86_64` | 783 | 369.6 MB | .wav:182, .pak:114, .png:100, .txt:85, .strings:84, (none):46 |
+
+## Abilities
+
+Files: 5, size: 257.4 KB
+
+Full file list:
+
+- `Abilities/Custom/Tiny/Avalance/simrock.blp` (70.8 KB)
+- `Abilities/Spells/Human/Resurrect/24h_clock_v1.blp` (54.6 KB)
+- `Abilities/Spells/NightElf/Barkskin/Hearth.blp` (17.5 KB)
+- `Abilities/Spells/Orc/EarthQuake/simrock.blp` (70.8 KB)
+- `Abilities/Spells/Undead/FreezingBreath/ICE-02.blp` (43.8 KB)
+
+## Buildings
+
+Files: 22, size: 2.9 MB
+
+Full file list:
+
+- `Buildings/NightElf/AncientOfLore/CloudSingle.blp` (3.3 KB)
+- `Buildings/NightElf/AncientOfLore/universal_vines001.blp` (208.4 KB)
+- `Buildings/NightElf/AncientOfWar/CloudSingle.blp` (3.3 KB)
+- `Buildings/NightElf/AncientOfWar/universal_vines001.blp` (208.4 KB)
+- `Buildings/NightElf/AncientOfWonder/DruidTreeForm.blp` (288.7 KB)
+- `Buildings/NightElf/AncientOfWonder/LEAFBROWNA.BLP` (6.0 KB)
+- `Buildings/NightElf/AncientOfWonder/LEAFRED2_A.BLP` (6.0 KB)
+- `Buildings/NightElf/AncientOfWonder/SB_PLANTSA.BLP` (60.6 KB)
+- `Buildings/NightElf/AncientOfWonder/SMOKEWISPY_ROUNDSPONGE_EDIT.BLP` (4.1 KB)
+- `Buildings/NightElf/HuntersHall/Dust3_Tonucki.blp` (4.9 KB)
+- `Buildings/NightElf/HuntersHall/good_tower004.blp` (182.0 KB)
+- `Buildings/NightElf/HuntersHall/universal_vines001.blp` (208.4 KB)
+- `Buildings/Other/FountainOfLife/Clouds8x8.blp` (308.3 KB)
+- `Buildings/Other/FountainOfLife/Dust5A.blp` (2.9 KB)
+- `Buildings/Other/FountainOfLife/good_base_stone001.blp` (106.2 KB)
+- `Buildings/Other/FountainOfLife/good_base_wall002.blp` (226.5 KB)
+- `Buildings/Other/FountainOfLife/good_shop001_items.blp` (472.7 KB)
+- `Buildings/Other/FountainOfLife/good_stonewall001.blp` (43.7 KB)
+- `Buildings/Other/FountainOfLife/tree_oak_leaves_00.blp` (95.0 KB)
+- `Buildings/Other/FountainOfLife/universal_vines001_Ton.blp` (172.1 KB)
+- `Buildings/Other/FountainOfLife_/Clouds8x8.blp` (308.3 KB)
+- `Buildings/Other/FountainOfLife_/Dust5A.blp` (2.9 KB)
+
+## Data
+
+Files: 428, size: 1.8 GB
+
+Subfolder structure to depth 4 (files recursive / size / extensions):
+
+- `config/` — 13 files, 212.4 KB [(none):13]
+  - `0c/` — 1 files, 7.7 KB [(none):1]
+    - `7d/` — 1 files, 7.7 KB [(none):1]
+  - `2a/` — 1 files, 97.6 KB [(none):1]
+    - `a7/` — 1 files, 97.6 KB [(none):1]
+  - `38/` — 1 files, 12.5 KB [(none):1]
+    - `87/` — 1 files, 12.5 KB [(none):1]
+  - `80/` — 1 files, 7.7 KB [(none):1]
+    - `fa/` — 1 files, 7.7 KB [(none):1]
+  - `8e/` — 2 files, 5.1 KB [(none):2]
+    - `23/` — 1 files, 3.3 KB [(none):1]
+    - `6d/` — 1 files, 1.8 KB [(none):1]
+  - `96/` — 1 files, 6.5 KB [(none):1]
+    - `45/` — 1 files, 6.5 KB [(none):1]
+  - `9a/` — 1 files, 7.3 KB [(none):1]
+    - `75/` — 1 files, 7.3 KB [(none):1]
+  - `9d/` — 1 files, 7.3 KB [(none):1]
+    - `23/` — 1 files, 7.3 KB [(none):1]
+  - `dd/` — 1 files, 12.3 KB [(none):1]
+    - `45/` — 1 files, 12.3 KB [(none):1]
+  - `e3/` — 1 files, 24.3 KB [(none):1]
+    - `f7/` — 1 files, 24.3 KB [(none):1]
+  - `f0/` — 1 files, 12.5 KB [(none):1]
+    - `6e/` — 1 files, 12.5 KB [(none):1]
+  - `ff/` — 1 files, 11.6 KB [(none):1]
+    - `5c/` — 1 files, 11.6 KB [(none):1]
+- `data/` — 36 files, 1.7 GB [.idx:32, .000:1, .001:1, .0:1, (none):1]
+- `indices/` — 379 files, 58.1 MB [.index:379]
+
+Complete file list for `Data` is in `FILES_ALL.tsv` (filter by prefix `Data/`).
+
+## Doodads
+
+Files: 69, size: 6.9 MB
+
+Full file list:
+
+- `Doodads/dire_tree007_moss.blp` (149.1 KB)
+- `Doodads/dire_tree007c.blp` (95.0 KB)
+- `Doodads/Terrain/AshenTree/1.blp` (1.1 MB)
+- `Doodads/Terrain/AshenTree/AshenTree0.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree0D.mdx` (54.8 KB)
+- `Doodads/Terrain/AshenTree/AshenTree0S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree1.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree1D.mdx` (48.4 KB)
+- `Doodads/Terrain/AshenTree/AshenTree1S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree2.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree2D.mdx` (26.2 KB)
+- `Doodads/Terrain/AshenTree/AshenTree2S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree3.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree3D.mdx` (8.3 KB)
+- `Doodads/Terrain/AshenTree/AshenTree3S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree4.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree4D.mdx` (54.8 KB)
+- `Doodads/Terrain/AshenTree/AshenTree4S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree5.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree5S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree6.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree6S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree7.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree7S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree8.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree8S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree9.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/AshenTree9S.mdx` (80.6 KB)
+- `Doodads/Terrain/AshenTree/tree_bamboo_leaves_01.BLP` (79.9 KB)
+- `Doodads/Terrain/AshenTree/tree_oak_leaves_00.BLP` (93.4 KB)
+- `Doodads/Terrain/AshenTree/tree_oak_leaves_10.blp` (89.8 KB)
+- `Doodads/Terrain/AshenTree/tree_pine_frond_00.BLP` (92.3 KB)
+- `Doodads/Terrain/LOSBlocker/LOSBlocker.mdx` (3.0 KB)
+- `Doodads/Terrain/LordaeronTree/LordaeronTree0.mdx` (157.0 KB)
+- `Doodads/Terrain/LordaeronTree/LordaeronTree0D.mdx` (26.2 KB)
+- `Doodads/Terrain/LordaeronTree/LordaeronTree0S.mdx` (56.3 KB)
+- `Doodads/Terrain/LordaeronTree/tree_pine_frond_00.blp` (92.3 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree0.mdx` (128.6 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree0D.mdx` (33.6 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree0S.mdx` (76.5 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree1.mdx` (191.3 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree1D.mdx` (37.5 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree1S.mdx` (132.1 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree2.mdx` (191.3 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree2D.mdx` (37.5 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree2S.mdx` (132.1 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree3.mdx` (182.8 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree3D.mdx` (37.8 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree3S.mdx` (129.7 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree4.mdx` (128.6 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree4D.mdx` (33.6 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree4S.mdx` (76.5 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree5.mdx` (133.1 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree5D.mdx` (37.5 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree5S.mdx` (76.2 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree6.mdx` (182.8 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree6D.mdx` (37.8 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree6S.mdx` (129.7 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree7.mdx` (133.1 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree7D.mdx` (37.5 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree7S.mdx` (76.2 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree8.mdx` (133.1 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree8D.mdx` (37.5 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree8S.mdx` (76.2 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree9.mdx` (182.8 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree9D.mdx` (37.8 KB)
+- `Doodads/Terrain/NorthrendTree/NorthrendTree9S.mdx` (129.7 KB)
+- `Doodads/Terrain/NorthrendTree/dire_tree007_moss.blp` (132.8 KB)
+- `Doodads/Terrain/NorthrendTree/dire_tree007c.blp` (82.6 KB)
+
+## Dota Mod Project
+
+Files: 54957, size: 49.7 GB
+
+Subfolder structure to depth 4 (files recursive / size / extensions):
+
+- `Archives/` — 645 files, 42.1 GB [.w3x:385, .blp:248, .mdx:11, .zip:1]
+  - `DotaHQ/` — 3 files, 74.6 MB [.w3x:3]
+    - `HistoricalMaps/` — 3 files, 74.6 MB [.w3x:3]
+  - `GlobalOverrides/` — 259 files, 9.3 MB [.blp:248, .mdx:11]
+    - `2026-09-25-ui-moved-into-maps/` — 257 files, 9.0 MB [.blp:247, .mdx:10]
+      - `UI/` — 257 files, 9.0 MB [.blp:247, .mdx:10]
+    - `2026-09-25-wrong-secret-shop-assets/` — 2 files, 333.3 KB [.mdx:1, .blp:1]
+      - `Units/` — 2 files, 333.3 KB [.mdx:1, .blp:1]
+  - `HeroWorkshop/` — 380 files, 41.7 GB [.w3x:380]
+    - `Backups/` — 380 files, 41.7 GB [.w3x:380]
+      - `HeroWorkshop/` — 380 files, 41.7 GB [.w3x:380]
+  - `MapSnapshots/` — 2 files, 33.4 MB [.w3x:2]
+    - `2026-09-25-secret-shop-ui-scope/` — 2 files, 33.4 MB [.w3x:2]
+- `Build/` — 19538 files, 1.2 GB [.mp3:10793, .blp:6519, .mdx:1352, .wav:760, .fdf:43, .tga:42]
+  - `DotaHQ/` — 19538 files, 1.2 GB [.mp3:10793, .blp:6519, .mdx:1352, .wav:760, .fdf:43, .tga:42]
+    - `Inputs/` — 21 files, 5.1 MB [.slk:13, .blp:3, .mdx:2, .json:1, .txt:1, .tga:1]
+      - `NativeSoundInfo/` — 12 files, 1.3 MB [.slk:12]
+      - `SourceAssets/` — 5 files, 1.1 MB [.blp:3, .mdx:2]
+      - `SourceIndexes/` — 2 files, 618.8 KB [.json:1, .txt:1]
+      - `TerrainInfo/` — 2 files, 2.0 MB [.slk:1, .tga:1]
+    - `Reports/` — 5 files, 2.0 MB [.tsv:3, .json:2]
+    - `State/` — 19510 files, 1.2 GB [.mp3:10793, .blp:6516, .mdx:1350, .wav:760, .fdf:43, .tga:41]
+      - `DisabledExternalLayer/` — 11591 files, 1002.4 MB [.mp3:5408, .blp:4229, .mdx:1159, .wav:722, .fdf:43, .tga:26]
+      - `DisabledExternalSoundLinks/` — 2 files, 235 B [.slk:2]
+      - `ExternalBackup/` — 5422 files, 103.4 MB [.mp3:5385, .wav:37]
+      - `RuntimeOverrideBackup/` — 2474 files, 90.6 MB [.blp:2286, .mdx:171, .tga:15, .wav:1, .slk:1]
+      - `SelectedMixTreeBackup/` — 21 files, 3.2 MB [.mdx:20, .blp:1]
+- `Documentation/` — 2 files, 11.9 KB [.md:2]
+- `Sources/` — 18737 files, 4.9 GB [.mp3:11056, .blp:6047, .mdx:1170, .wav:182, .rar:161, .tga:27]
+  - `Maps/` — 10 files, 364.8 MB [.w3x:10]
+  - `Packs/` — 18727 files, 4.5 GB [.mp3:11056, .blp:6047, .mdx:1170, .wav:182, .rar:161, .tga:27]
+    - `DOTA 2 mod/` — 18727 files, 4.5 GB [.mp3:11056, .blp:6047, .mdx:1170, .wav:182, .rar:161, .tga:27]
+      - `114 HEROES ICONOS/` — 1162 files, 8.9 MB [.blp:1151, .exe:2, (none):2, .txt:2, .reg:1, .ocx:1]
+      - `AnimeDecor/` — 115 files, 11.8 MB [.mdx:69, .blp:46]
+      - `DOTA-HQv5_RePack.part01/` — 10 files, 1.8 GB [.txt:2, .reg:2, .mpq:2, .w3x:2, .exe:1, .zip:1]
+      - `DotA_Heroes_v2.0/` — 1643 files, 513.5 MB [.blp:1330, .mdx:287, .ico:4, .w3x:4, .reg:3, .txt:3]
+      - `Dota 1.5 - PrO_SoZaIa & ShadowProgr - 2012/` — 1658 files, 57.1 MB [.blp:1560, .wav:48, .mdx:26, .tga:11, .mp3:8, .reg:2]
+      - `Dota 1.5 2/` — 450 files, 154.0 MB [.blp:264, .mdx:176, .wav:5, .txt:4, .ini:1]
+      - `Dota2HeroesClash_IconsGrouped/` — 72 files, 323.3 KB [.blp:70, .txt:1, .csv:1]
+      - `Dota2HeroesClash_SkinDatabase/` — 73 files, 6.2 MB [.blp:55, .mdx:14, .csv:2, .tsv:1, .jpg:1]
+      - `Massive Dota 2 Special Effects Rip/` — 352 files, 37.8 MB [.blp:259, .mdx:92, .html:1]
+      - `UPDATE/` — 70 files, 249.7 MB [.rar:70]
+      - `UPDATE 2/` — 2 files, 52.6 MB [.rar:2]
+      - `UPDATE 3/` — 91 files, 397.5 MB [.rar:89, .zip:2]
+      - `Wardota 2 Compilation V2 - Creative's ArT - 2014/` — 13023 files, 935.2 MB [.mp3:11048, .blp:1312, .mdx:506, .wav:129, .tga:16, .w3x:5]
+- `Tools/` — 10645 files, 96.6 MB [.png:3595, .blp:3580, .txt:2543, .json:875, .mdx:15, .py:8]
+  - `HeroWorkshop/` — 40 files, 29.5 MB [.png:8, .json:7, .md:6, .py:5, .zip:3, .txt:3]
+    - `HeroWorkshopUI/` — 2 files, 29.3 KB [.swift:2]
+      - `Sources/` — 1 files, 29.1 KB [.swift:1]
+    - `HeroWorkshop_inventory/` — 7 files, 24.0 MB [.md:4, .tsv:2, .json:1]
+    - `assets/` — 9 files, 66.8 KB [.png:8, (none):1]
+      - `icons/` — 9 files, 66.8 KB [.png:8, (none):1]
+    - `data/` — 2 files, 28.3 KB [.json:2]
+    - `tools/` — 2 files, 999.8 KB [(none):2]
+  - `HeroWorkshop2/` — 10605 files, 67.1 MB [.png:3587, .blp:3580, .txt:2540, .json:868, .mdx:15, (none):5]
+    - `HeroWorkshopUI/` — 2 files, 29.3 KB [.swift:2]
+      - `Sources/` — 1 files, 29.1 KB [.swift:1]
+    - `assets/` — 7186 files, 65.7 MB [.png:3587, .blp:3580, .mdx:15, .slk:2, (none):1, .fdf:1]
+      - `icons/` — 7186 files, 65.7 MB [.png:3587, .blp:3580, .mdx:15, .slk:2, (none):1, .fdf:1]
+    - `data/` — 2 files, 28.3 KB [.json:2]
+    - `heroes/` — 2059 files, 112.8 KB [.txt:1824, .json:235]
+      - `Abaddon__Udea/` — 14 files, 812 B [.txt:12, .json:2]
+      - `Alchemist__N01I/` — 14 files, 801 B [.txt:12, .json:2]
+      - `Ancient_Apparition__N0HP/` — 16 files, 901 B [.txt:14, .json:2]
+      - `Anti_Mage__Edem/` — 14 files, 827 B [.txt:12, .json:2]
+      - `Arc_Warden__N0MK/` — 16 files, 924 B [.txt:14, .json:2]
+      - `Axe__Opgh/` — 14 files, 813 B [.txt:12, .json:2]
+      - `Bane__Oshd/` — 16 files, 899 B [.txt:14, .json:2]
+      - `Batrider__O016/` — 16 files, 893 B [.txt:14, .json:2]
+      - `Beastmaster__H00D/` — 14 files, 830 B [.txt:12, .json:2]
+      - `Bloodseeker__Hvsh/` — 16 files, 925 B [.txt:14, .json:2]
+      - `Bounty_Hunter__Naka/` — 14 files, 830 B [.txt:12, .json:2]
+      - `Brewmaster__Npbm/` — 14 files, 826 B [.txt:12, .json:2]
+      - `Bristleback__H008/` — 16 files, 921 B [.txt:14, .json:2]
+      - `Broodmother__U006/` — 16 files, 930 B [.txt:14, .json:2]
+      - `Centaur_Warrunner__H000/` — 16 files, 935 B [.txt:14, .json:2]
+      - `Chaos_Knight__U00A/` — 18 files, 1012 B [.txt:16, .json:2]
+      - `Chen__H00A/` — 14 files, 820 B [.txt:12, .json:2]
+      - `Clinkz__E004/` — 18 files, 1.0 KB [.txt:16, .json:2]
+      - `Clockwerk__H00T/` — 16 files, 903 B [.txt:14, .json:2]
+      - `Crystal_Maiden__Hjai/` — 14 files, 834 B [.txt:12, .json:2]
+      - `Dark_Seer__H00N/` — 16 files, 919 B [.txt:14, .json:2]
+      - `Dazzle__N01W/` — 16 files, 893 B [.txt:14, .json:2]
+      - `Death_Prophet__UC76/` — 15 files, 928 B [.txt:14, .json:1]
+      - `Disruptor__E02J/` — 14 files, 797 B [.txt:12, .json:2]
+      - `Doom__UC42/` — 16 files, 879 B [.txt:14, .json:2]
+      - `Dragon_Knight__Hlgr/` — 16 files, 945 B [.txt:14, .json:2]
+      - `Drow_Ranger__Nbrn/` — 13 files, 824 B [.txt:12, .json:1]
+      - `Earth_Spirit__N0MU/` — 14 files, 829 B [.txt:12, .json:2]
+      - `Earthshaker__Otch/` — 16 files, 929 B [.txt:14, .json:2]
+      - `Elder_Titan__O015/` — 14 files, 823 B [.txt:12, .json:2]
+      - `Ember_Spirit__N0M0/` — 14 files, 844 B [.txt:12, .json:2]
+      - `Enchantress__Emoo/` — 16 files, 932 B [.txt:14, .json:2]
+      - `Enigma__Uktl/` — 16 files, 911 B [.txt:14, .json:2]
+      - `Faceless_Void__EC45/` — 16 files, 920 B [.txt:14, .json:2]
+      - `Gyrocopter__E02N/` — 15 files, 927 B [.txt:14, .json:1]
+      - `Huskar__H00Q/` — 16 files, 928 B [.txt:14, .json:2]
+      - `Invoker__H00U/` — 12 files, 727 B [.txt:10, .json:2]
+      - `Io__O01F/` — 16 files, 938 B [.txt:14, .json:2]
+      - `Jakiro__E00P/` — 16 files, 892 B [.txt:14, .json:2]
+      - `Juggernaut__Nbbc/` — 14 files, 846 B [.txt:12, .json:2]
+      - `Keeper_of_the_Light__Hblm/` — 14 files, 810 B [.txt:12, .json:2]
+      - `Kunkka__H06S/` — 14 files, 833 B [.txt:12, .json:2]
+      - `Legion_Commander__E02K/` — 14 files, 803 B [.txt:12, .json:2]
+      - `Leshrac__Ekee/` — 14 files, 823 B [.txt:12, .json:2]
+      - `Lich__Ulic/` — 14 files, 792 B [.txt:12, .json:2]
+      - `Lifestealer__U00C/` — 18 files, 1.0 KB [.txt:16, .json:2]
+      - `Lina__H004/` — 18 files, 1.0 KB [.txt:16, .json:2]
+      - `Lion__UC18/` — 16 files, 890 B [.txt:14, .json:2]
+      - `Lone_Druid__N01O/` — 18 files, 1017 B [.txt:16, .json:2]
+      - `Luna__E005/` — 15 files, 913 B [.txt:14, .json:1]
+      - `Lycan__U008/` — 14 files, 811 B [.txt:12, .json:2]
+      - `Magnus__UC11/` — 16 files, 915 B [.txt:14, .json:2]
+      - `Medusa__H00V/` — 13 files, 829 B [.txt:12, .json:1]
+      - `Meepo__H00I/` — 15 files, 938 B [.txt:14, .json:1]
+      - `Mirana__N01V/` — 14 files, 822 B [.txt:12, .json:2]
+      - `Morphling__O00P/` — 16 files, 939 B [.txt:14, .json:2]
+      - `Naga_Siren__HC49/` — 16 files, 939 B [.txt:14, .json:2]
+      - `Nature_s_Prophet__Emns/` — 14 files, 848 B [.txt:12, .json:2]
+      - `Necrophos__U00E/` — 16 files, 918 B [.txt:14, .json:2]
+      - `Night_Stalker__Udre/` — 14 files, 829 B [.txt:12, .json:2]
+      - `Nyx_Assassin__U000/` — 13 files, 823 B [.txt:12, .json:1]
+      - `Ogre_Magi__Hmkg/` — 16 files, 937 B [.txt:14, .json:2]
+      - `Omniknight__Harf/` — 14 files, 814 B [.txt:12, .json:2]
+      - `Oracle__N0MD/` — 16 files, 926 B [.txt:14, .json:2]
+      - `Outworld_Devourer__U00P/` — 16 files, 931 B [.txt:14, .json:2]
+      - `Phantom_Assassin__Ewar/` — 14 files, 826 B [.txt:12, .json:2]
+      - `Phantom_Lancer__Ogrh/` — 14 files, 840 B [.txt:12, .json:2]
+      - `Phoenix__E02F/` — 16 files, 935 B [.txt:14, .json:2]
+      - `Puck__N00B/` — 16 files, 931 B [.txt:14, .json:2]
+      - `Pudge__U00F/` — 16 files, 921 B [.txt:14, .json:2]
+      - `Pugna__H00H/` — 16 files, 921 B [.txt:14, .json:2]
+      - `Queen_of_Pain__UC01/` — 16 files, 932 B [.txt:14, .json:2]
+      - `Razor__E002/` — 18 files, 1008 B [.txt:16, .json:2]
+      - `Riki__HC92/` — 24 files, 1.3 KB [.txt:22, .json:2]
+      - `Rubick__E02X/` — 22 files, 1.2 KB [.txt:20, .json:2]
+      - `Sand_King__U00K/` — 16 files, 926 B [.txt:14, .json:2]
+      - `Shadow_Demon__E02H/` — 14 files, 800 B [.txt:12, .json:2]
+      - `Shadow_Fiend__Nfir/` — 14 files, 794 B [.txt:12, .json:2]
+      - `Shadow_Shaman__Orkn/` — 14 files, 844 B [.txt:12, .json:2]
+      - `Silencer__N01A/` — 18 files, 1.0 KB [.txt:16, .json:2]
+      - `Skywrath_Mage__H0DO/` — 15 files, 921 B [.txt:14, .json:1]
+      - `Slardar__UC91/` — 16 files, 924 B [.txt:14, .json:2]
+      - `Slark__H071/` — 15 files, 915 B [.txt:14, .json:1]
+      - `Sniper__Usyl/` — 16 files, 919 B [.txt:14, .json:2]
+      - `Spectre__E01B/` — 14 files, 845 B [.txt:12, .json:2]
+      - `Spirit_Breaker__O00J/` — 16 files, 898 B [.txt:14, .json:2]
+      - `Storm_Spirit__H00S/` — 14 files, 844 B [.txt:12, .json:2]
+      - `Sven__H001/` — 16 files, 903 B [.txt:14, .json:2]
+      - `TX24__TX24/` — 17 files, 1010 B [.txt:16, .json:1]
+      - `TX26__TX26/` — 13 files, 814 B [.txt:12, .json:1]
+      - `TX32__TX32/` — 15 files, 912 B [.txt:14, .json:1]
+      - `TX34__TX34/` — 13 files, 814 B [.txt:12, .json:1]
+      - `Techies__H00K/` — 15 files, 915 B [.txt:14, .json:1]
+      - `Templar_Assassin__E01Y/` — 16 files, 930 B [.txt:14, .json:2]
+      - `Terrorblade__Eevi/` — 16 files, 916 B [.txt:14, .json:2]
+      - `Tidehunter__Ofar/` — 16 files, 924 B [.txt:14, .json:2]
+      - `Timbersaw__E032/` — 16 files, 914 B [.txt:14, .json:2]
+      - `Tinker__Ntin/` — 13 files, 838 B [.txt:12, .json:1]
+      - `Tiny__Ucrl/` — 16 files, 923 B [.txt:14, .json:2]
+      - `Treant_Protector__Hamg/` — 16 files, 930 B [.txt:14, .json:2]
+      - `Troll_Warlord__N016/` — 18 files, 1.0 KB [.txt:16, .json:2]
+      - `Tusk__E02I/` — 16 files, 895 B [.txt:14, .json:2]
+      - `Underlord__N00R/` — 14 files, 797 B [.txt:12, .json:2]
+      - `Undying__H00R/` — 16 files, 921 B [.txt:14, .json:2]
+      - `Ursa__Huth/` — 16 files, 924 B [.txt:14, .json:2]
+      - `Vengeful_Spirit__Hvwd/` — 16 files, 948 B [.txt:14, .json:2]
+      - `Venomancer__EC57/` — 16 files, 906 B [.txt:14, .json:2]
+      - `Viper__EC77/` — 16 files, 922 B [.txt:14, .json:2]
+      - `Visage__UC60/` — 15 files, 917 B [.txt:14, .json:1]
+      - `Warlock__E01C/` — 16 files, 906 B [.txt:14, .json:2]
+      - `Weaver__Ubal/` — 18 files, 1001 B [.txt:16, .json:2]
+      - `Windranger__N0EG/` — 14 files, 836 B [.txt:12, .json:2]
+      - `Winter_Wyvern__N0M7/` — 15 files, 921 B [.txt:14, .json:1]
+      - `Witch_Doctor__E01A/` — 16 files, 940 B [.txt:14, .json:2]
+      - `Wraith_King__NC00/` — 18 files, 1.0 KB [.txt:16, .json:2]
+      - `Zeus__Hmbr/` — 14 files, 790 B [.txt:12, .json:2]
+      - `_ArchivedDuplicateConfigs/` — 255 files, 10.0 KB [.txt:236, .json:19]
+      - `n00L__n00L/` — 13 files, 788 B [.txt:12, .json:1]
+    - `items/` — 1120 files, 73.0 KB [.txt:715, .json:405]
+      - `I000__I000/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I001__I001/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I002__I002/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I003__I003/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I004__I004/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I005__I005/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I006__I006/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I008__I008/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I009__I009/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00D__I00D/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00E__I00E/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I00G__I00G/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00H__I00H/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00I__I00I/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00J__I00J/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I00K__I00K/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I00M__I00M/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I00N__I00N/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I00O__I00O/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00P__I00P/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00Q__I00Q/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I00R__I00R/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I00U__I00U/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I00Z__I00Z/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I010__I010/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I011__I011/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I012__I012/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I015__I015/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I016__I016/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I017__I017/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I01D__I01D/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I01J__I01J/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I01N__I01N/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I01O__I01O/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I02O__I02O/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I02P__I02P/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I02R__I02R/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I02T__I02T/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I02Y__I02Y/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I043__I043/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I044__I044/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I045__I045/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I046__I046/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I047__I047/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I048__I048/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I049__I049/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04A__I04A/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04B__I04B/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I04C__I04C/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04D__I04D/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04E__I04E/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I04F__I04F/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04G__I04G/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I04H__I04H/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04I__I04I/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04J__I04J/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04K__I04K/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04L__I04L/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04M__I04M/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I04N__I04N/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04O__I04O/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I04P__I04P/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04Q__I04Q/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04R__I04R/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I04S__I04S/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I04T__I04T/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04U__I04U/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04V__I04V/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04W__I04W/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04X__I04X/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I04Y__I04Y/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I04Z__I04Z/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I050__I050/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I051__I051/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I052__I052/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I053__I053/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I054__I054/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I055__I055/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I05C__I05C/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05D__I05D/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05F__I05F/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05G__I05G/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05H__I05H/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05I__I05I/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05J__I05J/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05R__I05R/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05S__I05S/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05T__I05T/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05U__I05U/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05V__I05V/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05W__I05W/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05X__I05X/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I05Y__I05Y/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I05Z__I05Z/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I062__I062/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I063__I063/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I066__I066/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I067__I067/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I06A__I06A/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I06B__I06B/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I06D__I06D/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I06F__I06F/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I06H__I06H/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I06J__I06J/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I06L__I06L/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I06O__I06O/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I06P__I06P/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I06S__I06S/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I06V__I06V/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I06Y__I06Y/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I06Z__I06Z/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I072__I072/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I073__I073/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I07V__I07V/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I07W__I07W/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I07X__I07X/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I07Y__I07Y/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I080__I080/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I081__I081/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I083__I083/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I088__I088/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I08B__I08B/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I08C__I08C/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I08D__I08D/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I08G__I08G/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I08H__I08H/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I08K__I08K/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I08L__I08L/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I08O__I08O/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I08P__I08P/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I08R__I08R/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I08T__I08T/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I08V__I08V/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I08Y__I08Y/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I08Z__I08Z/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I091__I091/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I093__I093/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I095__I095/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I097__I097/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I099__I099/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I09C__I09C/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I09D__I09D/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I09F__I09F/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I09H__I09H/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I09L__I09L/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I09M__I09M/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I09N__I09N/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I09O__I09O/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I09P__I09P/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I09T__I09T/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I09X__I09X/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I09Y__I09Y/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I09Z__I09Z/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0A1__I0A1/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0A3__I0A3/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0A5__I0A5/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0A8__I0A8/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0A9__I0A9/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0AB__I0AB/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AE__I0AE/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AF__I0AF/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AI__I0AI/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0AJ__I0AJ/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AL__I0AL/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0AM__I0AM/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AN__I0AN/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AO__I0AO/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AP__I0AP/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0AV__I0AV/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0AW__I0AW/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0AY__I0AY/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0B1__I0B1/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0BA__I0BA/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0BD__I0BD/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0BE__I0BE/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0BG__I0BG/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0BJ__I0BJ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0BK__I0BK/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0BM__I0BM/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0DG__I0DG/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DI__I0DI/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DJ__I0DJ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DK__I0DK/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DL__I0DL/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DM__I0DM/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0DN__I0DN/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0DO__I0DO/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DP__I0DP/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DQ__I0DQ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0DR__I0DR/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0EV__I0EV/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0FH__I0FH/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FI__I0FI/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FJ__I0FJ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FK__I0FK/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FL__I0FL/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FM__I0FM/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FN__I0FN/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FO__I0FO/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FP__I0FP/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FQ__I0FQ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FR__I0FR/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FS__I0FS/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0FT__I0FT/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FU__I0FU/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FV__I0FV/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FW__I0FW/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FX__I0FX/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0FY__I0FY/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0FZ__I0FZ/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0G0__I0G0/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0G1__I0G1/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0GC__I0GC/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GF__I0GF/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GH__I0GH/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GJ__I0GJ/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0GM__I0GM/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GN__I0GN/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GO__I0GO/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GP__I0GP/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GQ__I0GQ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GX__I0GX/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GY__I0GY/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0GZ__I0GZ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0H0__I0H0/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0H1__I0H1/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0H3__I0H3/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0H4__I0H4/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0H5__I0H5/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0H6__I0H6/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0HB__I0HB/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0HF__I0HF/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0HI__I0HI/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0HJ__I0HJ/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0HM__I0HM/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0HN__I0HN/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0HP__I0HP/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0HQ__I0HQ/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0HR__I0HR/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0HS__I0HS/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0HZ__I0HZ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0I7__I0I7/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IK__I0IK/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IL__I0IL/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IM__I0IM/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IN__I0IN/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0IO__I0IO/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IP__I0IP/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IQ__I0IQ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0IR__I0IR/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IS__I0IS/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0IT__I0IT/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0IU__I0IU/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0J6__I0J6/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0J9__I0J9/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0JA__I0JA/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0JF__I0JF/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0JI__I0JI/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0JS__I0JS/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0JT__I0JT/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0JU__I0JU/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0JV__I0JV/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0JW__I0JW/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0JX__I0JX/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0JY__I0JY/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0K6__I0K6/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0K7__I0K7/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0KA__I0KA/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0KF__I0KF/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0KH__I0KH/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0KL__I0KL/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0KP__I0KP/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0KS__I0KS/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0KV__I0KV/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0KY__I0KY/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0L0__I0L0/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0L5__I0L5/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0L6__I0L6/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0L7__I0L7/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0LC__I0LC/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0LF__I0LF/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0LJ__I0LJ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0LK__I0LK/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0LL__I0LL/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0LN__I0LN/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0LT__I0LT/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0LV__I0LV/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0M0__I0M0/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0M4__I0M4/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0M7__I0M7/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0M9__I0M9/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0ME__I0ME/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0MG__I0MG/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0MI__I0MI/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0ML__I0ML/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0MP__I0MP/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0MU__I0MU/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0N0__I0N0/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0NA__I0NA/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0NE__I0NE/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0NG__I0NG/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0NI__I0NI/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0NK__I0NK/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0NN__I0NN/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0NR__I0NR/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0NU__I0NU/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0NX__I0NX/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0O0__I0O0/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0O3__I0O3/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0O6__I0O6/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0O8__I0O8/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0OA__I0OA/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0OE__I0OE/` — 6 files, 398 B [.txt:5, .json:1]
+      - `I0OG__I0OG/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0OI__I0OI/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0OL__I0OL/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0OS__I0OS/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0OV__I0OV/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0OX__I0OX/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0P1__I0P1/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0P4__I0P4/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0P8__I0P8/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0PB__I0PB/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0PH__I0PH/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0PK__I0PK/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0PM__I0PM/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0PQ__I0PQ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0PT__I0PT/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0PW__I0PW/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0Q2__I0Q2/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0Q3__I0Q3/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0Q6__I0Q6/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0Q9__I0Q9/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QA__I0QA/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QB__I0QB/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QC__I0QC/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QD__I0QD/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QM__I0QM/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QP__I0QP/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QS__I0QS/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QT__I0QT/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0QV__I0QV/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0R2__I0R2/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0R5__I0R5/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0R8__I0R8/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0RB__I0RB/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0RE__I0RE/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0RH__I0RH/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0RV__I0RV/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0RY__I0RY/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0S1__I0S1/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0S4__I0S4/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0S7__I0S7/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0SA__I0SA/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0SD__I0SD/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0SJ__I0SJ/` — 4 files, 266 B [.txt:3, .json:1]
+      - `I0SM__I0SM/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0SP__I0SP/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0SS__I0SS/` — 5 files, 332 B [.txt:4, .json:1]
+      - `I0SV__I0SV/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0SX__I0SX/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0SY__I0SY/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0T0__I0T0/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0T6__I0T6/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0T8__I0T8/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0T9__I0T9/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TB__I0TB/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TE__I0TE/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TH__I0TH/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TK__I0TK/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TN__I0TN/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TQ__I0TQ/` — 3 files, 200 B [.txt:2, .json:1]
+      - `I0TS__I0TS/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TT__I0TT/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TU__I0TU/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TW__I0TW/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TY__I0TY/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0TZ__I0TZ/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0U5__I0U5/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0U6__I0U6/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0U7__I0U7/` — 2 files, 134 B [.json:1, .txt:1]
+      - `I0Z2__I0Z2/` — 2 files, 134 B [.json:1, .txt:1]
+      - `dust__dust/` — 2 files, 134 B [.json:1, .txt:1]
+      - `hslv__hslv/` — 2 files, 134 B [.json:1, .txt:1]
+      - `mcri__mcri/` — 2 files, 134 B [.json:1, .txt:1]
+      - `moon__moon/` — 2 files, 134 B [.json:1, .txt:1]
+      - `ocor__ocor/` — 2 files, 134 B [.json:1, .txt:1]
+      - `ofir__ofir/` — 2 files, 134 B [.json:1, .txt:1]
+      - `oli2__oli2/` — 2 files, 134 B [.json:1, .txt:1]
+      - `oven__oven/` — 3 files, 200 B [.txt:2, .json:1]
+      - `pams__pams/` — 2 files, 134 B [.json:1, .txt:1]
+      - `phea__phea/` — 2 files, 134 B [.json:1, .txt:1]
+      - `plcl__plcl/` — 2 files, 134 B [.json:1, .txt:1]
+      - `pman__pman/` — 2 files, 134 B [.json:1, .txt:1]
+      - `rej2__rej2/` — 2 files, 134 B [.json:1, .txt:1]
+      - `rnec__rnec/` — 2 files, 134 B [.json:1, .txt:1]
+      - `shas__shas/` — 2 files, 134 B [.json:1, .txt:1]
+      - `shea__shea/` — 2 files, 134 B [.json:1, .txt:1]
+      - `skul__skul/` — 2 files, 134 B [.json:1, .txt:1]
+      - `spre__spre/` — 2 files, 134 B [.json:1, .txt:1]
+      - `sreg__sreg/` — 2 files, 134 B [.json:1, .txt:1]
+      - `ssan__ssan/` — 2 files, 134 B [.json:1, .txt:1]
+      - `stwp__stwp/` — 2 files, 134 B [.json:1, .txt:1]
+      - `tgrh__tgrh/` — 2 files, 134 B [.json:1, .txt:1]
+      - `tsct__tsct/` — 2 files, 134 B [.json:1, .txt:1]
+    - `tools/` — 2 files, 999.8 KB [(none):2]
+    - `units/` — 222 files, 86.3 KB [.json:222]
+      - `H00J__H00J/` — 1 files, 710 B [.json:1]
+      - `H00Y__H00Y/` — 1 files, 340 B [.json:1]
+      - `H07G__H07G/` — 1 files, 340 B [.json:1]
+      - `H0B8__H0B8/` — 1 files, 550 B [.json:1]
+      - `H0DL__H0DL/` — 1 files, 482 B [.json:1]
+      - `N0MM__N0MM/` — 1 files, 780 B [.json:1]
+      - `e000__e000/` — 1 files, 410 B [.json:1]
+      - `e001__e001/` — 1 files, 340 B [.json:1]
+      - `e003__e003/` — 1 files, 340 B [.json:1]
+      - `e006__e006/` — 1 files, 340 B [.json:1]
+      - `e008__e008/` — 1 files, 340 B [.json:1]
+      - `e009__e009/` — 1 files, 340 B [.json:1]
+      - `e00A__e00A/` — 1 files, 340 B [.json:1]
+      - `e00B__e00B/` — 1 files, 340 B [.json:1]
+      - `e00C__e00C/` — 1 files, 270 B [.json:1]
+      - `e00D__e00D/` — 1 files, 340 B [.json:1]
+      - `e00E__e00E/` — 1 files, 340 B [.json:1]
+      - `e00I__e00I/` — 1 files, 267 B [.json:1]
+      - `e00J__e00J/` — 1 files, 340 B [.json:1]
+      - `e00K__e00K/` — 1 files, 267 B [.json:1]
+      - `e00L__e00L/` — 1 files, 340 B [.json:1]
+      - `e00Q__e00Q/` — 1 files, 340 B [.json:1]
+      - `e00R__e00R/` — 1 files, 340 B [.json:1]
+      - `e00S__e00S/` — 1 files, 340 B [.json:1]
+      - `e00U__e00U/` — 1 files, 340 B [.json:1]
+      - `e00X__e00X/` — 1 files, 410 B [.json:1]
+      - `e010__e010/` — 1 files, 271 B [.json:1]
+      - `e011__e011/` — 1 files, 340 B [.json:1]
+      - `e017__e017/` — 1 files, 341 B [.json:1]
+      - `e019__e019/` — 1 files, 340 B [.json:1]
+      - `e01E__e01E/` — 1 files, 410 B [.json:1]
+      - `e01F__e01F/` — 1 files, 410 B [.json:1]
+      - `e01G__e01G/` — 1 files, 341 B [.json:1]
+      - `e01K__e01K/` — 1 files, 410 B [.json:1]
+      - `e01L__e01L/` — 1 files, 410 B [.json:1]
+      - `e01M__e01M/` — 1 files, 410 B [.json:1]
+      - `e01O__e01O/` — 1 files, 410 B [.json:1]
+      - `e01R__e01R/` — 1 files, 340 B [.json:1]
+      - `e01T__e01T/` — 1 files, 340 B [.json:1]
+      - `e01V__e01V/` — 1 files, 340 B [.json:1]
+      - `e020__e020/` — 1 files, 620 B [.json:1]
+      - `e022__e022/` — 1 files, 340 B [.json:1]
+      - `e025__e025/` — 1 files, 620 B [.json:1]
+      - `e02A__e02A/` — 1 files, 340 B [.json:1]
+      - `e02C__e02C/` — 1 files, 340 B [.json:1]
+      - `e02P__e02P/` — 1 files, 270 B [.json:1]
+      - `e02Q__e02Q/` — 1 files, 340 B [.json:1]
+      - `e02Y__e02Y/` — 1 files, 340 B [.json:1]
+      - `e02Z__e02Z/` — 1 files, 340 B [.json:1]
+      - `e039__e039/` — 1 files, 340 B [.json:1]
+      - `eaoe__eaoe/` — 1 files, 270 B [.json:1]
+      - `eaom__eaom/` — 1 files, 270 B [.json:1]
+      - `eaow__eaow/` — 1 files, 270 B [.json:1]
+      - `edob__edob/` — 1 files, 270 B [.json:1]
+      - `emow__emow/` — 1 files, 340 B [.json:1]
+      - `etol__etol/` — 1 files, 270 B [.json:1]
+      - `ewsp__ewsp/` — 1 files, 410 B [.json:1]
+      - `h002__h002/` — 1 files, 550 B [.json:1]
+      - `h003__h003/` — 1 files, 410 B [.json:1]
+      - `h005__h005/` — 1 files, 410 B [.json:1]
+      - `h007__h007/` — 1 files, 410 B [.json:1]
+      - `h00C__h00C/` — 1 files, 410 B [.json:1]
+      - `h00O__h00O/` — 1 files, 340 B [.json:1]
+      - `h00P__h00P/` — 1 files, 340 B [.json:1]
+      - `h03Y__h03Y/` — 1 files, 340 B [.json:1]
+      - `h06I__h06I/` — 1 files, 410 B [.json:1]
+      - `h06J__h06J/` — 1 files, 410 B [.json:1]
+      - `h06K__h06K/` — 1 files, 270 B [.json:1]
+      - `h06L__h06L/` — 1 files, 410 B [.json:1]
+      - `h06M__h06M/` — 1 files, 410 B [.json:1]
+      - `h06O__h06O/` — 1 files, 410 B [.json:1]
+      - `h06P__h06P/` — 1 files, 410 B [.json:1]
+      - `h06R__h06R/` — 1 files, 410 B [.json:1]
+      - `h06V__h06V/` — 1 files, 410 B [.json:1]
+      - `h06Z__h06Z/` — 1 files, 410 B [.json:1]
+      - `h077__h077/` — 1 files, 480 B [.json:1]
+      - `h078__h078/` — 1 files, 480 B [.json:1]
+      - `h07F__h07F/` — 1 files, 410 B [.json:1]
+      - `h07H__h07H/` — 1 files, 410 B [.json:1]
+      - `h07J__h07J/` — 1 files, 410 B [.json:1]
+      - `h07K__h07K/` — 1 files, 480 B [.json:1]
+      - `h07Q__h07Q/` — 1 files, 410 B [.json:1]
+      - `h07U__h07U/` — 1 files, 410 B [.json:1]
+      - `h07W__h07W/` — 1 files, 340 B [.json:1]
+      - `h07Z__h07Z/` — 1 files, 410 B [.json:1]
+      - `h081__h081/` — 1 files, 480 B [.json:1]
+      - `h088__h088/` — 1 files, 410 B [.json:1]
+      - `h090__h090/` — 1 files, 410 B [.json:1]
+      - `h091__h091/` — 1 files, 410 B [.json:1]
+      - `h092__h092/` — 1 files, 410 B [.json:1]
+      - `h098__h098/` — 1 files, 340 B [.json:1]
+      - `h0B1__h0B1/` — 1 files, 410 B [.json:1]
+      - `h0B2__h0B2/` — 1 files, 410 B [.json:1]
+      - `h0B6__h0B6/` — 1 files, 411 B [.json:1]
+      - `h0BB__h0BB/` — 1 files, 410 B [.json:1]
+      - `h0BD__h0BD/` — 1 files, 410 B [.json:1]
+      - `h0BQ__h0BQ/` — 1 files, 340 B [.json:1]
+      - `h0BX__h0BX/` — 1 files, 410 B [.json:1]
+      - `h0C2__h0C2/` — 1 files, 410 B [.json:1]
+      - `h0C3__h0C3/` — 1 files, 410 B [.json:1]
+      - `h0C6__h0C6/` — 1 files, 410 B [.json:1]
+      - `h0CJ__h0CJ/` — 1 files, 340 B [.json:1]
+      - `h0CK__h0CK/` — 1 files, 410 B [.json:1]
+      - `h0CL__h0CL/` — 1 files, 410 B [.json:1]
+      - `h0CS__h0CS/` — 1 files, 410 B [.json:1]
+      - `h0CU__h0CU/` — 1 files, 410 B [.json:1]
+      - `h0CV__h0CV/` — 1 files, 550 B [.json:1]
+      - `h0CW__h0CW/` — 1 files, 550 B [.json:1]
+      - `h0CX__h0CX/` — 1 files, 550 B [.json:1]
+      - `h0DS__h0DS/` — 1 files, 410 B [.json:1]
+      - `h0E7__h0E7/` — 1 files, 340 B [.json:1]
+      - `h0E8__h0E8/` — 1 files, 410 B [.json:1]
+      - `h0ED__h0ED/` — 1 files, 410 B [.json:1]
+      - `h0EG__h0EG/` — 1 files, 410 B [.json:1]
+      - `h0EJ__h0EJ/` — 1 files, 410 B [.json:1]
+      - `hC95__hC95/` — 1 files, 550 B [.json:1]
+      - `n002__n002/` — 1 files, 551 B [.json:1]
+      - `n005__n005/` — 1 files, 410 B [.json:1]
+      - `n007__n007/` — 1 files, 410 B [.json:1]
+      - `n008__n008/` — 1 files, 410 B [.json:1]
+      - `n009__n009/` — 1 files, 550 B [.json:1]
+      - `n00C__n00C/` — 1 files, 340 B [.json:1]
+      - `n00V__n00V/` — 1 files, 551 B [.json:1]
+      - `n00W__n00W/` — 1 files, 551 B [.json:1]
+      - `n00X__n00X/` — 1 files, 550 B [.json:1]
+      - `n018__n018/` — 1 files, 411 B [.json:1]
+      - `n019__n019/` — 1 files, 410 B [.json:1]
+      - `n01B__n01B/` — 1 files, 410 B [.json:1]
+      - `n01C__n01C/` — 1 files, 480 B [.json:1]
+      - `n01D__n01D/` — 1 files, 410 B [.json:1]
+      - `n01G__n01G/` — 1 files, 621 B [.json:1]
+      - `n01K__n01K/` — 1 files, 550 B [.json:1]
+      - `n01M__n01M/` — 1 files, 340 B [.json:1]
+      - `n01N__n01N/` — 1 files, 410 B [.json:1]
+      - `n01P__n01P/` — 1 files, 410 B [.json:1]
+      - `n01Q__n01Q/` — 1 files, 270 B [.json:1]
+      - `n01R__n01R/` — 1 files, 270 B [.json:1]
+      - `n01S__n01S/` — 1 files, 340 B [.json:1]
+      - `n01U__n01U/` — 1 files, 340 B [.json:1]
+      - `n01X__n01X/` — 1 files, 340 B [.json:1]
+      - `n027__n027/` — 1 files, 340 B [.json:1]
+      - `n02A__n02A/` — 1 files, 270 B [.json:1]
+      - `n036__n036/` — 1 files, 620 B [.json:1]
+      - `n0DC__n0DC/` — 1 files, 340 B [.json:1]
+      - `n0EO__n0EO/` — 1 files, 410 B [.json:1]
+      - `n0F5__n0F5/` — 1 files, 480 B [.json:1]
+      - `n0F6__n0F6/` — 1 files, 341 B [.json:1]
+      - `n0FH__n0FH/` — 1 files, 341 B [.json:1]
+      - `n0FI__n0FI/` — 1 files, 341 B [.json:1]
+      - `n0FJ__n0FJ/` — 1 files, 341 B [.json:1]
+      - `n0GJ__n0GJ/` — 1 files, 410 B [.json:1]
+      - `n0GK__n0GK/` — 1 files, 410 B [.json:1]
+      - `n0HE__n0HE/` — 1 files, 551 B [.json:1]
+      - `n0HQ__n0HQ/` — 1 files, 340 B [.json:1]
+      - `n0LH__n0LH/` — 1 files, 410 B [.json:1]
+      - `n0LI__n0LI/` — 1 files, 410 B [.json:1]
+      - `n0LJ__n0LJ/` — 1 files, 410 B [.json:1]
+      - `n0NI__n0NI/` — 1 files, 340 B [.json:1]
+      - `n129__n129/` — 1 files, 690 B [.json:1]
+      - `n12B__n12B/` — 1 files, 550 B [.json:1]
+      - `n12K__n12K/` — 1 files, 551 B [.json:1]
+      - `n12M__n12M/` — 1 files, 1.0 KB [.json:1]
+      - `n12N__n12N/` — 1 files, 550 B [.json:1]
+      - `nC35__nC35/` — 1 files, 550 B [.json:1]
+      - `nC38__nC38/` — 1 files, 550 B [.json:1]
+      - `ncop__ncop/` — 1 files, 971 B [.json:1]
+      - `ncp2__ncp2/` — 1 files, 410 B [.json:1]
+      - `ndfl__ndfl/` — 1 files, 410 B [.json:1]
+      - `nfoh__nfoh/` — 1 files, 410 B [.json:1]
+      - `nshe__nshe/` — 1 files, 270 B [.json:1]
+      - `o003__o003/` — 1 files, 480 B [.json:1]
+      - `o00C__o00C/` — 1 files, 340 B [.json:1]
+      - `o00D__o00D/` — 1 files, 340 B [.json:1]
+      - `o00G__o00G/` — 1 files, 340 B [.json:1]
+      - `o00Q__o00Q/` — 1 files, 340 B [.json:1]
+      - `o00S__o00S/` — 1 files, 340 B [.json:1]
+      - `o00Y__o00Y/` — 1 files, 410 B [.json:1]
+      - `o00Z__o00Z/` — 1 files, 340 B [.json:1]
+      - `o010__o010/` — 1 files, 340 B [.json:1]
+      - `o019__o019/` — 1 files, 340 B [.json:1]
+      - `o01A__o01A/` — 1 files, 340 B [.json:1]
+      - `o01P__o01P/` — 1 files, 340 B [.json:1]
+      - `o01W__o01W/` — 1 files, 340 B [.json:1]
+      - `o01X__o01X/` — 1 files, 550 B [.json:1]
+      - `o01Y__o01Y/` — 1 files, 340 B [.json:1]
+      - `o01Z__o01Z/` — 1 files, 340 B [.json:1]
+      - `o022__o022/` — 1 files, 340 B [.json:1]
+      - `o02B__o02B/` — 1 files, 340 B [.json:1]
+      - `o02C__o02C/` — 1 files, 340 B [.json:1]
+      - `o02D__o02D/` — 1 files, 340 B [.json:1]
+      - `u001__u001/` — 1 files, 270 B [.json:1]
+      - `u004__u004/` — 1 files, 410 B [.json:1]
+      - `u00B__u00B/` — 1 files, 340 B [.json:1]
+      - `u00D__u00D/` — 1 files, 270 B [.json:1]
+      - `u00H__u00H/` — 1 files, 410 B [.json:1]
+      - `u00J__u00J/` — 1 files, 340 B [.json:1]
+      - `u00L__u00L/` — 1 files, 480 B [.json:1]
+      - `u00M__u00M/` — 1 files, 270 B [.json:1]
+      - `u00N__u00N/` — 1 files, 270 B [.json:1]
+      - `u00O__u00O/` — 1 files, 341 B [.json:1]
+      - `u00Q__u00Q/` — 1 files, 550 B [.json:1]
+      - `u00T__u00T/` — 1 files, 270 B [.json:1]
+      - `u00X__u00X/` — 1 files, 340 B [.json:1]
+      - `u00Y__u00Y/` — 1 files, 340 B [.json:1]
+      - `u00Z__u00Z/` — 1 files, 551 B [.json:1]
+      - `u010__u010/` — 1 files, 551 B [.json:1]
+      - `u014__u014/` — 1 files, 410 B [.json:1]
+      - `u01D__u01D/` — 1 files, 410 B [.json:1]
+      - `u01I__u01I/` — 1 files, 340 B [.json:1]
+      - `u01R__u01R/` — 1 files, 410 B [.json:1]
+      - `u021__u021/` — 1 files, 271 B [.json:1]
+      - `u022__u022/` — 1 files, 270 B [.json:1]
+      - `u023__u023/` — 1 files, 340 B [.json:1]
+      - `u024__u024/` — 1 files, 340 B [.json:1]
+      - `u026__u026/` — 1 files, 340 B [.json:1]
+      - `uC74__uC74/` — 1 files, 550 B [.json:1]
+      - `ubon__ubon/` — 1 files, 267 B [.json:1]
+      - `unpl__unpl/` — 1 files, 270 B [.json:1]
+      - `usap__usap/` — 1 files, 267 B [.json:1]
+      - `usep__usep/` — 1 files, 267 B [.json:1]
+      - `utod__utod/` — 1 files, 267 B [.json:1]
+      - `uzig__uzig/` — 1 files, 267 B [.json:1]
+- `Workspaces/` — 5389 files, 1.5 GB [.png:2707, .blp:2619, .w3x:21, .tsv:14, .txt:8, .py:6]
+  - `Dota2/` — 5371 files, 1.4 GB [.png:2707, .blp:2619, .w3x:19, .tsv:10, .json:4, .txt:3]
+    - `Backups/` — 17 files, 1.2 GB [.w3x:17]
+    - `CooldownFDF/` — 5 files, 10.6 KB [.fdf:1, .toc:1, .j:1, .md:1, .py:1]
+    - `FailedTests/` — 2 files, 205.0 MB [.w3x:2]
+    - `Icon Audit/` — 5330 files, 42.2 MB [.png:2707, .blp:2619, .tsv:3, .md:1]
+      - `CONTACT_SHEETS/` — 88 files, 7.1 MB [.png:88]
+      - `Heroes/` — 1920 files, 12.5 MB [.blp:960, .png:960]
+      - `Items/` — 388 files, 2.8 MB [.blp:194, .png:194]
+      - `Shared_or_Unassigned/` — 2930 files, 19.1 MB [.blp:1465, .png:1465]
+  - `Wardota/` — 18 files, 39.2 MB [.txt:5, .tsv:4, .py:4, .sh:2, .w3x:2, .json:1]
+    - `Backups/` — 2 files, 39.0 MB [.w3x:2]
+
+Complete file list for `Dota Mod Project` is in `FILES_ALL.tsv` (filter by prefix `Dota Mod Project/`).
+
+## Environment
+
+Files: 1, size: 77.9 KB
+
+Full file list:
+
+- `Environment/Sky/Outland_Sky/OutlandSkyNew.blp` (77.9 KB)
+
+## Maps
+
+Files: 4, size: 91.7 MB
+
+Full file list:
+
+- `Maps/Downloads/D85 06 DotaHQv5.w3x` (23.0 MB)
+- `Maps/Downloads/D85 07 AnimationUpdatesTest.w3x` (23.0 MB)
+- `Maps/Downloads/Dota_Radiant_Terrain_Fix_v4.w3x` (23.1 MB)
+- `Maps/Downloads/Dota_Radiant_Terrain_Fix_v4.w3x.zip` (22.6 MB)
+
+## Objects
+
+Files: 2, size: 161.7 KB
+
+Full file list:
+
+- `Objects/InventoryItems/TreasureChest/CHESTGOLD.BLP` (36.5 KB)
+- `Objects/InventoryItems/TreasureChest/TreasureChestTonucki.blp` (125.2 KB)
+
+## ReplaceableTextures
+
+Files: 1, size: 308.3 KB
+
+Full file list:
+
+- `ReplaceableTextures/Weather/Clouds8x8.blp` (308.3 KB)
+
+## SPELLS
+
+Files: 2, size: 65.8 KB
+
+Full file list:
+
+- `SPELLS/Beam1.blp` (12.9 KB)
+- `SPELLS/CrackedGround.blp` (52.9 KB)
+
+## TerrainArt
+
+Files: 22, size: 8.7 MB
+
+Full file list:
+
+- `TerrainArt/Terrain.slk` (49.0 KB)
+- `TerrainArt/Blight/Felwood_Blight.blp` (80.0 KB)
+- `TerrainArt/Blight/Felwood_Blight.tga` (512.0 KB)
+- `TerrainArt/Cityscape/City_Grass.blp` (215.6 KB)
+- `TerrainArt/Felwood/Felwood_Dirt.TGA` (512.0 KB)
+- `TerrainArt/Felwood/Felwood_Dirt.blp` (119.8 KB)
+- `TerrainArt/Felwood/Felwood_DirtRough.TGA` (512.0 KB)
+- `TerrainArt/Felwood/Felwood_DirtRough.blp` (107.7 KB)
+- `TerrainArt/Felwood/Felwood_Grass.TGA` (512.0 KB)
+- `TerrainArt/Felwood/Felwood_Grass.blp` (250.1 KB)
+- `TerrainArt/Felwood/Felwood_Leaves.TGA` (1.0 MB)
+- `TerrainArt/Felwood/Felwood_Leaves.blp` (186.2 KB)
+- `TerrainArt/Felwood/Felwood_Rock.TGA` (2.0 MB)
+- `TerrainArt/Felwood/Felwood_Vines.TGA` (512.0 KB)
+- `TerrainArt/Felwood/Felwood_Vines.blp` (115.8 KB)
+- `TerrainArt/Northrend/North_dirtdark.TGA` (512.0 KB)
+- `TerrainArt/Northrend/North_dirtdark.blp` (72.7 KB)
+- `TerrainArt/Ruins/Ruins_Grass.blp` (125.6 KB)
+- `TerrainArt/Ruins/Ruins_GrassDark.TGA` (512.0 KB)
+- `TerrainArt/Ruins/Ruins_GrassDark.blp` (311.7 KB)
+- `TerrainArt/Ruins/Ruins_SmallBricks.TGA` (512.0 KB)
+- `TerrainArt/Ruins/Ruins_SmallBricks.blp` (142.3 KB)
+
+## Textures
+
+Files: 4, size: 41.2 KB
+
+Full file list:
+
+- `Textures/Blue_Glow2.blp` (2.8 KB)
+- `Textures/Clouds8x8FadeWhite.blp` (22.6 KB)
+- `Textures/LightningBall.blp` (6.2 KB)
+- `Textures/Shockwave10.blp` (9.7 KB)
+
+## Ton_ucki
+
+Files: 12, size: 786.8 KB
+
+Full file list:
+
+- `Ton_ucki/Clock/bad_ancient_crystal001.blp` (36.1 KB)
+- `Ton_ucki/Morted/YellowGlow.blp` (3.3 KB)
+- `Ton_ucki/Pudge/bad_ancient_crystal001.blp` (36.1 KB)
+- `Ton_ucki/Pudge/pudge.blp` (680.8 KB)
+- `Ton_ucki/Zeus/el1.blp` (3.8 KB)
+- `Ton_ucki/Zeus/el2.blp` (3.8 KB)
+- `Ton_ucki/Zeus/el3.blp` (3.8 KB)
+- `Ton_ucki/Zeus/el4.blp` (3.8 KB)
+- `Ton_ucki/Zeus/el5.blp` (3.8 KB)
+- `Ton_ucki/Zeus/el6.blp` (3.8 KB)
+- `Ton_ucki/Zeus/electric1.blp` (3.8 KB)
+- `Ton_ucki/Zeus/electric2.blp` (3.8 KB)
+
+## UI
+
+Files: 5, size: 591 B
+
+Full file list:
+
+- `UI/SoundInfo/AbilitySounds.slk` (119 B)
+- `UI/SoundInfo/AnimLookups.slk` (117 B)
+- `UI/SoundInfo/AnimSounds.slk` (116 B)
+- `UI/SoundInfo/DialogSounds.slk` (119 B)
+- `UI/SoundInfo/UnitAckSounds.slk` (120 B)
+
+## Units
+
+Files: 144, size: 13.4 MB
+
+Full file list:
+
+- `Units/Creeps/BristleBack/QuillBoarWarrior_Skin.blp` (94.4 KB)
+- `Units/Creeps/ForestTroll/Body Forest Troll Berserker.blp` (141.0 KB)
+- `Units/Creeps/ForestTroll/FORESTTROLLMALESKIN00_00.blp` (35.2 KB)
+- `Units/Creeps/ForestTroll/Hair00_05.blp` (14.9 KB)
+- `Units/Creeps/ForestTroll/axe_1h_hatchet_d_01.blp` (10.0 KB)
+- `Units/Creeps/ForestTroll/leather_dungeonleather_c_02blue.blp` (31.9 KB)
+- `Units/Creeps/GoblinLandMine/ConcussiveMine.blp` (14.5 KB)
+- `Units/Creeps/GoblinZeppelin/CourierBG.blp` (30.9 KB)
+- `Units/Creeps/GoblinZeppelin/mighty_boar_color.blp` (133.0 KB)
+- `Units/Creeps/HarpyQueen/HarpyBlack.blp` (66.5 KB)
+- `Units/Creeps/HarpyQueen/PARTICLEFEATHER01.BLP` (5.1 KB)
+- `Units/Creeps/HarpyQueen/PARTICLEFEATHER02.BLP` (3.9 KB)
+- `Units/Creeps/HeroTinkerRobot/ClockWorKGiantPet.blp` (120.5 KB)
+- `Units/Creeps/HeroTinkerRobot/ClockWorkGiantPetGlow.BLP` (21.0 KB)
+- `Units/Creeps/LordGarithos/G_10.BLP` (71.9 KB)
+- `Units/Creeps/LordGarithos/G_2.BLP` (60.3 KB)
+- `Units/Creeps/LordGarithos/G_24.BLP` (19.2 KB)
+- `Units/Creeps/LordGarithos/G_25.BLP` (79.6 KB)
+- `Units/Creeps/LordGarithos/G_5.BLP` (15.5 KB)
+- `Units/Creeps/LordGarithos/G_6.BLP` (12.1 KB)
+- `Units/Creeps/LordGarithos/G_8.BLP` (11.4 KB)
+- `Units/Creeps/LordGarithos/Yellow_Star.blp` (4.5 KB)
+- `Units/Creeps/MurlocNightCrawler/Dust3_Tonucki.blp` (4.9 KB)
+- `Units/Creeps/MurlocNightCrawler/frog.blp` (137.5 KB)
+- `Units/Creeps/SpiderBlue/NerubianSpiderlingBlue.blp` (69.7 KB)
+- `Units/Creeps/WendigoShaman/WendigoSkinBrown.blp` (61.0 KB)
+- `Units/Creeps/miniboom/CourierBG.blp` (30.9 KB)
+- `Units/Creeps/miniboom/turtle_rider_color.blp` (181.8 KB)
+- `Units/Creeps/tuskarLord/JefeTuskarraxe.blp` (34.8 KB)
+- `Units/Creeps/tuskarLord/Shield_2H_OutlandRaid_D_08Pink.blp` (200.3 KB)
+- `Units/Creeps/tuskarLord/jefeTuskarr.blp` (67.6 KB)
+- `Units/Creeps/tuskarLord/jefetuskarrhair.blp` (15.9 KB)
+- `Units/Critters/BrownWolf/CourierBG.blp` (30.9 KB)
+- `Units/Critters/BrownWolf/tegu_color.blp` (160.9 KB)
+- `Units/Critters/DuneWorm/CourierBG.blp` (30.9 KB)
+- `Units/Critters/DuneWorm/snowleopard_courier_color.blp` (111.0 KB)
+- `Units/Critters/EasterChicken/CourierBG.blp` (30.9 KB)
+- `Units/Critters/EasterChicken/lockjaw_color.blp` (163.2 KB)
+- `Units/Critters/EasterRabbit/CourierBG.blp` (30.9 KB)
+- `Units/Critters/EasterRabbit/drodo_color.blp` (158.5 KB)
+- `Units/Critters/Felboar/CourierBG.blp` (30.9 KB)
+- `Units/Critters/Felboar/mighty_boar_color.blp` (133.0 KB)
+- `Units/Critters/MiniPudge/CourierBG.blp` (30.9 KB)
+- `Units/Critters/MiniPudge/minipudge_color.blp` (60.0 KB)
+- `Units/Critters/PackHorse/CourierBG.blp` (30.9 KB)
+- `Units/Critters/Penguin/CourierBG.blp` (30.9 KB)
+- `Units/Critters/Penguin/stump001_color.blp` (141.1 KB)
+- `Units/Critters/Raccoon/CourierBG.blp` (30.9 KB)
+- `Units/Critters/Raccoon/imp_color.blp` (88.5 KB)
+- `Units/Critters/Seal/CourierBG.blp` (30.9 KB)
+- `Units/Critters/Seal/juggernaut_dog_defense.blp` (185.6 KB)
+- `Units/Critters/Skink/CourierBG.blp` (30.9 KB)
+- `Units/Critters/Skink/frog.blp` (137.5 KB)
+- `Units/Critters/SnowOwl/CourierBG.blp` (30.9 KB)
+- `Units/Critters/SnowOwl/lockjaw_color.blp` (163.2 KB)
+- `Units/Critters/SpiderCrab/CourierBG.blp` (30.9 KB)
+- `Units/Critters/SpiderCrab/badger_001.blp` (155.7 KB)
+- `Units/Critters/VillagerMan/HumanMaleWarriorLight_Skin02.blp` (65.8 KB)
+- `Units/Critters/VillagerMan1/HumanMaleWarriorLight_Skin01.blp` (62.0 KB)
+- `Units/Critters/Vulture/CourierBG.blp` (30.9 KB)
+- `Units/Critters/Vulture/imp_color.blp` (88.5 KB)
+- `Units/Custom/EmberSpirit/BodyTonucki.tga` (384.0 KB)
+- `Units/Custom/EmberSpirit/HELLFIRE.BLP` (27.6 KB)
+- `Units/Custom/EmberSpirit/HELLFIRE01.BLP` (28.8 KB)
+- `Units/Custom/EmberSpirit/HELLFIRE_GLOW.BLP` (3.6 KB)
+- `Units/Custom/EmberSpirit/PandaMaleFaceUpper10_01.blp` (129.2 KB)
+- `Units/Custom/EmberSpirit/PandaMaleSkinExtra00_01.blp` (20.2 KB)
+- `Units/Custom/EmberSpirit/PlantTonucki.blp` (242.8 KB)
+- `Units/Custom/EmberSpirit/Robe_RaidPriest_A_01Gold_Bracer_AL_U.blp` (7.9 KB)
+- `Units/Custom/EmberSpirit/paladin.blp` (59.0 KB)
+- `Units/Custom/FrostWyrm/2_10.blp` (176.1 KB)
+- `Units/Custom/FrostWyrm/2_8.blp` (237.3 KB)
+- `Units/Custom/FrostWyrm/2_9.blp` (316.3 KB)
+- `Units/Custom/FrostWyrm/FrostmourneBlade.BLP` (4.8 KB)
+- `Units/Custom/FrostWyrm/FrostmourneFrost.blp` (6.5 KB)
+- `Units/Custom/Shop/DruidTreeForm.blp` (288.7 KB)
+- `Units/Custom/Shop/LEAFBROWNA.BLP` (6.0 KB)
+- `Units/Custom/Shop/LEAFRED2_A.BLP` (6.0 KB)
+- `Units/Custom/Shop/SB_PLANTSA.BLP` (60.6 KB)
+- `Units/Custom/Shop/SMOKEWISPY_ROUNDSPONGE_EDIT.BLP` (4.1 KB)
+- `Units/Custom/Shop/mountaingiant_howling1.blp` (51.3 KB)
+- `Units/Custom/Shop/mountaingiant_howling2.blp` (48.1 KB)
+- `Units/Custom/ShopKeeper/ShopKeeper.mdx` (280.0 KB)
+- `Units/Custom/ShopKeeper/ShopKeeper_Portrait.mdx` (115.0 KB)
+- `Units/Custom/ShopKeeper/secretshopBG.blp` (63.9 KB)
+- `Units/Custom/ShopKeeper/secretshopkeeper_dire_color.blp` (268.0 KB)
+- `Units/Custom/ShopKeeper/shopkeeper.blp` (302.8 KB)
+- `Units/Custom/ShopKeeper/shopkeeper_weapon.blp` (104.3 KB)
+- `Units/Custom/ShopKeeper/tree_oak_leaves_05.blp` (325.8 KB)
+- `Units/Demon/ChaosPeon/Axe_1H_Pick_A_01Brown.blp` (7.5 KB)
+- `Units/Demon/ChaosPeon/kugongCape.blp` (4.4 KB)
+- `Units/Demon/ChaosPeon/kugongHair.blp` (9.6 KB)
+- `Units/Demon/ChaosPeon/kugongbody.blp` (50.4 KB)
+- `Units/Demon/felhound/FELHOUNDSKIN.BLP` (274.8 KB)
+- `Units/Human/Phoenix/Firehawk.blp` (271.0 KB)
+- `Units/Human/Phoenix/FirehawkBody.blp` (4.2 KB)
+- `Units/Human/Phoenix/FirehawkWing.blp` (8.2 KB)
+- `Units/Naga/HeroNagaSeawitch/Bow_1H_OutlandRaid_D_03Cape.blp` (15.7 KB)
+- `Units/Naga/HeroNagaSeawitch/LADYVASHJSHOULDERS.BLP` (39.7 KB)
+- `Units/Naga/HeroNagaSeawitch/LadyVashj.TGA` (1.0 MB)
+- `Units/Naga/HeroNagaSeawitch/LadyVashj.blp` (541.8 KB)
+- `Units/Naga/HeroNagaSeawitch/REDSTARFLASH.BLP` (3.9 KB)
+- `Units/NightElf/DruidOfTheTalon/CourierBG.blp` (30.9 KB)
+- `Units/NightElf/DruidOfTheTalon/juggernaut_dog_defense.blp` (185.6 KB)
+- `Units/NightElf/FaerieDragon/FAERIEWING.BLP` (35.8 KB)
+- `Units/NightElf/Furion/Helm_Leather_RaidDruid_B_01.blp` (13.0 KB)
+- `Units/NightElf/Furion/NightElfArmor.blp` (171.8 KB)
+- `Units/NightElf/Furion/NightElfMalewuq.blp` (258.0 KB)
+- `Units/NightElf/Furion/feather.blp` (22.5 KB)
+- `Units/NightElf/Furion/malfurion.blp` (83.6 KB)
+- `Units/NightElf/Furion/malfurioncapa.blp` (29.9 KB)
+- `Units/NightElf/Furion/malfurionhombreras.blp` (56.6 KB)
+- `Units/NightElf/Furion/malfurionojos.blp` (3.4 KB)
+- `Units/NightElf/Furion/malfurionpelo.blp` (26.1 KB)
+- `Units/NightElf/Furion/plumas.blp` (20.0 KB)
+- `Units/Orc/Grunt/CourierBG.blp` (30.9 KB)
+- `Units/Orc/Grunt/Grunt1.blp` (683.8 KB)
+- `Units/Orc/Grunt/pig.blp` (30.6 KB)
+- `Units/Orc/HeadHunter/Polearm_2H_Bladed_A_02.blp` (11.7 KB)
+- `Units/Orc/HeadHunter/Shoulder_Leather_Horde_B_Cape.blp` (7.8 KB)
+- `Units/Orc/HeadHunter/TrollMaleBody.blp` (75.6 KB)
+- `Units/Orc/HeadHunter/TrollMaleHair.blp` (20.8 KB)
+- `Units/Orc/HealingWard/ShockwaveWard.blp` (9.7 KB)
+- `Units/Orc/HeroBladeMaster/BladeMaster_color.blp` (679.9 KB)
+- `Units/Orc/StasisTotem/LIGHTNINGRED.BLP` (16.9 KB)
+- `Units/Orc/StasisTotem/SHOCKWAVE10B.BLP` (12.4 KB)
+- `Units/Orc/StasisTotem/TOONSMOKE16_2.BLP` (131.6 KB)
+- `Units/Orc/StasisTotem/TOTEM1.BLP` (63.6 KB)
+- `Units/Undead/FrostWyrm/CourierBG.blp` (30.9 KB)
+- `Units/Undead/FrostWyrm/stump001_color.blp` (141.1 KB)
+- `Units/Undead/HeroDeathKnight/ARTHASUNDEAD_01.blp` (238.7 KB)
+- `Units/Undead/HeroDeathKnight/Clouds8x8.blp` (308.3 KB)
+- `Units/Undead/HeroDeathKnight/MountedDeathKnight_Arthas_Skin01.blp` (86.4 KB)
+- `Units/Undead/HeroDeathKnight/Sword_2H_Frostmourne_D_01Cape.BLP` (46.7 KB)
+- `Units/Undead/HeroLich/LICHSKIN02.BLP` (3.3 KB)
+- `Units/Undead/HeroLichCIN/ARMORREFLECT3.BLP` (2.9 KB)
+- `Units/Undead/HeroLichCIN/BLACK32.BLP` (2.8 KB)
+- `Units/Undead/HeroLichCIN/FLARE.BLP` (3.8 KB)
+- `Units/Undead/HeroLichCIN/GHOST2.BLP` (3.9 KB)
+- `Units/Undead/HeroLichCIN/SHOCKWAVEWATER1.BLP` (11.1 KB)
+- `Units/Undead/Shade/BLACK32.BLP` (2.8 KB)
+- `Units/Undead/Shade/SMOKEBASE.BLP` (16.8 KB)
+- `Units/Undead/scarab/CourierBG.blp` (30.9 KB)
+- `Units/Undead/scarab/tegu_color.blp` (160.9 KB)
+
+## WC3Dota2Test
+
+Files: 2039, size: 674.3 MB
+
+Subfolder structure to depth 4 (files recursive / size / extensions):
+
+- `Defaults/` — 24 files, 8.6 MB [.blp:18, .mdx:6]
+  - `Abaddon/` — 12 files, 3.8 MB [.blp:10, .mdx:2]
+  - `AncientApparition/` — 6 files, 1.5 MB [.blp:4, .mdx:2]
+  - `AntiMage/` — 6 files, 3.3 MB [.blp:4, .mdx:2]
+- `Fixes/` — 22 files, 5.8 MB [.blp:18, .mdx:4]
+  - `Huskar/` — 9 files, 2.5 MB [.blp:7, .mdx:2]
+  - `Slark/` — 13 files, 3.4 MB [.blp:11, .mdx:2]
+- `GeneratedUI/` — 12 files, 8.0 MB [.blp:12]
+  - `widescreen-gray/` — 4 files, 2.7 MB [.blp:4]
+  - `widescreen-gray-strips/` — 4 files, 2.7 MB [.blp:4]
+    - `nightelf/` — 2 files, 1.3 MB [.blp:2]
+    - `undead/` — 2 files, 1.3 MB [.blp:2]
+    - `nightelf/` — 2 files, 1.3 MB [.blp:2]
+    - `undead/` — 2 files, 1.3 MB [.blp:2]
+  - `widescreen-transparent/` — 4 files, 2.7 MB [.blp:4]
+    - `nightelf/` — 2 files, 1.3 MB [.blp:2]
+    - `undead/` — 2 files, 1.3 MB [.blp:2]
+- `Icons/` — 14 files, 69.2 KB [.blp:14]
+  - `Axe/` — 1 files, 4.8 KB [.blp:1]
+  - `Crystal_Maiden/` — 1 files, 5.2 KB [.blp:1]
+  - `Death_Prophet/` — 1 files, 4.9 KB [.blp:1]
+  - `Doom/` — 1 files, 4.8 KB [.blp:1]
+  - `Juggernaut/` — 1 files, 4.9 KB [.blp:1]
+  - `Lich/` — 1 files, 5.4 KB [.blp:1]
+  - `Lina/` — 1 files, 4.8 KB [.blp:1]
+  - `Omniknight/` — 1 files, 4.8 KB [.blp:1]
+  - `Phantom_Assassin/` — 1 files, 5.0 KB [.blp:1]
+  - `Queen_of_Pain/` — 1 files, 5.1 KB [.blp:1]
+  - `Roshan/` — 1 files, 4.4 KB [.blp:1]
+  - `Sven/` — 1 files, 5.1 KB [.blp:1]
+  - `Tidehunter/` — 1 files, 5.0 KB [.blp:1]
+  - `Windranger/` — 1 files, 5.0 KB [.blp:1]
+- `Skins/` — 71 files, 6.3 MB [.blp:55, .mdx:16]
+  - `Axe/` — 7 files, 718.9 KB [.blp:5, .mdx:2]
+  - `Crystal_Maiden/` — 3 files, 491.5 KB [.blp:2, .mdx:1]
+  - `Death_Prophet/` — 5 files, 332.1 KB [.blp:4, .mdx:1]
+  - `Doom/` — 3 files, 470.2 KB [.blp:2, .mdx:1]
+  - `Juggernaut/` — 8 files, 365.5 KB [.blp:7, .mdx:1]
+  - `Lich/` — 2 files, 303.4 KB [.mdx:1, .blp:1]
+  - `Lina/` — 6 files, 324.3 KB [.blp:5, .mdx:1]
+  - `Omniknight/` — 8 files, 529.8 KB [.blp:7, .mdx:1]
+  - `Phantom_Assassin/` — 6 files, 362.7 KB [.blp:5, .mdx:1]
+  - `Queen_of_Pain/` — 6 files, 544.1 KB [.blp:5, .mdx:1]
+  - `Roshan/` — 2 files, 502.4 KB [.mdx:1, .blp:1]
+  - `Sven/` — 3 files, 623.9 KB [.blp:2, .mdx:1]
+  - `Tidehunter/` — 7 files, 579.2 KB [.blp:5, .mdx:2]
+  - `Windranger/` — 5 files, 337.8 KB [.blp:4, .mdx:1]
+- `Units/` — 1174 files, 380.6 MB [.blp:936, .mdx:238]
+  - `Creeps/` — 323 files, 88.8 MB [.blp:255, .mdx:68]
+    - `ArchnathidGreen/` — 10 files, 3.0 MB [.blp:8, .mdx:2]
+    - `Assassin/` — 12 files, 2.0 MB [.blp:10, .mdx:2]
+    - `AzureDragon/` — 3 files, 893.2 KB [.mdx:2, .blp:1]
+    - `BansheeRanger/` — 17 files, 3.9 MB [.blp:15, .mdx:2]
+    - `Beastmaster/` — 9 files, 1.4 MB [.blp:7, .mdx:2]
+    - `BurningArcher/` — 10 files, 2.5 MB [.blp:8, .mdx:2]
+    - `DarkTrollShadowPriest/` — 9 files, 3.3 MB [.blp:7, .mdx:2]
+    - `DireWolf/` — 6 files, 1.5 MB [.blp:4, .mdx:2]
+    - `FacelessOne/` — 14 files, 4.0 MB [.blp:12, .mdx:2]
+    - `FirePandarenBrewMaster/` — 5 files, 1.4 MB [.blp:3, .mdx:2]
+    - `FurbolgTracker/` — 9 files, 2.5 MB [.blp:7, .mdx:2]
+    - `GnollWarden/` — 17 files, 3.5 MB [.blp:15, .mdx:2]
+    - `GreenDragon/` — 3 files, 886.2 KB [.mdx:2, .blp:1]
+    - `HeroTinker/` — 20 files, 3.9 MB [.blp:18, .mdx:2]
+    - `IronGolem/` — 15 files, 3.1 MB [.blp:13, .mdx:2]
+    - `KoboldGeomancer/` — 10 files, 2.0 MB [.blp:8, .mdx:2]
+    - `LordGarithos/` — 10 files, 3.1 MB [.blp:8, .mdx:2]
+    - `Medivh/` — 8 files, 2.7 MB [.blp:6, .mdx:2]
+    - `NerubianQueen/` — 8 files, 2.4 MB [.blp:6, .mdx:2]
+    - `NetherDragon/` — 4 files, 1.4 MB [.blp:2, .mdx:2]
+    - `PandarenBrewmaster/` — 9 files, 2.6 MB [.blp:7, .mdx:2]
+    - `RazorMane/` — 9 files, 2.1 MB [.blp:7, .mdx:2]
+    - `RedDragon/` — 3 files, 867.7 KB [.mdx:2, .blp:1]
+    - `Revenant/` — 9 files, 1.7 MB [.blp:7, .mdx:2]
+    - `SeaElemental/` — 18 files, 5.7 MB [.blp:16, .mdx:2]
+    - `SeaGiantGreen/` — 6 files, 1.8 MB [.blp:4, .mdx:2]
+    - `SpiderBlack/` — 8 files, 1.5 MB [.blp:6, .mdx:2]
+    - `StormPandarenBrewmaster/` — 5 files, 1.5 MB [.blp:3, .mdx:2]
+    - `SylvanusWindrunner/` — 9 files, 2.6 MB [.blp:7, .mdx:2]
+    - `TuskarLord/` — 5 files, 2.8 MB [.blp:3, .mdx:2]
+    - `VoidWalker/` — 17 files, 4.3 MB [.blp:15, .mdx:2]
+    - `WindSerpent/` — 7 files, 2.8 MB [.blp:5, .mdx:2]
+    - `Zombie/` — 6 files, 3.8 MB [.blp:4, .mdx:2]
+    - `goblinsapper/` — 13 files, 5.2 MB [.blp:11, .mdx:2]
+  - `Critters/` — 8 files, 4.4 MB [.blp:6, .mdx:2]
+    - `Hydralisk/` — 8 files, 4.4 MB [.blp:6, .mdx:2]
+  - `Custom/` — 219 files, 78.5 MB [.blp:171, .mdx:48]
+    - `Banshee/` — 9 files, 2.9 MB [.blp:7, .mdx:2]
+    - `CentaurKhan/` — 12 files, 3.3 MB [.blp:10, .mdx:2]
+    - `Clockwerk/` — 4 files, 2.0 MB [.mdx:2, .blp:2]
+    - `EarthPandarenBrewmaster/` — 11 files, 4.6 MB [.blp:9, .mdx:2]
+    - `Enigma/` — 10 files, 1.5 MB [.blp:8, .mdx:2]
+    - `HeroFlameLord/` — 24 files, 5.4 MB [.blp:22, .mdx:2]
+    - `HeroGoblinAlchemist/` — 9 files, 3.9 MB [.blp:7, .mdx:2]
+    - `IcyGhost/` — 9 files, 1.8 MB [.blp:7, .mdx:2]
+    - `Lich/` — 10 files, 2.5 MB [.blp:8, .mdx:2]
+    - `MagnataurBlue/` — 9 files, 2.6 MB [.blp:7, .mdx:2]
+    - `Naix/` — 10 files, 5.6 MB [.blp:8, .mdx:2]
+    - `OgreMagi/` — 9 files, 3.7 MB [.blp:7, .mdx:2]
+    - `PL/` — 12 files, 4.5 MB [.blp:10, .mdx:2]
+    - `Priest/` — 7 files, 7.0 MB [.blp:5, .mdx:2]
+    - `Puck/` — 6 files, 2.2 MB [.blp:4, .mdx:2]
+    - `Riki/` — 13 files, 6.4 MB [.blp:11, .mdx:2]
+    - `Rooftrellen/` — 8 files, 2.9 MB [.blp:6, .mdx:2]
+    - `Spectre/` — 10 files, 3.5 MB [.blp:8, .mdx:2]
+    - `StormPandarenBrewmaster/` — 8 files, 2.9 MB [.blp:6, .mdx:2]
+    - `Tiny/` — 9 files, 2.2 MB [.blp:7, .mdx:2]
+    - `Troll/` — 7 files, 4.7 MB [.mdx:4, .blp:3]
+    - `Wisp/` — 5 files, 419.3 KB [.blp:3, .mdx:2]
+    - `Xin/` — 8 files, 2.0 MB [.blp:6, .mdx:2]
+  - `Demon/` — 131 files, 37.1 MB [.blp:109, .mdx:22]
+    - `ChaosHellscream/` — 15 files, 5.6 MB [.blp:13, .mdx:2]
+    - `ChaosWarlock/` — 16 files, 3.8 MB [.blp:14, .mdx:2]
+    - `ChaosWarlord/` — 10 files, 2.9 MB [.blp:8, .mdx:2]
+    - `DemonessBlue/` — 9 files, 2.8 MB [.blp:7, .mdx:2]
+    - `DoomGuard/` — 19 files, 4.7 MB [.blp:17, .mdx:2]
+    - `Felgaurd/` — 9 files, 2.6 MB [.blp:7, .mdx:2]
+    - `FelgaurdBlue/` — 10 files, 3.1 MB [.blp:8, .mdx:2]
+    - `HeroChaosBladeMaster/` — 18 files, 3.9 MB [.blp:16, .mdx:2]
+    - `HeroPitlord/` — 11 files, 4.3 MB [.blp:9, .mdx:2]
+    - `Kiljaeden/` — 5 files, 1.5 MB [.blp:3, .mdx:2]
+    - `Warlock/` — 9 files, 2.0 MB [.blp:7, .mdx:2]
+  - `Human/` — 107 files, 43.8 MB [.blp:85, .mdx:22]
+    - `Arthas/` — 11 files, 3.6 MB [.blp:9, .mdx:2]
+    - `BloodElfSpellThief/` — 15 files, 3.4 MB [.blp:13, .mdx:2]
+    - `Gyrocopter/` — 7 files, 4.4 MB [.blp:5, .mdx:2]
+    - `HeroArchMage/` — 5 files, 6.9 MB [.blp:3, .mdx:2]
+    - `HeroBloodElf/` — 8 files, 2.1 MB [.blp:6, .mdx:2]
+    - `HeroMountainKing/` — 18 files, 6.9 MB [.blp:16, .mdx:2]
+    - `Jaina/` — 10 files, 5.2 MB [.blp:8, .mdx:2]
+    - `Phoenix/` — 13 files, 5.0 MB [.blp:11, .mdx:2]
+    - `Rifleman/` — 6 files, 2.7 MB [.blp:4, .mdx:2]
+    - `Sorceress/` — 9 files, 1.7 MB [.blp:7, .mdx:2]
+    - `TheCaptain/` — 5 files, 1.8 MB [.blp:3, .mdx:2]
+  - `Naga/` — 26 files, 7.8 MB [.blp:20, .mdx:6]
+    - `LadyVashj/` — 10 files, 4.0 MB [.blp:8, .mdx:2]
+    - `NagaRoyalGuard/` — 8 files, 2.2 MB [.blp:6, .mdx:2]
+    - `NagaSiren/` — 8 files, 1.6 MB [.blp:6, .mdx:2]
+  - `NightElf/` — 107 files, 36.8 MB [.blp:85, .mdx:22]
+    - `Chimaera/` — 4 files, 2.6 MB [.blp:2, .mdx:2]
+    - `DruidoftheClaw/` — 8 files, 3.8 MB [.blp:6, .mdx:2]
+    - `Dryad/` — 12 files, 3.4 MB [.blp:10, .mdx:2]
+    - `EvilIllidan/` — 17 files, 4.4 MB [.blp:15, .mdx:2]
+    - `HeroDemonHunter/` — 8 files, 1.7 MB [.blp:6, .mdx:2]
+    - `HeroKeeperoftheGroveGhost/` — 8 files, 2.9 MB [.blp:6, .mdx:2]
+    - `HeroMoonPriestess/` — 14 files, 4.2 MB [.blp:12, .mdx:2]
+    - `HeroWarden/` — 8 files, 5.1 MB [.blp:6, .mdx:2]
+    - `Huntress/` — 10 files, 3.6 MB [.blp:8, .mdx:2]
+    - `Malfurion/` — 10 files, 3.5 MB [.blp:8, .mdx:2]
+    - `Vengeance/` — 8 files, 1.7 MB [.blp:6, .mdx:2]
+  - `Orc/` — 110 files, 32.5 MB [.blp:88, .mdx:22]
+    - `BatTroll/` — 10 files, 2.6 MB [.blp:8, .mdx:2]
+    - `HeroFarSeer/` — 12 files, 1.8 MB [.blp:10, .mdx:2]
+    - `HeroShadowHunter/` — 10 files, 2.6 MB [.blp:8, .mdx:2]
+    - `HeroTaurenChieftain/` — 14 files, 5.5 MB [.blp:12, .mdx:2]
+    - `OrcWarlockGuldan/` — 10 files, 1.8 MB [.blp:8, .mdx:2]
+    - `Shaman/` — 11 files, 3.7 MB [.blp:9, .mdx:2]
+    - `SpiritWyvern/` — 7 files, 1.8 MB [.blp:5, .mdx:2]
+    - `Spiritwalker/` — 8 files, 2.7 MB [.blp:6, .mdx:2]
+    - `Tauren/` — 8 files, 2.2 MB [.blp:6, .mdx:2]
+    - `Thrall/` — 12 files, 4.6 MB [.blp:10, .mdx:2]
+    - `WitchDoctor/` — 8 files, 3.2 MB [.blp:6, .mdx:2]
+  - `Other/` — 36 files, 14.2 MB [.blp:28, .mdx:8]
+    - `DranaiAkama/` — 10 files, 4.5 MB [.blp:8, .mdx:2]
+    - `DranaiMage/` — 10 files, 4.2 MB [.blp:8, .mdx:2]
+    - `FleshGolem/` — 5 files, 3.6 MB [.blp:3, .mdx:2]
+    - `Proudmoore/` — 11 files, 2.0 MB [.blp:9, .mdx:2]
+  - `Undead/` — 107 files, 36.6 MB [.blp:89, .mdx:18]
+    - `Abomination/` — 15 files, 3.7 MB [.blp:13, .mdx:2]
+    - `FrostWyrm/` — 10 files, 4.3 MB [.blp:8, .mdx:2]
+    - `HeroCryptLord/` — 7 files, 2.2 MB [.blp:5, .mdx:2]
+    - `HeroDeathKnight/` — 14 files, 6.1 MB [.blp:12, .mdx:2]
+    - `KelthuzadGhost/` — 11 files, 3.6 MB [.blp:9, .mdx:2]
+    - `ObsidianStatue/` — 18 files, 4.8 MB [.blp:16, .mdx:2]
+    - `Skeleton/` — 15 files, 5.6 MB [.blp:13, .mdx:2]
+    - `SkeletonMage/` — 8 files, 3.5 MB [.blp:6, .mdx:2]
+    - `Tichondrius/` — 9 files, 2.8 MB [.blp:7, .mdx:2]
+- `UpdateSkins/` — 722 files, 264.9 MB [.blp:508, .mdx:170, .wav:37, .db:3, .tsv:1, .reg:1]
+  - `GameRoot/` — 721 files, 264.9 MB [.blp:508, .mdx:170, .wav:37, .db:3, .reg:1, .ini:1]
+    - `Abilities/` — 22 files, 1.6 MB [.blp:17, .mdx:4, .ini:1]
+      - `Custom/` — 21 files, 1.6 MB [.blp:17, .mdx:4]
+    - `Doodads/` — 9 files, 1.0 MB [.blp:8, .mdx:1]
+      - `Barrens/` — 9 files, 1.0 MB [.blp:8, .mdx:1]
+    - `H/` — 2 files, 33.5 KB [.mdx:2]
+      - `SF/` — 2 files, 33.5 KB [.mdx:2]
+    - `HEROESD2/` — 621 files, 247.3 MB [.blp:461, .mdx:157, .db:3]
+      - `AGILIDAD/` — 128 files, 49.7 MB [.blp:97, .mdx:28, .db:3]
+      - `FUERZA/` — 299 files, 133.5 MB [.blp:221, .mdx:78]
+      - `INTELIGENCIA/` — 194 files, 64.0 MB [.blp:143, .mdx:51]
+    - `Objects/` — 7 files, 444.0 KB [.blp:6, .mdx:1]
+      - `SpawnModels/` — 7 files, 444.0 KB [.blp:6, .mdx:1]
+    - `ReplaceableTextures/` — 12 files, 73.1 KB [.blp:12]
+      - `CommandButtons/` — 5 files, 53.3 KB [.blp:5]
+      - `CommandButtonsDisabled/` — 5 files, 14.5 KB [.blp:5]
+      - `PassiveButtons/` — 2 files, 5.3 KB [.blp:2]
+    - `Sound/` — 37 files, 10.5 MB [.wav:37]
+      - `Combat/` — 12 files, 981.2 KB [.wav:12]
+      - `Spell/` — 13 files, 7.8 MB [.wav:13]
+      - `Spells/` — 12 files, 1.8 MB [.wav:12]
+    - `Units/` — 10 files, 3.9 MB [.mdx:5, .blp:4, .png:1]
+      - `Creeps/` — 5 files, 1.3 MB [.mdx:3, .blp:2]
+      - `Custom/` — 5 files, 2.6 MB [.blp:2, .mdx:2, .png:1]
+
+Complete file list for `WC3Dota2Test` is in `FILES_ALL.tsv` (filter by prefix `WC3Dota2Test/`).
+
+## WC3DotaHQTest
+
+Files: 12006, size: 1.0 GB
+
+Subfolder structure to depth 4 (files recursive / size / extensions):
+
+- `A/` — 11773 files, 1.0 GB [.mp3:5414, .blp:4320, .mdx:1244, .wav:722, .fdf:43, .tga:26]
+  - `Abilities/` — 1124 files, 145.4 MB [.blp:493, .mdx:331, .wav:297, .mdl:3]
+    - `Custom/` — 407 files, 36.4 MB [.blp:284, .mdx:123]
+      - `ActiveItemsPack/` — 21 files, 1.9 MB [.blp:14, .mdx:7]
+      - `ClockAgha/` — 4 files, 156.0 KB [.blp:3, .mdx:1]
+      - `Commander/` — 2 files, 13.4 KB [.blp:1, .mdx:1]
+      - `EarthShaker/` — 15 files, 1.2 MB [.blp:9, .mdx:6]
+      - `Enigma/` — 20 files, 1.0 MB [.blp:14, .mdx:6]
+      - `Gandalf/` — 9 files, 567.3 KB [.blp:6, .mdx:3]
+      - `Gyrocopter/` — 19 files, 505.1 KB [.blp:14, .mdx:5]
+      - `HealingActiveItems/` — 7 files, 815.6 KB [.blp:5, .mdx:2]
+      - `Invoker/` — 49 files, 7.9 MB [.blp:38, .mdx:11]
+      - `Lanaya/` — 7 files, 3.2 MB [.blp:6, .mdx:1]
+      - `Leshrac/` — 22 files, 3.3 MB [.blp:17, .mdx:5]
+      - `Lina/` — 18 files, 355.9 KB [.blp:14, .mdx:4]
+      - `Lion/` — 1 files, 3.6 KB [.mdx:1]
+      - `LoneDruid/` — 7 files, 1.0 MB [.blp:5, .mdx:2]
+      - `Luna/` — 20 files, 750.5 KB [.blp:16, .mdx:4]
+      - `Lycan/` — 8 files, 832.0 KB [.blp:5, .mdx:3]
+      - `Mirana/` — 3 files, 157.9 KB [.blp:2, .mdx:1]
+      - `NagaSiren/` — 21 files, 2.7 MB [.blp:16, .mdx:5]
+      - `Naix/` — 1 files, 5.3 KB [.mdx:1]
+      - `Necrolyte/` — 3 files, 153.7 KB [.blp:2, .mdx:1]
+      - `NyxAssassin/` — 2 files, 75.9 KB [.blp:1, .mdx:1]
+      - `Other/` — 12 files, 86.6 KB [.blp:7, .mdx:5]
+      - `OutworldDestroyer/` — 23 files, 303.0 KB [.blp:20, .mdx:3]
+      - `Puck/` — 18 files, 614.8 KB [.blp:13, .mdx:5]
+      - `Pugna/` — 17 files, 325.2 KB [.blp:11, .mdx:6]
+      - `QueenOfPain/` — 24 files, 835.5 KB [.blp:16, .mdx:8]
+      - `RegenPack/` — 4 files, 209.0 KB [.blp:2, .mdx:2]
+      - `SandKing/` — 3 files, 741.8 KB [.blp:2, .mdx:1]
+      - `ShadowDemon/` — 2 files, 23.0 KB [.blp:1, .mdx:1]
+      - `TideHunter/` — 1 files, 1.2 KB [.mdx:1]
+      - `Tiny/` — 1 files, 47.6 KB [.mdx:1]
+      - `UrnOfShadow/` — 5 files, 2.2 MB [.blp:4, .mdx:1]
+      - `Venomancer/` — 15 files, 1.1 MB [.mdx:8, .blp:7]
+      - `Viper/` — 11 files, 359.2 KB [.blp:6, .mdx:5]
+      - `WR/` — 11 files, 3.1 MB [.blp:7, .mdx:4]
+      - `Wisp/` — 1 files, 4.3 KB [.mdx:1]
+    - `Spells/` — 530 files, 88.0 MB [.wav:203, .blp:173, .mdx:151, .mdl:3]
+      - `Custom/` — 63 files, 5.5 MB [.blp:37, .mdx:26]
+      - `Demon/` — 16 files, 918.4 KB [.blp:9, .wav:5, .mdx:2]
+      - `Human/` — 108 files, 20.8 MB [.wav:47, .blp:33, .mdx:27, .mdl:1]
+      - `Items/` — 60 files, 10.8 MB [.blp:32, .mdx:16, .wav:12]
+      - `NightElf/` — 61 files, 11.0 MB [.wav:39, .mdx:14, .blp:8]
+      - `Orc/` — 59 files, 11.0 MB [.wav:25, .mdx:19, .blp:15]
+      - `Other/` — 76 files, 15.2 MB [.wav:36, .mdx:20, .blp:20]
+      - `Undead/` — 87 files, 12.9 MB [.wav:39, .mdx:27, .blp:19, .mdl:2]
+    - `Weapons/` — 187 files, 21.0 MB [.wav:94, .mdx:57, .blp:36]
+      - `AncestralGuardianMissile/` — 2 files, 302.0 KB [.wav:2]
+      - `AncientProtectorMissile/` — 6 files, 907.5 KB [.wav:6]
+      - `Arrow/` — 3 files, 81.3 KB [.wav:2, .mdx:1]
+      - `AvengerMissile/` — 3 files, 93.3 KB [.mdx:1, .wav:1, .blp:1]
+      - `Axe/` — 1 files, 11.9 KB [.mdx:1]
+      - `BallistaMissile/` — 2 files, 160.1 KB [.mdx:1, .blp:1]
+      - `BansheeMissile/` — 1 files, 33.9 KB [.mdx:1]
+      - `BatTrollMissile/` — 4 files, 213.2 KB [.wav:3, .mdx:1]
+      - `BloodElfMissile/` — 5 files, 284.9 KB [.blp:3, .mdx:1, .wav:1]
+      - `BloodElfSpellThiefMISSILE/` — 2 files, 32.9 KB [.mdx:2]
+      - `BoatMissile/` — 4 files, 305.2 KB [.wav:2, .mdx:1, .blp:1]
+      - `CannonTowerMissile/` — 7 files, 2.3 MB [.wav:6, .mdx:1]
+      - `ChimaeraAcidMissile/` — 7 files, 513.1 KB [.wav:6, .mdx:1]
+      - `ColdArrow/` — 3 files, 848.5 KB [.wav:3]
+      - `CryptFiendMissile/` — 4 files, 277.7 KB [.wav:3, .mdx:1]
+      - `DemolisherFireMissile/` — 1 files, 396 B [.mdx:1]
+      - `DemonHunterMissile/` — 1 files, 6.7 KB [.mdx:1]
+      - `DragonHawkMissile/` — 1 files, 2.2 KB [.mdx:1]
+      - `DruidoftheTalonMissile/` — 6 files, 153.8 KB [.wav:5, .mdx:1]
+      - `Dryadmissile/` — 1 files, 16.3 KB [.mdx:1]
+      - `FaerieDragonMissile/` — 2 files, 71.1 KB [.wav:1, .mdx:1]
+      - `FarseerMissile/` — 1 files, 46.3 KB [.wav:1]
+      - `FireBallMissile/` — 3 files, 232.4 KB [.wav:2, .mdx:1]
+      - `FlamingArrow/` — 6 files, 644.3 KB [.wav:3, .blp:2, .mdx:1]
+      - `FlyingMachine/` — 1 files, 21.7 KB [.mdx:1]
+      - `GargoyleMissile/` — 6 files, 560.2 KB [.wav:6]
+      - `GlaiveMissile/` — 1 files, 23.3 KB [.mdx:1]
+      - `GryphonRiderMissile/` — 4 files, 680.7 KB [.wav:3, .mdx:1]
+      - `IllidanMissile/` — 1 files, 6.0 KB [.mdx:1]
+      - `KeeperGroveMissile/` — 1 files, 8.4 KB [.mdx:1]
+      - `LavaSpawnMissile/` — 5 files, 2.0 MB [.blp:4, .mdx:1]
+      - `LichMissile/` — 1 files, 8.1 KB [.mdx:1]
+      - `LordofFlameMissile/` — 1 files, 17.6 KB [.mdx:1]
+      - `Mortar/` — 2 files, 290.7 KB [.wav:1, .mdx:1]
+      - `NagaArrowMissile/` — 1 files, 16.2 KB [.mdx:1]
+      - `NecromancerMissile/` — 6 files, 146.9 KB [.wav:5, .mdx:1]
+      - `PhoenixMissile/` — 3 files, 426.9 KB [.wav:1, .mdx:1, .blp:1]
+      - `PriestMissile/` — 2 files, 686.1 KB [.mdx:1, .blp:1]
+      - `RangerMissile/` — 3 files, 109.6 KB [.wav:3]
+      - `RedDragonBreath/` — 1 files, 3.3 KB [.mdx:1]
+      - `RexxarMissile/` — 6 files, 484.4 KB [.blp:4, .mdx:2]
+      - `Rifle/` — 1 files, 3.9 KB [.mdx:1]
+      - `RocketMissile/` — 1 files, 26.1 KB [.mdx:1]
+      - `RubickMissile/` — 1 files, 47.8 KB [.mdx:1]
+      - `SeaElementalMissile/` — 1 files, 3.4 KB [.mdx:1]
+      - `SearingArrow/` — 7 files, 854.4 KB [.wav:6, .mdx:1]
+      - `SentinelMissile/` — 2 files, 108.2 KB [.wav:1, .mdx:1]
+      - `SerpentWardMissile/` — 1 files, 8.4 KB [.mdx:1]
+      - `ShadowHunterMissile/` — 3 files, 117.0 KB [.wav:2, .mdx:1]
+      - `SkeletalMageMissile/` — 1 files, 5.7 KB [.mdx:1]
+      - `SpiritOfVengeanceMissile/` — 5 files, 2.0 MB [.blp:4, .mdx:1]
+      - `SteamTank/` — 1 files, 21.7 KB [.mdx:1]
+      - `VengeanceMissile/` — 1 files, 7.6 KB [.mdx:1]
+      - `WardenMissile/` — 10 files, 256.9 KB [.blp:8, .mdx:2]
+      - `WaterElementalMissile/` — 3 files, 673.8 KB [.wav:3]
+      - `WingedSerpentMissile/` — 1 files, 4.6 KB [.mdx:1]
+      - `WitchDoctorMissile/` — 5 files, 164.9 KB [.wav:4, .mdx:1]
+      - `WyvernSpear/` — 5 files, 494.3 KB [.blp:2, .wav:2, .mdx:1]
+      - `ZigguratFrostMissile/` — 5 files, 2.2 MB [.blp:4, .mdx:1]
+      - `ZigguratMissile/` — 7 files, 886.4 KB [.wav:6, .mdx:1]
+      - `huntermissile/` — 4 files, 222.9 KB [.wav:3, .mdx:1]
+      - `snapMissile/` — 1 files, 51.6 KB [.wav:1]
+  - `BG/` — 1 files, 55.5 KB [.blp:1]
+  - `Buildings/` — 158 files, 35.2 MB [.mdx:66, .blp:62, .wav:30]
+    - `Custom/` — 13 files, 2.3 MB [.blp:10, .mdx:3]
+      - `BadAncient/` — 1 files, 349.2 KB [.mdx:1]
+      - `BadTower/` — 4 files, 1013.3 KB [.blp:3, .mdx:1]
+      - `GoodAncient/` — 8 files, 1008.1 KB [.blp:7, .mdx:1]
+    - `Naga/` — 6 files, 925.4 KB [.wav:6]
+      - `AltarOfDepths/` — 1 files, 157.1 KB [.wav:1]
+      - `CoralBed/` — 1 files, 152.2 KB [.wav:1]
+      - `ShrineOfAshjara/` — 1 files, 151.6 KB [.wav:1]
+      - `SpawningGrounds/` — 1 files, 152.2 KB [.wav:1]
+      - `TempleofTides/` — 1 files, 150.2 KB [.wav:1]
+      - `TidalGuardian/` — 1 files, 162.2 KB [.wav:1]
+    - `Other/` — 55 files, 12.6 MB [.blp:26, .mdx:23, .wav:6]
+      - `AmmoDump/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `ArcaneObservatory/` — 1 files, 132.1 KB [.wav:1]
+      - `BarrelsUnit0/` — 1 files, 8.0 KB [.mdx:1]
+      - `BookOfSummoning/` — 1 files, 89.8 KB [.mdx:1]
+      - `ChieftainHut/` — 1 files, 130.1 KB [.wav:1]
+      - `DraneiHut0/` — 1 files, 134.1 KB [.wav:1]
+      - `FountainOfLife/` — 15 files, 2.6 MB [.blp:8, .mdx:7]
+      - `FountainOfLifeDefiled/` — 12 files, 2.3 MB [.blp:9, .mdx:3]
+      - `FountainOfLife_/` — 1 files, 531.7 KB [.mdx:1]
+      - `GoblinShipyard/` — 1 files, 176.0 KB [.wav:1]
+      - `MageTower/` — 4 files, 1.8 MB [.mdx:3, .blp:1]
+      - `MarketPlace/` — 1 files, 110.1 KB [.wav:1]
+      - `Merchant/` — 6 files, 3.1 MB [.blp:4, .mdx:2]
+      - `PowerGenerator/` — 4 files, 251.3 KB [.blp:2, .mdx:2]
+      - `Tavern/` — 3 files, 294.3 KB [.wav:1, .blp:1, .mdx:1]
+    - `Undead/` — 23 files, 6.1 MB [.mdx:15, .blp:6, .wav:2]
+      - `Boneyard/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `Crypt/` — 3 files, 910.6 KB [.mdx:2, .blp:1]
+      - `Graveyard/` — 2 files, 134.0 KB [.blp:1, .mdx:1]
+      - `Necropolis/` — 1 files, 93.0 KB [.mdx:1]
+      - `SacrificialPit/` — 2 files, 1.1 MB [.mdx:2]
+      - `Slaughterhouse/` — 1 files, 56.0 KB [.mdx:1]
+      - `TempleOfTheDamned/` — 4 files, 939.8 KB [.blp:2, .mdx:2]
+      - `TombOfRelics/` — 3 files, 496.8 KB [.mdx:2, .wav:1]
+      - `Ziggurat/` — 4 files, 1.3 MB [.mdx:2, .wav:1, .blp:1]
+    - `human/` — 10 files, 1.6 MB [.blp:4, .mdx:4, .wav:2]
+      - `ArcaneVault/` — 3 files, 311.9 KB [.blp:1, .mdx:1, .wav:1]
+      - `GryphonAviary/` — 2 files, 194.5 KB [.blp:1, .mdx:1]
+      - `HumanTower/` — 3 files, 379.6 KB [.wav:1, .blp:1, .mdx:1]
+      - `TownHall/` — 2 files, 701.6 KB [.mdx:1, .blp:1]
+    - `nightelf/` — 40 files, 10.9 MB [.mdx:17, .wav:12, .blp:11]
+      - `AltarOfElders/` — 2 files, 125.8 KB [.blp:1, .mdx:1]
+      - `AncientOfLore/` — 3 files, 693.5 KB [.mdx:2, .blp:1]
+      - `AncientOfWar/` — 3 files, 650.9 KB [.mdx:2, .blp:1]
+      - `AncientOfWind/` — 2 files, 162.3 KB [.mdx:2]
+      - `AncientOfWonder/` — 11 files, 2.4 MB [.wav:9, .mdx:2]
+      - `AncientProtector/` — 11 files, 5.6 MB [.mdx:4, .blp:4, .wav:3]
+      - `HuntersHall/` — 3 files, 529.9 KB [.mdx:2, .blp:1]
+      - `MoonWell/` — 3 files, 314.1 KB [.blp:2, .mdx:1]
+      - `TreeofLife/` — 2 files, 538.4 KB [.blp:1, .mdx:1]
+    - `orc/` — 11 files, 853.1 KB [.blp:5, .mdx:4, .wav:2]
+      - `AltarofStorms/` — 2 files, 193.4 KB [.blp:1, .mdx:1]
+      - `SpiritLodge/` — 2 files, 148.8 KB [.blp:1, .mdx:1]
+      - `TrollBurrow/` — 2 files, 202.7 KB [.wav:1, .mdx:1]
+      - `VoodooLounge/` — 5 files, 308.2 KB [.blp:3, .mdx:1, .wav:1]
+  - `Doodads/` — 297 files, 52.7 MB [.mdx:175, .blp:121, .wav:1]
+    - `Ashenvale/` — 54 files, 17.4 MB [.mdx:33, .blp:21]
+      - `Plants/` — 8 files, 687.0 KB [.mdx:7, .blp:1]
+      - `Props/` — 25 files, 5.3 MB [.blp:13, .mdx:12]
+      - `Rocks/` — 16 files, 10.1 MB [.mdx:11, .blp:5]
+      - `Structures/` — 5 files, 1.4 MB [.mdx:3, .blp:2]
+    - `Barrens/` — 3 files, 184.8 KB [.mdx:2, .blp:1]
+      - `Rocks/` — 3 files, 184.8 KB [.mdx:2, .blp:1]
+    - `BlackCitadel/` — 11 files, 773.8 KB [.blp:9, .mdx:2]
+      - `Props/` — 11 files, 773.8 KB [.blp:9, .mdx:2]
+    - `Cinematic/` — 18 files, 4.2 MB [.blp:12, .mdx:6]
+      - `EyeOfSargeras/` — 7 files, 118.5 KB [.blp:6, .mdx:1]
+      - `GlowingRunes/` — 5 files, 58.0 KB [.mdx:3, .blp:2]
+      - `LichKing/` — 5 files, 4.1 MB [.blp:4, .mdx:1]
+      - `RessurectionStoneSW/` — 1 files, 12.0 KB [.mdx:1]
+    - `Felwood/` — 26 files, 1.6 MB [.mdx:21, .blp:5]
+      - `Plants/` — 8 files, 229.5 KB [.mdx:6, .blp:2]
+      - `Props/` — 2 files, 452.0 KB [.mdx:2]
+      - `Rocks/` — 13 files, 690.1 KB [.mdx:10, .blp:3]
+      - `Structures/` — 3 files, 295.7 KB [.mdx:3]
+    - `Icecrown/` — 3 files, 256.0 KB [.blp:2, .mdx:1]
+      - `Props/` — 2 files, 214.3 KB [.mdx:1, .blp:1]
+      - `Rocks/` — 1 files, 41.8 KB [.blp:1]
+    - `LordaeronSummer/` — 33 files, 6.7 MB [.mdx:22, .blp:11]
+      - `Props/` — 33 files, 6.7 MB [.mdx:22, .blp:11]
+    - `Northrend/` — 52 files, 12.8 MB [.blp:39, .mdx:12, .wav:1]
+      - `Props/` — 15 files, 2.7 MB [.mdx:8, .blp:7]
+      - `Rocks/` — 5 files, 548.0 KB [.blp:4, .mdx:1]
+      - `Structures/` — 12 files, 2.3 MB [.blp:11, .mdx:1]
+      - `Water/` — 20 files, 7.4 MB [.blp:17, .mdx:2, .wav:1]
+    - `Outland/` — 9 files, 2.7 MB [.blp:7, .mdx:2]
+      - `Props/` — 9 files, 2.7 MB [.blp:7, .mdx:2]
+    - `Ruins/` — 27 files, 367.9 KB [.mdx:22, .blp:5]
+      - `Plants/` — 27 files, 367.9 KB [.mdx:22, .blp:5]
+    - `Terrain/` — 52 files, 4.9 MB [.mdx:49, .blp:3]
+      - `AshenTree/` — 16 files, 1.5 MB [.mdx:15, .blp:1]
+      - `LOSBlocker/` — 1 files, 3.0 KB [.mdx:1]
+      - `LordaeronTree/` — 3 files, 239.5 KB [.mdx:3]
+      - `NorthrendTree/` — 32 files, 3.1 MB [.mdx:30, .blp:2]
+    - `Underground/` — 2 files, 67.4 KB [.mdx:1, .blp:1]
+      - `Plants/` — 2 files, 67.4 KB [.mdx:1, .blp:1]
+    - `Village/` — 3 files, 222.8 KB [.mdx:2, .blp:1]
+      - `Props/` — 3 files, 222.8 KB [.mdx:2, .blp:1]
+  - `Dota2/` — 5428 files, 127.4 MB [.mp3:5391, .wav:37]
+    - `Sound/` — 5428 files, 127.4 MB [.mp3:5391, .wav:37]
+      - `Abilities/` — 612 files, 35.4 MB [.mp3:586, .wav:26]
+      - `Heroes/` — 4816 files, 92.1 MB [.mp3:4805, .wav:11]
+  - `Environment/` — 1 files, 77.9 KB [.blp:1]
+    - `Sky/` — 1 files, 77.9 KB [.blp:1]
+      - `Outland_Sky/` — 1 files, 77.9 KB [.blp:1]
+  - `NewTextures/` — 37 files, 1.3 MB [.blp:37]
+  - `Objects/` — 21 files, 1.0 MB [.mdx:11, .blp:10]
+    - `InventoryItems/` — 6 files, 480.1 KB [.blp:3, .mdx:3]
+      - `BundleofGifts/` — 1 files, 3.5 KB [.blp:1]
+      - `CrystalShard/` — 3 files, 390.7 KB [.mdx:2, .blp:1]
+      - `TreasureChest/` — 2 files, 85.9 KB [.blp:1, .mdx:1]
+    - `Spawnmodels/` — 15 files, 560.7 KB [.mdx:8, .blp:7]
+      - `Human/` — 2 files, 11.2 KB [.mdx:2]
+      - `NightElf/` — 2 files, 8.9 KB [.mdx:2]
+      - `Other/` — 1 files, 73.4 KB [.blp:1]
+      - `Undead/` — 10 files, 467.2 KB [.blp:6, .mdx:4]
+  - `ReplaceableTextures/` — 1772 files, 17.5 MB [.blp:1767, .tga:5]
+    - `AshenvaleTree/` — 2 files, 165.7 KB [.blp:2]
+    - `Cliff/` — 4 files, 671.6 KB [.tga:2, .blp:2]
+    - `CommandButtons/` — 794 files, 7.0 MB [.blp:794]
+    - `CommandButtonsDisabled/` — 917 files, 5.8 MB [.blp:917]
+    - `LordaeronTree/` — 2 files, 677.8 KB [.blp:2]
+    - `NorthrendTree/` — 2 files, 295.6 KB [.blp:2]
+    - `PassiveButtons/` — 21 files, 144.5 KB [.blp:21]
+    - `Selection/` — 7 files, 913.4 KB [.blp:4, .tga:3]
+    - `Splats/` — 16 files, 1.8 MB [.blp:16]
+    - `Weather/` — 7 files, 90.3 KB [.blp:7]
+  - `ShadowArt/` — 3 files, 122.7 KB [.blp:3]
+    - `UI/` — 1 files, 109.6 KB [.blp:1]
+  - `SharedModels/` — 2 files, 137.2 KB [.blp:2]
+  - `Sound/` — 224 files, 131.3 MB [.wav:201, .mp3:23]
+    - `Ambient/` — 28 files, 20.7 MB [.wav:28]
+      - `DoodadEffects/` — 21 files, 4.6 MB [.wav:21]
+    - `Buildings/` — 9 files, 6.1 MB [.wav:9]
+      - `Death/` — 4 files, 2.5 MB [.wav:4]
+      - `Naga/` — 2 files, 188.5 KB [.wav:2]
+      - `Undead/` — 3 files, 3.5 MB [.wav:3]
+    - `Dialogue/` — 8 files, 637.7 KB [.wav:4, .mp3:4]
+      - `HumanExpCamp/` — 4 files, 637.7 KB [.wav:4]
+      - `OrcExpCamp/` — 4 files, 0 B [.mp3:4]
+    - `Interface/` — 42 files, 8.7 MB [.wav:42]
+      - `Warning/` — 19 files, 2.0 MB [.wav:19]
+    - `Music/` — 19 files, 81.8 MB [.mp3:19]
+      - `mp3Music/` — 19 files, 81.8 MB [.mp3:19]
+    - `Time/` — 2 files, 2.8 MB [.wav:2]
+    - `Units/` — 116 files, 10.5 MB [.wav:116]
+      - `Combat/` — 95 files, 8.3 MB [.wav:95]
+      - `Footsteps/` — 20 files, 1.6 MB [.wav:20]
+      - `Undead/` — 1 files, 623.2 KB [.wav:1]
+  - `Spells/` — 13 files, 282.9 KB [.blp:13]
+  - `TerrainArt/` — 20 files, 6.7 MB [.blp:11, .tga:9]
+    - `Blight/` — 2 files, 592.1 KB [.blp:1, .tga:1]
+    - `Cityscape/` — 1 files, 215.6 KB [.blp:1]
+    - `Felwood/` — 10 files, 3.8 MB [.tga:5, .blp:5]
+    - `Northrend/` — 2 files, 584.7 KB [.tga:1, .blp:1]
+    - `Ruins/` — 5 files, 1.6 MB [.blp:3, .tga:2]
+  - `Textures/` — 245 files, 8.3 MB [.blp:245]
+  - `Ton_ucki/` — 10 files, 275.4 KB [.mdx:9, .blp:1]
+    - `Clock/` — 2 files, 30.4 KB [.mdx:2]
+    - `Morted/` — 2 files, 191.9 KB [.mdx:1, .blp:1]
+    - `Pudge/` — 2 files, 24.6 KB [.mdx:2]
+    - `Sn/` — 1 files, 14.8 KB [.mdx:1]
+    - `Sni/` — 1 files, 1.2 KB [.mdx:1]
+    - `Zeus/` — 1 files, 8.4 KB [.mdx:1]
+  - `UI/` — 301 files, 9.5 MB [.blp:247, .fdf:43, .mdx:10, .toc:1]
+    - `Buttons/` — 1 files, 4.1 KB [.mdx:1]
+      - `HeroLevel/` — 1 files, 4.1 KB [.mdx:1]
+    - `Console/` — 28 files, 4.4 MB [.blp:25, .mdx:3]
+      - `Human/` — 7 files, 1.2 MB [.blp:6, .mdx:1]
+      - `NightElf/` — 10 files, 1.5 MB [.blp:9, .mdx:1]
+      - `Undead/` — 11 files, 1.7 MB [.blp:10, .mdx:1]
+    - `Cursor/` — 4 files, 1.0 MB [.blp:4]
+    - `Feedback/` — 21 files, 621.4 KB [.blp:15, .mdx:6]
+      - `Confirmation/` — 3 files, 442.9 KB [.blp:2, .mdx:1]
+      - `Cooldown/` — 1 files, 34.1 KB [.mdx:1]
+      - `HPBarConsole/` — 3 files, 22.5 KB [.blp:2, .mdx:1]
+      - `HPBarConsoleSmall/` — 4 files, 43.8 KB [.blp:3, .mdx:1]
+      - `ManaBarConsole/` — 2 files, 13.1 KB [.mdx:1, .blp:1]
+      - `ManaBarConsoleSmall/` — 4 files, 43.5 KB [.blp:3, .mdx:1]
+      - `Resources/` — 1 files, 7.3 KB [.blp:1]
+      - `XpBar/` — 3 files, 14.2 KB [.blp:3]
+    - `FrameDef/` — 44 files, 503.3 KB [.fdf:43, .toc:1]
+      - `Glue/` — 26 files, 306.4 KB [.fdf:26]
+      - `UI/` — 14 files, 92.6 KB [.fdf:14]
+    - `MiniMap/` — 1 files, 6.9 KB [.blp:1]
+    - `Widgets/` — 202 files, 2.9 MB [.blp:202]
+      - `BattleNet/` — 11 files, 159.2 KB [.blp:11]
+      - `Console/` — 87 files, 1.0 MB [.blp:87]
+      - `EscMenu/` — 51 files, 1.1 MB [.blp:51]
+      - `Glues/` — 51 files, 609.5 KB [.blp:51]
+      - `ToolTips/` — 2 files, 99.3 KB [.blp:2]
+  - `Units/` — 1827 files, 467.9 MB [.blp:1069, .mdx:602, .wav:156]
+    - `Creeps/` — 604 files, 146.6 MB [.blp:335, .mdx:214, .wav:55]
+      - `Archnathid/` — 3 files, 300.8 KB [.mdx:2, .blp:1]
+      - `ArchnathidGreen/` — 12 files, 2.4 MB [.blp:10, .mdx:2]
+      - `Archnathidpurple/` — 1 files, 91.1 KB [.blp:1]
+      - `Assassin/` — 11 files, 1.5 MB [.blp:8, .mdx:3]
+      - `AzureDragon/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `Bandit/` — 1 files, 576.6 KB [.wav:1]
+      - `BansheeGhost/` — 3 files, 1.2 MB [.mdx:2, .blp:1]
+      - `BansheeRanger/` — 21 files, 5.2 MB [.blp:19, .mdx:2]
+      - `Beastmaster/` — 3 files, 1.5 MB [.mdx:2, .blp:1]
+      - `BlackDragon/` — 3 files, 540.2 KB [.mdx:2, .blp:1]
+      - `BlackDrake/` — 3 files, 711.8 KB [.mdx:2, .blp:1]
+      - `BristleBack/` — 1 files, 192.2 KB [.mdx:1]
+      - `BurningArcher/` — 14 files, 3.7 MB [.blp:12, .mdx:2]
+      - `Centaur/` — 3 files, 759.1 KB [.mdx:2, .blp:1]
+      - `CentaurKhan/` — 12 files, 2.2 MB [.blp:10, .mdx:2]
+      - `DarkTroll/` — 3 files, 982.6 KB [.mdx:2, .blp:1]
+      - `DarkTrollShadowPriest/` — 8 files, 1.5 MB [.blp:6, .mdx:2]
+      - `DarkTrollTrapper/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `DireWolf/` — 7 files, 2.9 MB [.blp:5, .mdx:2]
+      - `DragonSpawnBlue/` — 4 files, 1.4 MB [.blp:2, .mdx:2]
+      - `DragonSpawnGreen/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `EarthPandarenBrewmaster/` — 5 files, 1.2 MB [.blp:3, .mdx:2]
+      - `ElderJungleBeast/` — 4 files, 1.2 MB [.mdx:2, .blp:2]
+      - `FacelessOne/` — 14 files, 1.6 MB [.blp:12, .mdx:2]
+      - `FirePandarenBrewMaster/` — 5 files, 1.4 MB [.blp:3, .mdx:2]
+      - `ForestTroll/` — 5 files, 2.9 MB [.mdx:4, .blp:1]
+      - `ForestTrollShadowPriest/` — 4 files, 1.2 MB [.blp:2, .mdx:2]
+      - `ForestTrollTrapper/` — 4 files, 2.7 MB [.mdx:4]
+      - `Furbolg/` — 1 files, 186.0 KB [.wav:1]
+      - `FurbolgChampion/` — 3 files, 1.5 MB [.mdx:2, .blp:1]
+      - `FurbolgTracker/` — 8 files, 1.6 MB [.blp:6, .mdx:2]
+      - `GnollArcher/` — 3 files, 718.4 KB [.mdx:2, .blp:1]
+      - `GnollWarden/` — 10 files, 1.5 MB [.blp:6, .mdx:4]
+      - `GoblinLandMine/` — 1 files, 13.2 KB [.mdx:1]
+      - `GoblinZeppelin/` — 3 files, 520.9 KB [.mdx:2, .blp:1]
+      - `GolemStatue/` — 1 files, 73.3 KB [.blp:1]
+      - `GreenDragon/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `GrizzlyBear/` — 4 files, 2.8 MB [.mdx:2, .blp:2]
+      - `HEROGoblinALCHEMIST/` — 35 files, 7.1 MB [.wav:18, .blp:15, .mdx:2]
+      - `Harpy/` — 3 files, 1.0 MB [.mdx:2, .blp:1]
+      - `HarpyQueen/` — 2 files, 601.1 KB [.mdx:2]
+      - `HarpyWitch/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `HeroFlameLord/` — 5 files, 1.0 MB [.blp:3, .mdx:2]
+      - `HeroTinker/` — 27 files, 4.8 MB [.wav:16, .blp:7, .mdx:4]
+      - `HeroTinkerFactory/` — 2 files, 101.4 KB [.mdx:1, .blp:1]
+      - `HeroTinkerRobot/` — 5 files, 838.6 KB [.blp:3, .mdx:2]
+      - `HumanMage/` — 2 files, 98.4 KB [.mdx:2]
+      - `Hydra/` — 3 files, 561.5 KB [.mdx:2, .blp:1]
+      - `IronGolem/` — 10 files, 3.1 MB [.blp:8, .mdx:2]
+      - `JungleBeast/` — 4 files, 1.2 MB [.mdx:2, .blp:2]
+      - `Kobold/` — 3 files, 1.4 MB [.mdx:2, .blp:1]
+      - `KoboldGeomancer/` — 3 files, 2.0 MB [.mdx:2, .blp:1]
+      - `KoboldTaskMaster/` — 2 files, 979.6 KB [.mdx:2]
+      - `KoboldTunneler/` — 2 files, 653.9 KB [.mdx:2]
+      - `Koboldb/` — 2 files, 360.7 KB [.blp:2]
+      - `Koboldc/` — 2 files, 326.6 KB [.blp:2]
+      - `LavaSpawn/` — 4 files, 310.9 KB [.blp:2, .mdx:2]
+      - `LordGarithos/` — 2 files, 617.6 KB [.mdx:2]
+      - `MagnataurBlue/` — 10 files, 2.1 MB [.blp:8, .mdx:2]
+      - `Medivh/` — 20 files, 3.2 MB [.blp:18, .mdx:2]
+      - `MonsterLure/` — 2 files, 16.0 KB [.blp:1, .mdx:1]
+      - `MudGolem/` — 3 files, 841.9 KB [.mdx:2, .blp:1]
+      - `MurgulTideWarrior/` — 3 files, 224.8 KB [.mdx:2, .blp:1]
+      - `MurlocNightCrawler/` — 14 files, 3.3 MB [.blp:9, .mdx:5]
+      - `NerubianQueen/` — 8 files, 1.4 MB [.blp:6, .mdx:2]
+      - `NetherDragon/` — 5 files, 814.1 KB [.blp:3, .mdx:2]
+      - `Ogre/` — 21 files, 2.5 MB [.wav:18, .mdx:2, .blp:1]
+      - `OgreMagi/` — 3 files, 1.4 MB [.mdx:2, .blp:1]
+      - `OwlBear/` — 3 files, 1.5 MB [.mdx:2, .blp:1]
+      - `PandarenBrewmaster/` — 11 files, 2.3 MB [.blp:8, .mdx:2, .wav:1]
+      - `PolarFurbolg/` — 3 files, 1.0 MB [.mdx:2, .blp:1]
+      - `QuillBeast/` — 3 files, 701.2 KB [.mdx:2, .blp:1]
+      - `RazorMane/` — 2 files, 382.2 KB [.mdx:2]
+      - `RazorManeChief/` — 2 files, 382.2 KB [.mdx:2]
+      - `RedDragon/` — 3 files, 1.0 MB [.mdx:2, .blp:1]
+      - `Revenant/` — 12 files, 2.2 MB [.blp:9, .mdx:3]
+      - `RevenantOfTheWaves/` — 3 files, 233.7 KB [.mdx:2, .blp:1]
+      - `RockGolem/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `Satyr/` — 3 files, 1.2 MB [.mdx:2, .blp:1]
+      - `SatyrHellcaller/` — 3 files, 1002.0 KB [.mdx:2, .blp:1]
+      - `SatyrTrickster/` — 4 files, 1.1 MB [.blp:2, .mdx:2]
+      - `SeaElemental/` — 17 files, 5.6 MB [.blp:15, .mdx:2]
+      - `SeaGiantGreen/` — 14 files, 3.0 MB [.blp:12, .mdx:2]
+      - `SkeletonOrc/` — 1 files, 67.8 KB [.blp:1]
+      - `Spider/` — 2 files, 1.4 MB [.mdx:2]
+      - `SpiderBlack/` — 12 files, 2.7 MB [.blp:10, .mdx:2]
+      - `SpiderBlue/` — 2 files, 378.7 KB [.mdx:2]
+      - `SpiderGreen/` — 4 files, 1.3 MB [.blp:2, .mdx:2]
+      - `StormPandarenBrewmaster/` — 7 files, 2.0 MB [.blp:4, .mdx:3]
+      - `SylvanusWindrunner/` — 10 files, 1.5 MB [.blp:8, .mdx:2]
+      - `ThunderLizard/` — 5 files, 999.6 KB [.blp:3, .mdx:2]
+      - `ThunderLizardSalamander/` — 2 files, 662.9 KB [.mdx:2]
+      - `ThunderLizardVizier/` — 2 files, 533.5 KB [.mdx:2]
+      - `TimberWolf/` — 3 files, 1.0 MB [.mdx:2, .blp:1]
+      - `TimberWolfBIG/` — 2 files, 386.7 KB [.mdx:2]
+      - `TimberWolfSmall/` — 3 files, 1.1 MB [.mdx:2, .blp:1]
+      - `UndeadDestroyerShip/` — 2 files, 784.0 KB [.blp:1, .mdx:1]
+      - `UndeadShipBattleShip/` — 1 files, 187.6 KB [.mdx:1]
+      - `VoidWalker/` — 7 files, 1.7 MB [.blp:5, .mdx:2]
+      - `WarEagle/` — 3 files, 786.3 KB [.mdx:2, .blp:1]
+      - `Watcher/` — 1 files, 42.7 KB [.blp:1]
+      - `Wendigo/` — 3 files, 918.4 KB [.mdx:2, .blp:1]
+      - `WendigoShaman/` — 2 files, 888.6 KB [.mdx:2]
+      - `WildkinSmall/` — 3 files, 1.4 MB [.mdx:2, .blp:1]
+      - `WindSerpent/` — 2 files, 258.6 KB [.mdx:2]
+      - `Zombie/` — 6 files, 3.0 MB [.blp:4, .mdx:2]
+      - `felstalkerPurple/` — 3 files, 953.9 KB [.mdx:2, .blp:1]
+      - `goblinsapper/` — 12 files, 1.3 MB [.blp:10, .mdx:2]
+      - `miniboom/` — 2 files, 646.7 KB [.mdx:2]
+      - `tuskar/` — 3 files, 216.4 KB [.mdx:2, .blp:1]
+      - `tuskarLord/` — 3 files, 900.2 KB [.mdx:2, .blp:1]
+    - `Custom/` — 198 files, 66.9 MB [.blp:113, .mdx:85]
+      - `CentaurKhan/` — 2 files, 583.2 KB [.mdx:2]
+      - `Clockwerk/` — 6 files, 2.1 MB [.blp:4, .mdx:2]
+      - `DeathWard/` — 8 files, 1.4 MB [.blp:6, .mdx:2]
+      - `DireMelee/` — 2 files, 487.6 KB [.mdx:2]
+      - `DireRange/` — 2 files, 736.8 KB [.mdx:2]
+      - `Doom/` — 1 files, 65.9 KB [.blp:1]
+      - `EarthPandarenBrewmaster/` — 2 files, 516.2 KB [.mdx:2]
+      - `Eidelon/` — 7 files, 1.7 MB [.blp:5, .mdx:2]
+      - `EmberSpirit/` — 5 files, 5.8 MB [.mdx:5]
+      - `Enigma/` — 11 files, 3.2 MB [.blp:9, .mdx:2]
+      - `FrostWyrm/` — 2 files, 6.1 MB [.mdx:2]
+      - `IcyGhost/` — 8 files, 1.3 MB [.blp:6, .mdx:2]
+      - `Naix/` — 8 files, 1.7 MB [.blp:6, .mdx:2]
+      - `NecroSummons/` — 16 files, 4.4 MB [.mdx:12, .blp:4]
+      - `OgreMagi/` — 12 files, 2.1 MB [.blp:10, .mdx:2]
+      - `OgreMagiCreep/` — 2 files, 684.2 KB [.mdx:2]
+      - `PL/` — 2 files, 1.7 MB [.mdx:2]
+      - `Phoenix/` — 2 files, 133.7 KB [.mdx:2]
+      - `Puck/` — 4 files, 1.7 MB [.mdx:2, .blp:2]
+      - `Riki/` — 11 files, 2.3 MB [.blp:9, .mdx:2]
+      - `Rooftrellen/` — 8 files, 2.9 MB [.blp:6, .mdx:2]
+      - `Roshan/` — 5 files, 1.5 MB [.blp:3, .mdx:2]
+      - `SentCreep/` — 2 files, 550.1 KB [.mdx:2]
+      - `SentCreepRange/` — 2 files, 713.1 KB [.mdx:2]
+      - `Shop/` — 18 files, 9.1 MB [.mdx:10, .blp:8]
+      - `ShopKeeper/` — 3 files, 448.3 KB [.mdx:2, .blp:1]
+      - `SkeletonKing/` — 2 files, 819.4 KB [.mdx:2]
+      - `SkeletonSmall/` — 4 files, 864.4 KB [.blp:2, .mdx:2]
+      - `StormPandarenBrewmaster/` — 5 files, 2.0 MB [.blp:3, .mdx:2]
+      - `StormSpirit/` — 11 files, 1.6 MB [.blp:8, .mdx:3]
+      - `ThunderLizardSmall/` — 4 files, 2.7 MB [.blp:2, .mdx:2]
+      - `Troll/` — 8 files, 1.9 MB [.blp:8]
+      - `Undying/` — 8 files, 2.7 MB [.blp:6, .mdx:2]
+      - `VenWard/` — 2 files, 334.9 KB [.mdx:1, .blp:1]
+      - `Wisp/` — 3 files, 391.0 KB [.blp:3]
+    - `Demon/` — 163 files, 33.5 MB [.blp:122, .mdx:41]
+      - `ChaosHellscream/` — 9 files, 2.0 MB [.blp:7, .mdx:2]
+      - `ChaosPeon/` — 2 files, 798.6 KB [.mdx:2]
+      - `ChaosWarlock/` — 6 files, 1.6 MB [.blp:4, .mdx:2]
+      - `ChaosWarlord/` — 16 files, 3.7 MB [.blp:14, .mdx:2]
+      - `Demoness/` — 3 files, 230.8 KB [.mdx:2, .blp:1]
+      - `DemonessBlue/` — 11 files, 2.4 MB [.blp:9, .mdx:2]
+      - `DoomGuard/` — 14 files, 2.7 MB [.blp:12, .mdx:2]
+      - `EredarWarlockPurple/` — 3 files, 276.9 KB [.mdx:2, .blp:1]
+      - `Felgaurd/` — 12 files, 2.5 MB [.blp:10, .mdx:2]
+      - `FelgaurdBlue/` — 9 files, 2.1 MB [.blp:7, .mdx:2]
+      - `HeroPitlord/` — 11 files, 2.7 MB [.blp:9, .mdx:2]
+      - `Infernal/` — 20 files, 3.3 MB [.blp:13, .mdx:7]
+      - `Kiljaeden/` — 16 files, 2.3 MB [.blp:14, .mdx:2]
+      - `Warlock/` — 10 files, 2.9 MB [.blp:8, .mdx:2]
+      - `felhound/` — 4 files, 1.7 MB [.mdx:4]
+      - `herochaosblademaster/` — 17 files, 2.4 MB [.blp:13, .mdx:4]
+    - `Human/` — 178 files, 45.8 MB [.blp:95, .mdx:47, .wav:36]
+      - `Arthas/` — 13 files, 3.4 MB [.blp:11, .mdx:2]
+      - `ArthaswithSword/` — 2 files, 478.4 KB [.mdx:2]
+      - `BloodElfDragonHawk/` — 4 files, 478.8 KB [.mdx:2, .blp:2]
+      - `BloodElfSpellThief/` — 16 files, 2.0 MB [.blp:14, .mdx:2]
+      - `GryphonRider/` — 20 files, 4.4 MB [.wav:20]
+      - `Gyrocopter/` — 8 files, 2.2 MB [.mdx:4, .blp:3, .wav:1]
+      - `HeroArchMage/` — 6 files, 5.2 MB [.blp:4, .mdx:2]
+      - `HeroBloodElf/` — 14 files, 2.3 MB [.blp:12, .mdx:2]
+      - `HeroMountainKing/` — 7 files, 2.0 MB [.blp:5, .mdx:2]
+      - `HeroPaladin/` — 2 files, 2.2 MB [.mdx:2]
+      - `Jaina/` — 10 files, 3.2 MB [.blp:8, .mdx:2]
+      - `Kael/` — 8 files, 2.3 MB [.blp:6, .mdx:2]
+      - `Knight/` — 2 files, 573.5 KB [.mdx:2]
+      - `Muradin/` — 15 files, 2.2 MB [.wav:13, .mdx:2]
+      - `Phoenix/` — 10 files, 2.1 MB [.blp:6, .mdx:4]
+      - `Priest/` — 4 files, 2.4 MB [.mdx:4]
+      - `Rifleman/` — 6 files, 2.2 MB [.blp:4, .mdx:2]
+      - `Sorceress/` — 7 files, 2.9 MB [.mdx:4, .blp:2, .wav:1]
+      - `SteamTank/` — 1 files, 82.0 KB [.wav:1]
+      - `TheCaptain/` — 14 files, 1.7 MB [.blp:11, .mdx:3]
+      - `Uther/` — 9 files, 1.5 MB [.blp:7, .mdx:2]
+    - `Naga/` — 40 files, 8.7 MB [.blp:31, .mdx:9]
+      - `HeroNagaSeawitch/` — 2 files, 2.0 MB [.mdx:2]
+      - `LadyVashj/` — 13 files, 2.3 MB [.blp:10, .mdx:3]
+      - `NagaRoyalGuard/` — 10 files, 1.5 MB [.blp:8, .mdx:2]
+      - `NagaSiren/` — 15 files, 2.8 MB [.blp:13, .mdx:2]
+    - `NightElf/` — 179 files, 44.2 MB [.blp:111, .mdx:51, .wav:17]
+      - `Ballista/` — 3 files, 1.2 MB [.mdx:2, .blp:1]
+      - `Chimaera/` — 18 files, 3.8 MB [.wav:13, .blp:3, .mdx:2]
+      - `DruidOfTheTalon/` — 5 files, 921.6 KB [.mdx:3, .blp:2]
+      - `DruidoftheClaw/` — 17 files, 6.3 MB [.blp:13, .mdx:4]
+      - `Dryad/` — 10 files, 1.9 MB [.blp:8, .mdx:2]
+      - `Ent/` — 5 files, 650.3 KB [.blp:3, .mdx:2]
+      - `EvilIllidan/` — 10 files, 1.1 MB [.blp:6, .mdx:4]
+      - `FaerieDragon/` — 4 files, 411.1 KB [.mdx:3, .blp:1]
+      - `Furion/` — 2 files, 1.6 MB [.mdx:2]
+      - `HeroDemonHunter/` — 10 files, 2.0 MB [.blp:8, .mdx:2]
+      - `HeroKeeperoftheGroveGhost/` — 8 files, 3.0 MB [.blp:6, .mdx:2]
+      - `HeroMoonPriestess/` — 8 files, 1.9 MB [.blp:5, .mdx:2, .wav:1]
+      - `HeroWarden/` — 16 files, 2.4 MB [.blp:13, .mdx:2, .wav:1]
+      - `Huntress/` — 16 files, 3.2 MB [.blp:13, .mdx:2, .wav:1]
+      - `MalFurion/` — 12 files, 2.0 MB [.blp:10, .mdx:2]
+      - `MountainGiant/` — 8 files, 7.8 MB [.mdx:4, .blp:3, .wav:1]
+      - `Owl/` — 1 files, 13.0 KB [.mdx:1]
+      - `OwlSCOUT/` — 2 files, 124.7 KB [.mdx:2]
+      - `SpiritOfVengeance/` — 14 files, 2.1 MB [.blp:12, .mdx:2]
+      - `Vengeance/` — 7 files, 1.9 MB [.blp:4, .mdx:3]
+      - `Wisp/` — 3 files, 33.6 KB [.mdx:3]
+    - `Orc/` — 197 files, 38.9 MB [.blp:129, .mdx:44, .wav:24]
+      - `BatTroll/` — 5 files, 1.9 MB [.blp:3, .mdx:2]
+      - `Grunt/` — 3 files, 473.4 KB [.mdx:3]
+      - `HeadHunter/` — 13 files, 3.1 MB [.blp:9, .mdx:4]
+      - `HealingWard/` — 6 files, 484.3 KB [.blp:5, .mdx:1]
+      - `Hellscream/` — 11 files, 2.3 MB [.blp:9, .mdx:2]
+      - `HeroBladeMaster/` — 3 files, 488.7 KB [.mdx:2, .wav:1]
+      - `HeroFarSeer/` — 11 files, 2.1 MB [.blp:9, .mdx:2]
+      - `HeroShadowHunter/` — 16 files, 1.9 MB [.blp:14, .mdx:2]
+      - `HeroTaurenChieftain/` — 6 files, 1.2 MB [.blp:4, .mdx:2]
+      - `OrcWarlockGuldan/` — 8 files, 1.9 MB [.blp:6, .mdx:2]
+      - `Peon/` — 18 files, 2.6 MB [.wav:18]
+      - `SentryWard/` — 5 files, 963.5 KB [.blp:3, .mdx:2]
+      - `SerpentWard/` — 3 files, 223.6 KB [.mdx:2, .blp:1]
+      - `Shaman/` — 11 files, 2.5 MB [.blp:9, .mdx:2]
+      - `SpiritWyvern/` — 7 files, 2.3 MB [.blp:5, .mdx:2]
+      - `Spiritwalker/` — 18 files, 4.9 MB [.blp:11, .wav:5, .mdx:2]
+      - `Spiritwolf/` — 4 files, 1.8 MB [.blp:2, .mdx:2]
+      - `StasisTotem/` — 1 files, 80.6 KB [.mdx:1]
+      - `Tauren/` — 8 files, 2.6 MB [.blp:6, .mdx:2]
+      - `Thrall/` — 27 files, 2.7 MB [.blp:25, .mdx:2]
+      - `WatcherWard/` — 4 files, 169.5 KB [.blp:2, .mdx:2]
+      - `WitchDoctor/` — 8 files, 2.3 MB [.blp:6, .mdx:2]
+      - `catapult/` — 1 files, 59.1 KB [.mdx:1]
+    - `Other/` — 53 files, 17.5 MB [.blp:34, .mdx:19]
+      - `BloodElfLieutenant/` — 2 files, 131.0 KB [.mdx:2]
+      - `DalaranMutant/` — 5 files, 1.7 MB [.mdx:4, .blp:1]
+      - `DiabloCar/` — 1 files, 49.6 KB [.blp:1]
+      - `Dranai/` — 2 files, 3.0 MB [.mdx:2]
+      - `DranaiAkama/` — 18 files, 3.1 MB [.blp:16, .mdx:2]
+      - `DranaiMage/` — 9 files, 1.7 MB [.blp:7, .mdx:2]
+      - `FleshGolem/` — 5 files, 2.2 MB [.blp:3, .mdx:2]
+      - `HeroArchMageGhost/` — 2 files, 4.2 MB [.mdx:2]
+      - `Orccar/` — 2 files, 161.4 KB [.blp:2]
+      - `Proudmoore/` — 4 files, 1.3 MB [.blp:2, .mdx:2]
+      - `TNTBarrel/` — 2 files, 25.8 KB [.mdx:1, .blp:1]
+      - `UndeadCar/` — 1 files, 27.0 KB [.blp:1]
+    - `Undead/` — 161 files, 52.3 MB [.blp:87, .mdx:50, .wav:24]
+      - `Abomination/` — 12 files, 1.9 MB [.blp:8, .mdx:4]
+      - `Acolyte/` — 2 files, 693.8 KB [.mdx:2]
+      - `Banshee/` — 14 files, 2.4 MB [.blp:11, .mdx:2, .wav:1]
+      - `FrostWyrm/` — 4 files, 2.3 MB [.mdx:4]
+      - `Gargoyle/` — 8 files, 2.0 MB [.blp:6, .mdx:2]
+      - `Ghoul/` — 2 files, 1.3 MB [.mdx:2]
+      - `HeroCryptLord/` — 7 files, 2.2 MB [.blp:5, .mdx:2]
+      - `HeroDeathKnight/` — 10 files, 2.3 MB [.blp:7, .mdx:3]
+      - `HeroDreadLord/` — 2 files, 1.0 MB [.mdx:2]
+      - `HeroLich/` — 30 files, 13.2 MB [.wav:22, .blp:4, .mdx:4]
+      - `HeroLichCIN/` — 3 files, 2.6 MB [.mdx:3]
+      - `KelthuzadGhost/` — 8 files, 1.6 MB [.blp:6, .mdx:2]
+      - `Meatwagon/` — 3 files, 1.9 MB [.mdx:2, .blp:1]
+      - `Necromancer/` — 8 files, 1.6 MB [.blp:6, .mdx:2]
+      - `ObsidianStatue/` — 10 files, 2.7 MB [.blp:8, .mdx:2]
+      - `PlagueCloud/` — 1 files, 1.4 KB [.mdx:1]
+      - `Shade/` — 2 files, 663.4 KB [.mdx:2]
+      - `Skeleton/` — 14 files, 4.3 MB [.blp:10, .mdx:3, .wav:1]
+      - `SkeletonMage/` — 8 files, 3.4 MB [.blp:6, .mdx:2]
+      - `Tichondrius/` — 11 files, 3.5 MB [.blp:9, .mdx:2]
+      - `scarab/` — 2 files, 612.0 KB [.mdx:2]
+    - `critters/` — 54 files, 13.4 MB [.mdx:42, .blp:12]
+      - `Albatross/` — 2 files, 97.9 KB [.mdx:2]
+      - `BrownWolf/` — 2 files, 612.0 KB [.mdx:2]
+      - `DuneWorm/` — 2 files, 301.2 KB [.mdx:2]
+      - `EasterChicken/` — 3 files, 708.9 KB [.mdx:2, .blp:1]
+      - `EasterRabbit/` — 3 files, 1.0 MB [.mdx:2, .blp:1]
+      - `Felboar/` — 2 files, 593.9 KB [.mdx:2]
+      - `Frog/` — 3 files, 73.3 KB [.mdx:2, .blp:1]
+      - `HighElfPeasant/` — 2 files, 886.0 KB [.mdx:2]
+      - `Hydralisk/` — 9 files, 1.9 MB [.blp:7, .mdx:2]
+      - `MiniPudge/` — 2 files, 504.2 KB [.mdx:2]
+      - `PackHorse/` — 2 files, 605.7 KB [.mdx:2]
+      - `Penguin/` — 2 files, 410.6 KB [.mdx:2]
+      - `Raccoon/` — 3 files, 482.4 KB [.mdx:2, .blp:1]
+      - `Seal/` — 2 files, 789.5 KB [.mdx:2]
+      - `Sheep/` — 2 files, 47.1 KB [.mdx:2]
+      - `Skink/` — 2 files, 579.1 KB [.mdx:2]
+      - `SnowOwl/` — 3 files, 827.7 KB [.mdx:2, .blp:1]
+      - `SpiderCrab/` — 2 files, 341.9 KB [.mdx:2]
+      - `VillagerMan/` — 2 files, 1.2 MB [.mdx:2]
+      - `VillagerMan1/` — 2 files, 1.2 MB [.mdx:2]
+      - `Vulture/` — 2 files, 469.4 KB [.mdx:2]
+  - `War3MapImported/` — 64 files, 4.2 MB [.mdx:36, .blp:28]
+    - `AuraTexture/` — 6 files, 538.9 KB [.blp:6]
+    - `DeathPulseTextures/` — 4 files, 511.8 KB [.blp:4]
+    - `DemonicPurgeTextures/` — 3 files, 35.7 KB [.blp:3]
+    - `OrchidTexture/` — 1 files, 89.2 KB [.blp:1]
+    - `PipeTextures/` — 3 files, 23.9 KB [.blp:3]
+    - `ShivaTextures/` — 4 files, 824.6 KB [.blp:4]
+    - `bmagha_Textures/` — 3 files, 270.0 KB [.blp:3]
+  - `effects/` — 10 files, 1.9 MB [.blp:6, .mdx:4]
+    - `HealingSalveTexture/` — 2 files, 758.1 KB [.blp:2]
+    - `ManaAuraTexture/` — 4 files, 1.1 MB [.blp:4]
+  - `fonts/` — 10 files, 40.4 KB [.tga:10]
+- `Mix/` — 221 files, 1.3 MB [.blp:221]
+  - `SelectedMix/` — 221 files, 1.3 MB [.blp:221]
+    - `ReplaceableTextures/` — 221 files, 1.3 MB [.blp:221]
+      - `CommandButtons/` — 104 files, 741.3 KB [.blp:104]
+      - `CommandButtonsDisabled/` — 104 files, 490.6 KB [.blp:104]
+      - `PassiveButtons/` — 13 files, 56.6 KB [.blp:13]
+- `SoundInfo/` — 12 files, 1.6 MB [.slk:12]
+
+Complete file list for `WC3DotaHQTest` is in `FILES_ALL.tsv` (filter by prefix `WC3DotaHQTest/`).
+
+## WC3WardotaTest
+
+Files: 1291, size: 409.0 MB
+
+Subfolder structure to depth 4 (files recursive / size / extensions):
+
+- `SoundInfo/` — 2 files, 1.3 MB [.slk:2]
+- `Units/` — 1289 files, 407.7 MB [.blp:1051, .mdx:238]
+  - `Creeps/` — 313 files, 98.3 MB [.blp:245, .mdx:68]
+    - `ArchnathidGreen/` — 9 files, 2.0 MB [.blp:7, .mdx:2]
+    - `Assassin/` — 14 files, 3.7 MB [.blp:12, .mdx:2]
+    - `AzureDragon/` — 4 files, 1.3 MB [.mdx:2, .blp:2]
+    - `BansheeRanger/` — 15 files, 4.6 MB [.blp:13, .mdx:2]
+    - `Beastmaster/` — 9 files, 2.3 MB [.blp:7, .mdx:2]
+    - `BurningArcher/` — 11 files, 3.1 MB [.blp:9, .mdx:2]
+    - `CentaurKhan/` — 15 files, 4.9 MB [.blp:13, .mdx:2]
+    - `DarkTrollShadowPriest/` — 11 files, 4.0 MB [.blp:9, .mdx:2]
+    - `DireWolf/` — 4 files, 2.5 MB [.mdx:2, .blp:2]
+    - `EarthPandarenBrewmaster/` — 1 files, 115.9 KB [.blp:1]
+    - `FacelessOne/` — 12 files, 2.6 MB [.blp:10, .mdx:2]
+    - `FirePandarenBrewMaster/` — 3 files, 685.1 KB [.mdx:2, .blp:1]
+    - `FurbolgTracker/` — 8 files, 2.9 MB [.blp:6, .mdx:2]
+    - `GnollWarden/` — 7 files, 1.4 MB [.blp:5, .mdx:2]
+    - `GoblinSapper/` — 8 files, 3.0 MB [.blp:6, .mdx:2]
+    - `GreenDragon/` — 4 files, 1.2 MB [.blp:2, .mdx:2]
+    - `IronGolem/` — 14 files, 5.0 MB [.blp:12, .mdx:2]
+    - `KoboldGeomancer/` — 10 files, 3.2 MB [.blp:8, .mdx:2]
+    - `LordGarithos/` — 10 files, 2.6 MB [.blp:8, .mdx:2]
+    - `MagnataurBlue/` — 9 files, 2.6 MB [.blp:7, .mdx:2]
+    - `Medivh/` — 7 files, 3.6 MB [.blp:5, .mdx:2]
+    - `NerubianQueen/` — 8 files, 2.4 MB [.blp:6, .mdx:2]
+    - `NetherDragon/` — 5 files, 1.0 MB [.blp:3, .mdx:2]
+    - `PandarenBrewmaster/` — 9 files, 3.6 MB [.blp:7, .mdx:2]
+    - `RazorMane/` — 13 files, 5.7 MB [.blp:11, .mdx:2]
+    - `RedDragon/` — 4 files, 1.2 MB [.blp:2, .mdx:2]
+    - `Revenant/` — 16 files, 2.4 MB [.blp:14, .mdx:2]
+    - `SeaElemental/` — 7 files, 1.4 MB [.blp:5, .mdx:2]
+    - `SeaGiantGreen/` — 8 files, 2.0 MB [.blp:6, .mdx:2]
+    - `SpiderBlack/` — 8 files, 2.5 MB [.blp:6, .mdx:2]
+    - `SylvanusWindrunner/` — 14 files, 3.2 MB [.blp:12, .mdx:2]
+    - `TuskarLord/` — 10 files, 4.4 MB [.blp:8, .mdx:2]
+    - `VoidWalker/` — 7 files, 2.3 MB [.blp:5, .mdx:2]
+    - `WindSerpent/` — 13 files, 5.1 MB [.blp:11, .mdx:2]
+    - `Zombie/` — 6 files, 3.8 MB [.blp:4, .mdx:2]
+  - `Critters/` — 8 files, 3.2 MB [.blp:6, .mdx:2]
+    - `Hydralisk/` — 8 files, 3.2 MB [.blp:6, .mdx:2]
+  - `Custom/` — 274 files, 84.3 MB [.blp:223, .mdx:51]
+    - `Clockwerk/` — 8 files, 3.1 MB [.blp:6, .mdx:2]
+    - `DireRange/` — 1 files, 2.2 KB [.blp:1]
+    - `EarthPandarenBrewmaster/` — 20 files, 5.2 MB [.blp:18, .mdx:2]
+    - `Eidelon/` — 2 files, 21.9 KB [.blp:2]
+    - `Enigma/` — 11 files, 3.2 MB [.blp:9, .mdx:2]
+    - `Gondar/` — 10 files, 4.1 MB [.blp:8, .mdx:2]
+    - `HeroFlameLord/` — 12 files, 3.3 MB [.blp:10, .mdx:2]
+    - `HeroGoblinAlchemist/` — 18 files, 6.2 MB [.blp:16, .mdx:2]
+    - `HeroMountainKing/` — 5 files, 2.0 MB [.blp:3, .mdx:2]
+    - `HeroTinker/` — 4 files, 2.7 MB [.mdx:2, .blp:2]
+    - `IcyGhost/` — 5 files, 1.9 MB [.blp:3, .mdx:2]
+    - `LavaSpawn/` — 1 files, 92.5 KB [.blp:1]
+    - `Lich/` — 12 files, 1.6 MB [.blp:10, .mdx:2]
+    - `Naix/` — 16 files, 5.2 MB [.blp:14, .mdx:2]
+    - `OgreMagi/` — 9 files, 3.7 MB [.blp:7, .mdx:2]
+    - `PL/` — 9 files, 3.7 MB [.blp:7, .mdx:2]
+    - `Phoenix/` — 13 files, 5.0 MB [.blp:11, .mdx:2]
+    - `Puck/` — 8 files, 1.7 MB [.blp:6, .mdx:2]
+    - `Riki/` — 13 files, 6.4 MB [.blp:11, .mdx:2]
+    - `Rooftrellen/` — 12 files, 3.2 MB [.blp:10, .mdx:2]
+    - `SkeletonKing/` — 13 files, 3.7 MB [.blp:11, .mdx:2]
+    - `Spectre/` — 15 files, 2.3 MB [.blp:13, .mdx:2]
+    - `StormPandarenBrewmaster/` — 17 files, 5.5 MB [.blp:15, .mdx:2]
+    - `Tiny/` — 9 files, 2.2 MB [.blp:7, .mdx:2]
+    - `Troll/` — 12 files, 4.5 MB [.blp:8, .mdx:4]
+    - `Wisp/` — 4 files, 413.0 KB [.blp:2, .mdx:2]
+    - `Xin/` — 15 files, 3.2 MB [.blp:12, .mdx:3]
+  - `Demon/` — 149 files, 41.4 MB [.blp:127, .mdx:22]
+    - `ChaosHellscream/` — 16 files, 4.6 MB [.blp:14, .mdx:2]
+    - `ChaosWarlock/` — 9 files, 3.0 MB [.blp:7, .mdx:2]
+    - `ChaosWarlord/` — 22 files, 4.4 MB [.blp:20, .mdx:2]
+    - `DemonessBlue/` — 8 files, 2.5 MB [.blp:6, .mdx:2]
+    - `DoomGuard/` — 18 files, 5.4 MB [.blp:16, .mdx:2]
+    - `Felgaurd/` — 24 files, 4.7 MB [.blp:22, .mdx:2]
+    - `FelgaurdBlue/` — 16 files, 4.2 MB [.blp:14, .mdx:2]
+    - `HeroChaosBladeMaster/` — 12 files, 4.6 MB [.blp:10, .mdx:2]
+    - `HeroPitlord/` — 11 files, 2.7 MB [.blp:9, .mdx:2]
+    - `Kiljaeden/` — 9 files, 2.2 MB [.blp:7, .mdx:2]
+    - `Warlock/` — 4 files, 3.1 MB [.blp:2, .mdx:2]
+  - `Human/` — 104 files, 38.3 MB [.blp:85, .mdx:19]
+    - `Arthas/` — 11 files, 3.6 MB [.blp:9, .mdx:2]
+    - `BloodElfSpellThief/` — 10 files, 2.6 MB [.blp:8, .mdx:2]
+    - `Gyrocopter/` — 12 files, 7.1 MB [.blp:10, .mdx:2]
+    - `HeroArchMage/` — 5 files, 6.9 MB [.blp:3, .mdx:2]
+    - `HeroBloodElf/` — 13 files, 2.8 MB [.blp:11, .mdx:2]
+    - `Jaina/` — 11 files, 5.4 MB [.blp:9, .mdx:2]
+    - `Priest/` — 12 files, 778.9 KB [.blp:11, .mdx:1]
+    - `Rifleman/` — 9 files, 1.9 MB [.blp:7, .mdx:2]
+    - `Sorceress/` — 11 files, 4.1 MB [.blp:9, .mdx:2]
+    - `TheCaptain/` — 10 files, 3.1 MB [.blp:8, .mdx:2]
+  - `Naga/` — 34 files, 12.0 MB [.blp:28, .mdx:6]
+    - `LadyVashj/` — 10 files, 4.0 MB [.blp:8, .mdx:2]
+    - `NagaRoyalGuard/` — 10 files, 3.5 MB [.blp:8, .mdx:2]
+    - `NagaSiren/` — 14 files, 4.5 MB [.blp:12, .mdx:2]
+  - `NightElf/` — 123 files, 40.2 MB [.blp:101, .mdx:22]
+    - `Chimaera/` — 4 files, 2.6 MB [.blp:2, .mdx:2]
+    - `DruidoftheClaw/` — 11 files, 4.4 MB [.blp:9, .mdx:2]
+    - `Dryad/` — 9 files, 3.1 MB [.blp:7, .mdx:2]
+    - `EvilIllidan/` — 17 files, 4.6 MB [.blp:15, .mdx:2]
+    - `HeroDemonHunter/` — 9 files, 2.1 MB [.blp:7, .mdx:2]
+    - `HeroKeeperoftheGroveGhost/` — 10 files, 4.2 MB [.blp:8, .mdx:2]
+    - `HeroMoonPriestess/` — 11 files, 3.5 MB [.blp:9, .mdx:2]
+    - `HeroWarden/` — 19 files, 3.8 MB [.blp:17, .mdx:2]
+    - `Huntress/` — 10 files, 5.7 MB [.blp:8, .mdx:2]
+    - `Malfurion/` — 13 files, 3.9 MB [.blp:11, .mdx:2]
+    - `Vengeance/` — 10 files, 2.3 MB [.blp:8, .mdx:2]
+  - `Orc/` — 128 files, 33.8 MB [.blp:106, .mdx:22]
+    - `BatTroll/` — 8 files, 2.8 MB [.blp:6, .mdx:2]
+    - `HeroFarSeer/` — 12 files, 1.8 MB [.blp:10, .mdx:2]
+    - `HeroShadowHunter/` — 10 files, 2.6 MB [.blp:8, .mdx:2]
+    - `HeroTaurenChieftain/` — 14 files, 5.1 MB [.blp:12, .mdx:2]
+    - `OrcWarlockGuldan/` — 18 files, 2.5 MB [.blp:16, .mdx:2]
+    - `Shaman/` — 11 files, 3.7 MB [.blp:9, .mdx:2]
+    - `SpiritWalker/` — 17 files, 4.8 MB [.blp:15, .mdx:2]
+    - `SpiritWyvern/` — 7 files, 1.8 MB [.blp:5, .mdx:2]
+    - `Tauren/` — 7 files, 2.0 MB [.blp:5, .mdx:2]
+    - `Thrall/` — 15 files, 3.0 MB [.blp:13, .mdx:2]
+    - `WitchDoctor/` — 9 files, 3.7 MB [.blp:7, .mdx:2]
+  - `Other/` — 33 files, 14.0 MB [.blp:25, .mdx:8]
+    - `DranaiMage/` — 9 files, 2.9 MB [.blp:7, .mdx:2]
+    - `FleshGolem/` — 5 files, 3.6 MB [.blp:3, .mdx:2]
+    - `HeroArchMageGhost/` — 2 files, 4.2 MB [.mdx:2]
+    - `Proudmoore/` — 17 files, 3.4 MB [.blp:15, .mdx:2]
+  - `Undead/` — 123 files, 42.2 MB [.blp:105, .mdx:18]
+    - `Abomination/` — 19 files, 4.9 MB [.blp:17, .mdx:2]
+    - `Banshee/` — 13 files, 4.2 MB [.blp:11, .mdx:2]
+    - `FrostWyrm/` — 7 files, 4.4 MB [.blp:5, .mdx:2]
+    - `Gargoyle/` — 2 files, 74.9 KB [.blp:2]
+    - `HeroCryptLord/` — 14 files, 4.0 MB [.blp:12, .mdx:2]
+    - `HeroDeathKnight/` — 18 files, 6.8 MB [.blp:16, .mdx:2]
+    - `KelthuzadGhost/` — 14 files, 4.8 MB [.blp:12, .mdx:2]
+    - `ObsidianStatue/` — 19 files, 6.8 MB [.blp:17, .mdx:2]
+    - `SkeletonMage/` — 8 files, 3.5 MB [.blp:6, .mdx:2]
+    - `Tichondrius/` — 9 files, 2.8 MB [.blp:7, .mdx:2]
+
+Complete file list for `WC3WardotaTest` is in `FILES_ALL.tsv` (filter by prefix `WC3WardotaTest/`).
+
+## Warcraft III Public Test Launcher.app
+
+Files: 48, size: 5.7 MB
+
+Full file list:
+
+- `Warcraft III Public Test Launcher.app/Contents/Info.plist` (1.8 KB)
+- `Warcraft III Public Test Launcher.app/Contents/PkgInfo` (8 B)
+- `Warcraft III Public Test Launcher.app/Contents/MacOS/Warcraft III Public Test Launcher` (4.8 MB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/BlizzardReg.ttf` (89.5 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/MainMenu.nib` (4.3 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/Settings.json` (485 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/Strings.bin` (23.1 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/bg_language_select.png` (29.1 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/bg_small_window.png` (24.0 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_chk_box.png` (176 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_chk_mark.png` (372 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_long_disabled.png` (445 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_long_down.png` (493 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_long_normal.png` (506 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_long_over.png` (509 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_mac_disabled.png` (642 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_mac_red_hover.png` (650 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_mac_red_normal.png` (618 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_mac_red_pressed.png` (633 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_mac_yellow_hover.png` (607 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_mac_yellow_normal.png` (605 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_mac_yellow_pressed.png` (600 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_small_disabled.png` (212 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_small_down.png` (280 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_small_normal.png` (219 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/btn_small_over.png` (229 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/d2_icon.icns` (40.9 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/img_deny.png` (262 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/img_error_shade.png` (628 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/img_line_h.png` (87 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/img_link.png` (376 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/progressbar_large_empty.png` (321 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/progressbar_large_full.png` (1.5 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/progressbar_lead.png` (953 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/progressbar_small_empty.png` (307 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/progressbar_small_full.png` (1.4 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/radiobutton_bg.png` (367 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/radiobutton_selection.png` (616 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/sc_background.png` (227.6 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/sc_icon.icns` (37.2 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/screen.bootstrap.json` (917 B)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/screen.error.json` (1.6 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/screen.install.json` (2.5 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/screen.language.json` (1.3 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/screen.splash.json` (2.9 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/wc3_icon.icns` (54.3 KB)
+- `Warcraft III Public Test Launcher.app/Contents/Resources/wc3x_background.png` (301.1 KB)
+- `Warcraft III Public Test Launcher.app/Contents/_CodeSignature/CodeResources` (15.7 KB)
+
+## effects
+
+Files: 1, size: 5.7 KB
+
+Full file list:
+
+- `effects/SonicTonucki.blp` (5.7 KB)
+
+## ssance
+
+Files: 1, size: 208.4 KB
+
+Full file list:
+
+- `ssance/universal_vines001.blp` (208.4 KB)
+
+## x86_64
+
+Files: 783, size: 369.6 MB
+
+Subfolder structure to depth 4 (files recursive / size / extensions):
+
+- `.WC3NativeIntegrationBackup/` — 8 files, 28.9 MB [(none):6, .original:1, .txt:1]
+  - `_CodeSignature/` — 1 files, 22.7 KB [(none):1]
+- `WC3_CASC_Asset_Scanner_0.2.0/` — 7 files, 6.2 MB [(none):3, .txt:1, .md:1, .command:1, .go:1]
+  - `Source/` — 1 files, 22.6 KB [.go:1]
+  - `Tools/` — 3 files, 6.2 MB [(none):3]
+- `WC3_Native_Integration_0.7.6/` — 231 files, 21.0 MB [.wav:91, .txt:42, .png:42, .swift:10, .slk:8, .blp:6]
+  - `Installer/` — 2 files, 6.6 KB [.sh:2]
+  - `Resources/` — 206 files, 20.1 MB [.wav:91, .png:42, .txt:41, .slk:8, .blp:6, .mdx:4]
+    - `WC3Patcher/` — 206 files, 20.1 MB [.wav:91, .png:42, .txt:41, .slk:8, .blp:6, .mdx:4]
+      - `backend/` — 1 files, 28.1 KB [.sh:1]
+      - `data/` — 153 files, 19.1 MB [.wav:91, .txt:36, .slk:8, .blp:6, .mdx:4, .w3x:4]
+      - `ui/` — 49 files, 1000.6 KB [.png:42, .txt:2, .icns:2, .fdf:2, .ttf:1]
+  - `Sources/` — 11 files, 131.8 KB [.swift:10, .c:1]
+  - `Tools/` — 2 files, 9.4 KB [.c:1, .py:1]
+  - `build/` — 3 files, 705.8 KB [.o:1, .dylib:1, (none):1]
+- `Warcraft III fixed.app/` — 164 files, 138.2 MB [.pak:57, .strings:42, (none):17, .icns:12, .nib:10, .png:8]
+  - `Contents/` — 164 files, 138.2 MB [.pak:57, .strings:42, (none):17, .icns:12, .nib:10, .png:8]
+    - `Frameworks/` — 5 files, 15.6 MB [(none):3, .dylib:1, .plist:1]
+      - `ClampCursor.framework/` — 4 files, 210.8 KB [(none):3, .plist:1]
+    - `MacOS/` — 1 files, 28.8 MB [(none):1]
+    - `Resources/` — 42 files, 2.1 MB [.strings:15, .icns:8, .png:8, .nib:4, .html:4, .woff:1]
+      - `de.lproj/` — 1 files, 2.9 KB [.strings:1]
+      - `en.lproj/` — 2 files, 4.6 KB [.strings:2]
+      - `es-419.lproj/` — 1 files, 3.0 KB [.strings:1]
+      - `es.lproj/` — 1 files, 3.0 KB [.strings:1]
+      - `fonts/` — 1 files, 49.0 KB [.woff:1]
+      - `fr.lproj/` — 1 files, 3.2 KB [.strings:1]
+      - `images/` — 8 files, 1.5 MB [.png:8]
+      - `it.lproj/` — 1 files, 2.9 KB [.strings:1]
+      - `ja.lproj/` — 1 files, 3.3 KB [.strings:1]
+      - `ko.lproj/` — 1 files, 3.1 KB [.strings:1]
+      - `pl.lproj/` — 1 files, 2.9 KB [.strings:1]
+      - `pt-BR.lproj/` — 1 files, 3.0 KB [.strings:1]
+      - `ru.lproj/` — 1 files, 3.7 KB [.strings:1]
+      - `scripts/` — 1 files, 13.4 KB [.js:1]
+      - `styles/` — 1 files, 5.3 KB [.css:1]
+      - `tr.lproj/` — 1 files, 2.5 KB [.strings:1]
+      - `zh-Hans.lproj/` — 1 files, 2.6 KB [.strings:1]
+      - `zh-Hant.lproj/` — 1 files, 2.7 KB [.strings:1]
+    - `SharedSupport/` — 39 files, 4.0 MB [.strings:26, .nib:5, (none):4, .icns:3, .plist:1]
+      - `Blizzard Error.app/` — 38 files, 1.1 MB [.strings:26, .nib:5, (none):3, .icns:3, .plist:1]
+    - `XPCServices/` — 74 files, 87.6 MB [.pak:57, (none):7, .plist:3, .bin:2, .so:1, .dat:1]
+      - `BrowserProxy.xpc/` — 74 files, 87.6 MB [.pak:57, (none):7, .plist:3, .bin:2, .so:1, .dat:1]
+    - `_CodeSignature/` — 1 files, 22.7 KB [(none):1]
+- `Warcraft III.app/` — 371 files, 159.0 MB [.wav:91, .pak:57, .png:50, .strings:42, .txt:41, (none):17]
+  - `Contents/` — 371 files, 159.0 MB [.wav:91, .pak:57, .png:50, .strings:42, .txt:41, (none):17]
+    - `Frameworks/` — 6 files, 16.2 MB [(none):3, .dylib:2, .plist:1]
+      - `ClampCursor.framework/` — 4 files, 175.2 KB [(none):3, .plist:1]
+    - `MacOS/` — 1 files, 28.8 MB [(none):1]
+    - `Resources/` — 248 files, 22.2 MB [.wav:91, .png:50, .txt:41, .strings:15, .icns:10, .slk:8]
+      - `WC3Patcher/` — 206 files, 20.1 MB [.wav:91, .png:42, .txt:41, .slk:8, .blp:6, .mdx:4]
+      - `de.lproj/` — 1 files, 2.9 KB [.strings:1]
+      - `en.lproj/` — 2 files, 4.6 KB [.strings:2]
+      - `es-419.lproj/` — 1 files, 3.0 KB [.strings:1]
+      - `es.lproj/` — 1 files, 3.0 KB [.strings:1]
+      - `fonts/` — 1 files, 49.0 KB [.woff:1]
+      - `fr.lproj/` — 1 files, 3.2 KB [.strings:1]
+      - `images/` — 8 files, 1.5 MB [.png:8]
+      - `it.lproj/` — 1 files, 2.9 KB [.strings:1]
+      - `ja.lproj/` — 1 files, 3.3 KB [.strings:1]
+      - `ko.lproj/` — 1 files, 3.1 KB [.strings:1]
+      - `pl.lproj/` — 1 files, 2.9 KB [.strings:1]
+      - `pt-BR.lproj/` — 1 files, 3.0 KB [.strings:1]
+      - `ru.lproj/` — 1 files, 3.7 KB [.strings:1]
+      - `scripts/` — 1 files, 13.4 KB [.js:1]
+      - `styles/` — 1 files, 5.3 KB [.css:1]
+      - `tr.lproj/` — 1 files, 2.5 KB [.strings:1]
+      - `zh-Hans.lproj/` — 1 files, 2.6 KB [.strings:1]
+      - `zh-Hant.lproj/` — 1 files, 2.7 KB [.strings:1]
+    - `SharedSupport/` — 39 files, 4.0 MB [.strings:26, .nib:5, (none):4, .icns:3, .plist:1]
+      - `Blizzard Error.app/` — 38 files, 1.1 MB [.strings:26, .nib:5, (none):3, .icns:3, .plist:1]
+    - `XPCServices/` — 74 files, 87.6 MB [.pak:57, (none):7, .plist:3, .bin:2, .so:1, .dat:1]
+      - `BrowserProxy.xpc/` — 74 files, 87.6 MB [.pak:57, (none):7, .plist:3, .bin:2, .so:1, .dat:1]
+    - `_CodeSignature/` — 1 files, 94.9 KB [(none):1]
+
+Complete file list for `x86_64` is in `FILES_ALL.tsv` (filter by prefix `x86_64/`).
