@@ -74,6 +74,14 @@ struct Item: Codable, Hashable, Identifiable {
     var icon: IconInfo
     var id: String { name }
 }
+struct Candidate: Codable, Hashable, Identifiable {
+    var file: String
+    var preview: String
+    var set: String
+    var source: String
+    var how: String
+    var id: String { file }
+}
 struct MapState: Codable {
     var map: String
     var game_root: String
@@ -175,6 +183,14 @@ struct MapState: Codable {
             if rc == 0 { self.refresh(message: out) } else { self.busy = false; self.status = "Ошибка: \(out)" }
         }
     }
+    func candidates(for key: String, then: @escaping @MainActor @Sendable ([Candidate]) -> Void) {
+        run(["candidates", key]) { code, out in
+            self.busy = false
+            guard code == 0, let data = out.data(using: .utf8),
+                  let list = try? JSONDecoder().decode([Candidate].self, from: data) else { then([]); return }
+            then(list)
+        }
+    }
 }
 
 // MARK: - HUD colours
@@ -197,6 +213,18 @@ struct IconSlot: View {
     var size: CGFloat = 64
     @State private var targeted = false
     @State private var importing = false
+    @State private var pickerOpen = false
+    @State private var candidateList: [Candidate] = []
+    @State private var candidatesLoading = false
+
+    func openPicker() {
+        pickerOpen = true
+        candidatesLoading = true
+        store.candidates(for: key) { list in
+            self.candidateList = list
+            self.candidatesLoading = false
+        }
+    }
 
     var resolved: Resolved { store.showDisabled ? icon.disabled : icon.normal }
     var originText: String {
@@ -237,8 +265,10 @@ struct IconSlot: View {
                 return true
             }
             .onTapGesture(count: 2) { importing = true }
+            .onTapGesture(count: 1) { openPicker() }
             .contextMenu {
                 Button("Выбрать файл…") { importing = true }
+                Button("Выбрать из библиотеки…") { openPicker() }
                 if icon.override != nil { Button("Вернуть исходную иконку") { store.clearIcon(key: key) } }
                 if let path = resolved.path, resolved.source == "disk" {
                     Button("Показать файл в Finder") {
@@ -250,6 +280,44 @@ struct IconSlot: View {
             .help("\(title)\n\(subtitle)\nПуть: \(icon.art ?? "—")\nИсточник: \(originText)" + (icon.override.map { "\nЗаменена: \($0.applied ?? "")" } ?? ""))
             .fileImporter(isPresented: $importing, allowedContentTypes: [.png, .bmp, .jpeg, UTType(filenameExtension: "blp") ?? .data, UTType(filenameExtension: "tga") ?? .data]) { result in
                 if case let .success(url) = result { store.setIcon(key: key, file: url) }
+            }
+            .popover(isPresented: $pickerOpen) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Выбор иконки: \(title)").font(.headline)
+                    if candidatesLoading {
+                        HStack { ProgressView().controlSize(.small); Text("Загружаю варианты…") }
+                            .frame(width: 340, height: 100)
+                    } else if candidateList.isEmpty {
+                        Text("Библиотека пуста: соберите её командой python3 library_build.py")
+                            .font(.callout).foregroundStyle(.secondary)
+                            .frame(width: 340, height: 100)
+                    } else {
+                        ScrollView {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 74), spacing: 10)], spacing: 12) {
+                                ForEach(candidateList) { c in
+                                    Button {
+                                        store.setIcon(key: key, file: URL(fileURLWithPath: c.file))
+                                        pickerOpen = false
+                                    } label: {
+                                        VStack(spacing: 3) {
+                                            if let img = NSImage(contentsOf: URL(fileURLWithPath: c.preview)) {
+                                                Image(nsImage: img).resizable().interpolation(.none).frame(width: 64, height: 64).cornerRadius(3)
+                                            } else {
+                                                RoundedRectangle(cornerRadius: 4).fill(HUD.slot).frame(width: 64, height: 64)
+                                            }
+                                            Text(c.set).font(.system(size: 8)).lineLimit(1).frame(width: 70)
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                    .help(c.source)
+                                }
+                            }
+                            .padding(10)
+                        }
+                        .frame(width: 380, height: 320)
+                    }
+                }
+                .padding(10)
             }
             Text(title).font(.system(size: 10)).lineLimit(1).frame(width: size + 14)
             Text(originText).font(.system(size: 8)).foregroundStyle(icon.override != nil ? Color.green : Color.secondary).lineLimit(1)

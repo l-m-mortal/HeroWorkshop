@@ -547,6 +547,57 @@ class Workshop:
         self.commit(); self.save_state()
         print(f'Scale {code}: ' + ', '.join(f'{c}={v:g}' for c, v in targets.items()) + (f', P3={scale:g}' if p3 else ''))
 
+def candidates(key: str, w: 'Workshop'):
+    """Icon library candidates for one slot key, as JSON to stdout.
+
+    key is unit:<code>, ability:<code> or item:<code> (for items, the first
+    of a possibly comma-separated multi-key string, e.g. "item:I0B4,item:I0B5").
+    """
+    from library_build import LIBRARY
+    first = next((k.strip() for k in key.split(',') if k.strip()), key.strip())
+    kind, code = first.split(':', 1)
+    if kind == 'item':
+        target = code
+        for g in w.item_list():
+            if code in g['codes'] or code == g['name']:
+                target = g['name']; break
+        want = {('item', target)}
+    elif kind == 'unit':
+        want = {('unit', code), ('hero-misc', code)}
+    else:
+        want = {(kind, code)}
+    index_path = LIBRARY / 'index.json'
+    if not index_path.is_file():
+        print('[]')
+        print('Подсказка: библиотека не собрана, запустите python3 library_build.py', file=sys.stderr)
+        return
+    data = json.loads(index_path.read_text())
+    seen = set(); out = []
+    for e in data.get('entries', []):
+        how = next((m.get('how') for m in e.get('matches', []) if (m.get('kind'), m.get('id')) in want), None)
+        if how is None: continue
+        files = e.get('files') or []
+        if not files: continue
+        sha1 = e.get('sha1')
+        if sha1:
+            if sha1 in seen: continue
+            seen.add(sha1)
+        blp_file = next((f for f in files if f.lower().endswith('.blp')), None)
+        chosen = blp_file or files[0]
+        stem = chosen.rsplit('.', 1)[0]
+        png_file = next((f for f in files if f == stem + '.png'), None) or next((f for f in files if f.lower().endswith('.png')), None)
+        out.append({
+            'file': str((LIBRARY / chosen).resolve()),
+            'preview': str((LIBRARY / png_file).resolve()) if png_file else str((LIBRARY / chosen).resolve()),
+            'set': e.get('set', ''), 'source': e.get('path', ''), 'how': how,
+        })
+    def sort_key(item):
+        s = item['set']
+        pri = 3 if s.startswith('map-') else 0 if s.startswith('audit-') else 1
+        return (pri, s)
+    out.sort(key=sort_key)
+    print(json.dumps(out, ensure_ascii=False))
+
 # ------------------------------------------------------------------ cli ----
 def doctor():
     print('Repo:      ', ROOT); print('Game root: ', GAME, '(ok)' if (GAME / 'Maps').is_dir() else '(нет папки Maps!)')
@@ -566,10 +617,12 @@ def main():
     s = sub.add_parser('add-related'); s.add_argument('hero'); s.add_argument('unit')
     s = sub.add_parser('remove-related'); s.add_argument('hero'); s.add_argument('unit')
     s = sub.add_parser('regen-disabled'); s.add_argument('--apply', action='store_true'); s.add_argument('--scope', choices=['all', 'map', 'disk'], default='all')
+    s = sub.add_parser('candidates'); s.add_argument('key')
     a = ap.parse_args()
     if a.cmd == 'doctor': return doctor()
     w = Workshop()
     if a.cmd == 'state': print(w.export_state(not a.no_previews))
+    elif a.cmd == 'candidates': candidates(a.key, w)
     elif a.cmd == 'set-icon':
         for key in [k.strip() for k in a.key.split(',') if k.strip()]: w.set_icon(key, Path(a.file).expanduser())
     elif a.cmd == 'clear-icon':

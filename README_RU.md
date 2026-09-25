@@ -77,6 +77,7 @@ python3 workshop.py clear-icon ability:A136
 python3 workshop.py set-scale H06S 1.25 [--morph 1.25] [--alt 1.0]
 python3 workshop.py add-related H06S n0EE      # призыв, созданный триггером
 python3 workshop.py regen-disabled [--apply] [--scope all|map|disk]  # перегенерировать disabled-иконки
+python3 workshop.py candidates ability:A136    # варианты иконок из библиотеки (JSON)
 ```
 
 Ключи: `unit:<rawcode>`, `ability:<rawcode>`, `item:<rawcode>`.
