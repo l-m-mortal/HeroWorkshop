@@ -94,9 +94,19 @@ struct Shop: Codable, Hashable, Identifiable {
     var units: [String]
     var id: String { code }
 }
+struct ItemVariant: Codable, Hashable, Identifiable {
+    var art: String?
+    var names: [String]
+    var codes: [String]
+    var label: String
+    var keys: String
+    var icon: IconInfo
+    var id: String { keys }
+}
 struct Item: Codable, Hashable, Identifiable {
     var code: String?
     var name: String
+    var names: [String]?
     var codes: [String]
     var keys: String                // "unit:X,item:A,item:B" — every rawcode this drop must apply to
     var count: Int
@@ -105,13 +115,15 @@ struct Item: Codable, Hashable, Identifiable {
     var icon_item: IconInfo?         // what the hero inventory shows (item icon), if different in the data
     var in_shops: [String]?
     var shop_units: [ShopUnit]
+    var variants: [ItemVariant]
     var id: String { name }
 
-    enum CodingKeys: String, CodingKey { case code, name, codes, keys, count, distinct_arts, icon, icon_item, in_shops, shop_units }
+    enum CodingKeys: String, CodingKey { case code, name, names, codes, keys, count, distinct_arts, icon, icon_item, in_shops, shop_units, variants }
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         code = try c.decodeIfPresent(String.self, forKey: .code)
         name = try c.decode(String.self, forKey: .name)
+        names = try c.decodeIfPresent([String].self, forKey: .names)
         codes = try c.decode([String].self, forKey: .codes)
         keys = try c.decode(String.self, forKey: .keys)
         count = try c.decode(Int.self, forKey: .count)
@@ -120,6 +132,7 @@ struct Item: Codable, Hashable, Identifiable {
         icon_item = try c.decodeIfPresent(IconInfo.self, forKey: .icon_item)
         in_shops = try c.decodeIfPresent([String].self, forKey: .in_shops)
         shop_units = try c.decodeIfPresent([ShopUnit].self, forKey: .shop_units) ?? []
+        variants = try c.decodeIfPresent([ItemVariant].self, forKey: .variants) ?? []
     }
 }
 struct Candidate: Codable, Hashable, Identifiable {
@@ -261,6 +274,7 @@ struct IconSlot: View {
     let icon: IconInfo
     var size: CGFloat = 64
     var note: String? = nil
+    var forceDisabled: Bool? = nil
     @State private var targeted = false
     @State private var importing = false
     @State private var pickerOpen = false
@@ -276,7 +290,7 @@ struct IconSlot: View {
         }
     }
 
-    var resolved: Resolved { store.showDisabled ? icon.disabled : icon.normal }
+    var resolved: Resolved { (forceDisabled ?? store.showDisabled) ? icon.disabled : icon.normal }
     var originText: String {
         switch resolved.source {
         case "map": return "в карте"
@@ -669,21 +683,9 @@ struct ShopCardView: View {
 
 struct ItemsView: View {
     @ObservedObject var store: Store
-    @State private var search = ""
-    @State private var selectedShop: String? = nil   // nil = "Все предметы"
-    @State private var showMode = 0                  // 0 = shop icon, 1 = inventory icon
+    @State private var selectedShop: String? = nil
 
     var shops: [Shop] { store.state?.shops ?? [] }
-
-    var filteredItems: [Item] {
-        let all = store.state?.items ?? []
-        guard !search.isEmpty else { return all }
-        return all.filter { item in
-            item.name.localizedCaseInsensitiveContains(search)
-                || item.codes.contains { $0.localizedCaseInsensitiveContains(search) }
-                || item.shop_units.contains { $0.code.localizedCaseInsensitiveContains(search) }
-        }
-    }
 
     var body: some View {
         HSplitView {
@@ -695,18 +697,20 @@ struct ItemsView: View {
                             Text("\(shop.code) · юнитов \(shop.units.count)").font(.caption2).foregroundStyle(.secondary)
                         }.tag(shop.code as String?)
                     }
-                    Text("Все предметы").tag(String?.none)
                 }
             }.frame(minWidth: 220, maxWidth: 300)
 
             Group {
                 if let code = selectedShop, let shop = shops.first(where: { $0.code == code }) {
                     shopDetail(shop)
+                } else if let shop = shops.first {
+                    shopDetail(shop)
                 } else {
-                    allItemsGrid
+                    Text("Нет магазинов").foregroundStyle(.secondary).frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .onChange(of: store.state?.generated) { _ in if selectedShop == nil { selectedShop = shops.first?.code } }
     }
 
     @ViewBuilder func shopDetail(_ shop: Shop) -> some View {
@@ -726,33 +730,95 @@ struct ItemsView: View {
         }
     }
 
-    var allItemsGrid: some View {
-        VStack(spacing: 0) {
-            HStack {
-                TextField("Поиск предмета или rawcode", text: $search).textFieldStyle(.roundedBorder)
-                Picker("Показывать", selection: $showMode) {
-                    Text("Магазин").tag(0)
-                    Text("Инвентарь").tag(1)
-                }.pickerStyle(.segmented).frame(width: 220)
-                Toggle("Серые (DISBTN)", isOn: $store.showDisabled).toggleStyle(.switch).controlSize(.small)
-            }.padding(10)
-            ScrollView {
-                LazyVGrid(columns: Array(repeating: GridItem(.fixed(84), spacing: 6), count: 10), spacing: 10) {
-                    ForEach(filteredItems) { item in itemCell(item) }
-                }.padding(10).background(HUD.panel, in: RoundedRectangle(cornerRadius: 12)).padding()
+}
+
+// MARK: - Inventory (item families, both icon states side by side)
+
+/// A drop-target pair for one variant (or the family's own shop icon): normal + disabled, side by side.
+struct InventoryVariantPair: View {
+    @ObservedObject var store: Store
+    let label: String
+    let key: String
+    let icon: IconInfo
+    var body: some View {
+        VStack(spacing: 3) {
+            Text(label).font(.caption2).lineLimit(1).frame(maxWidth: 160)
+            HStack(spacing: 6) {
+                IconSlot(store: store, key: key, title: label, subtitle: "Обычная иконка", icon: icon, size: 48, forceDisabled: false)
+                IconSlot(store: store, key: key, title: label, subtitle: "Серая иконка (DISBTN)", icon: icon, size: 48, forceDisabled: true)
             }
         }
     }
+}
 
-    @ViewBuilder func itemCell(_ item: Item) -> some View {
-        let bigIcon = showMode == 1 ? (item.icon_item ?? item.icon) : item.icon
-        VStack(spacing: 4) {
-            IconSlot(store: store, key: item.keys, title: item.count > 1 ? "\(item.name) ×\(item.count)" : item.name,
-                     subtitle: "Rawcode: \(item.codes.joined(separator: ", "))" + (item.distinct_arts > 1 ? "\nРазных иконок сейчас: \(item.distinct_arts)" : ""),
-                     icon: bigIcon)
-            if let inv = item.icon_item, inv.art != item.icon.art {
-                IconSlot(store: store, key: item.keys, title: "Инвентарь", subtitle: "Иконка в инвентаре: \(item.name)", icon: inv, size: 40)
+struct InventoryFamilyRow: View {
+    @ObservedObject var store: Store
+    let item: Item
+
+    var effectiveVariants: [ItemVariant] {
+        if !item.variants.isEmpty { return item.variants }
+        let icon = item.icon_item ?? item.icon
+        return [ItemVariant(art: icon.art, names: item.names ?? [item.name], codes: item.codes, label: item.name, keys: item.keys, icon: icon)]
+    }
+    var showsShopPair: Bool {
+        let variants = effectiveVariants
+        return !variants.contains { $0.art == item.icon.art }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(item.name).font(.headline)
+                Text("×\(item.count)").foregroundStyle(.secondary)
+                if let shops = item.in_shops, !shops.isEmpty {
+                    Text(shops.joined(separator: ", ")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
             }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: 14) {
+                    ForEach(effectiveVariants) { variant in
+                        InventoryVariantPair(store: store, label: variant.label, key: variant.keys, icon: variant.icon)
+                    }
+                    if showsShopPair {
+                        InventoryVariantPair(store: store, label: "в магазине", key: item.keys, icon: item.icon)
+                    }
+                }
+            }
+        }
+        .padding(10).background(HUD.panel, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+struct InventoryView: View {
+    @ObservedObject var store: Store
+    @State private var search = ""
+
+    var families: [Item] {
+        let all = store.state?.items ?? []
+        let filtered: [Item]
+        if search.isEmpty {
+            filtered = all
+        } else {
+            filtered = all.filter { item in
+                item.name.localizedCaseInsensitiveContains(search)
+                    || (item.names ?? []).contains { $0.localizedCaseInsensitiveContains(search) }
+                    || item.codes.contains { $0.localizedCaseInsensitiveContains(search) }
+            }
+        }
+        return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            TextField("Поиск предмета, названия или rawcode", text: $search).textFieldStyle(.roundedBorder).padding(10)
+            List {
+                ForEach(families) { item in
+                    InventoryFamilyRow(store: store, item: item)
+                        .listRowSeparator(.hidden)
+                }
+            }
+            Text("Каждая пара: цветная и серая версии одного и того же файла. Перетаскивание на любую из них заменяет обе.")
+                .font(.footnote).foregroundStyle(.secondary).padding(8)
         }
     }
 }
@@ -773,7 +839,7 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Picker("", selection: $tab) { Text("Герои").tag("heroes"); Text("Предметы").tag("items") }.pickerStyle(.segmented).frame(width: 220)
+                Picker("", selection: $tab) { Text("Герои").tag("heroes"); Text("Предметы").tag("items"); Text("Инвентарь").tag("inventory") }.pickerStyle(.segmented).frame(width: 320)
                 Spacer()
                 Text(store.mapName).font(.caption).foregroundStyle(.secondary)
                 Button { store.refresh() } label: { Image(systemName: "arrow.clockwise") }.disabled(store.busy)
@@ -795,8 +861,10 @@ struct ContentView: View {
                         VStack { Image(systemName: "person.3").font(.largeTitle); Text(store.busy ? "Читаю карту…" : "Нет героев") }.frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 }
-            } else {
+            } else if tab == "items" {
                 ItemsView(store: store)
+            } else {
+                InventoryView(store: store)
             }
             Divider()
             HStack {
