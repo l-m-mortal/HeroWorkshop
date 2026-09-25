@@ -1,7 +1,4 @@
 {
-  "map_relative_to_game": "Maps/Downloads/D85 06 DotaHQv5.w3x",
-  "icon_root": "assets/icons",
-  "workspace": "../../Workspaces/Dota2",
-  "selection": "data/MODEL_SELECTION.json",
-  "skins": "data/SKINS_TEST_INFO.json"
+  "map": "Maps/Downloads/Dota_Radiant_Terrain_Fix_v4.w3x",
+  "keep_backups": 10
 }

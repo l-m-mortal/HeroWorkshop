@@ -1,442 +1,533 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct Ability: Codable, Identifiable, Hashable {
-    var base_ability: String
+// MARK: - State produced by `python3 workshop.py state`
+
+struct Resolved: Codable, Hashable {
+    var source: String            // map | disk | standard | missing | none
+    var path: String?
+    var preview: String?
+    enum CodingKeys: String, CodingKey { case source = "where", path, preview }
+}
+struct Override: Codable, Hashable {
     var source: String
-    var label: String?
-    var id: String { base_ability + source }
+    var target: String
+    enum CodingKeys: String, CodingKey { case source = "where", target, source_file = "source", applied }
+    var source_file: String?
+    var applied: String?
 }
-
-struct RelatedModel: Codable, Identifiable, Hashable {
-    var rawcode: String
-    var label: String
-    var model_scale: Double
-    var model_scale_base: Double?
-    var id: String { rawcode }
+struct IconInfo: Codable, Hashable {
+    var art: String?
+    var art_file: String?
+    var normal: Resolved
+    var disabled: Resolved
+    var override: Override?
 }
-
-struct Hero: Codable, Identifiable, Hashable {
-    var hero: String
-    var unit_rawcode: String
-    var primary_model_scale: Double?
-    var alternative_model_scale: Double?
-    var is_unit: Bool?
-    var related_models: [RelatedModel]?
+struct Ability: Codable, Hashable, Identifiable {
+    var code: String
+    var name: String
+    var hero: Bool
+    var buttonpos: [Int]?
+    var researchpos: [Int]?
+    var icon: IconInfo
+    var id: String { code }
+    var visible: Bool { icon.art != nil || buttonpos != nil }
+}
+struct SavedScales: Codable, Hashable { var scale: Double?; var morph: Double?; var alt: Double?; var applied: String? }
+struct RelatedUnit: Codable, Hashable, Identifiable {
+    var code: String
+    var relation: String
+    var name: String
+    var model: String?
+    var scale: Double?
+    var p3_scale: Double?
+    var saved_scales: SavedScales?
+    var icon: IconInfo
     var abilities: [Ability]
-    var extra_abilities: [Ability]?
-    var id: String { unit_rawcode }
-    var allAbilities: [Ability] { abilities + (extra_abilities ?? []) }
-    var relatedModels: [RelatedModel] { related_models ?? [] }
+    var id: String { code }
 }
-struct Item: Codable, Identifiable, Hashable {
-    var item: String; var item_rawcode: String; var abilities: [Ability]
-    var id: String { item_rawcode }
+struct Hero: Codable, Hashable, Identifiable {
+    var code: String
+    var name: String
+    var txt_name: String?
+    var model: String?
+    var scale: Double?
+    var p3_scale: Double?
+    var morph: String?
+    var morph_scale: Double?
+    var alt: String?
+    var alt_scale: Double?
+    var saved_scales: SavedScales?
+    var icon: IconInfo
+    var abilities: [Ability]
+    var related: [RelatedUnit]?
+    var id: String { code }
+}
+struct Item: Codable, Hashable, Identifiable {
+    var code: String
+    var name: String
+    var icon: IconInfo
+    var id: String { code }
+}
+struct MapState: Codable {
+    var map: String
+    var game_root: String
+    var generated: String
+    var work_dir: String
+    var heroes: [Hero]
+    var items: [Item]
 }
 
-struct CatalogIcon: Identifiable, Hashable {
-    let url: URL
-    var id: URL { url }
-    var title: String {
-        let file = url.deletingPathExtension().lastPathComponent
-        let pack = url.deletingLastPathComponent().lastPathComponent
-        return pack.isEmpty ? file : "\(pack) / \(file)"
-    }
-}
+// MARK: - Store
 
-@MainActor final class WorkshopStore: ObservableObject {
-    @Published var heroes: [Hero] = []
-    @Published var units: [Hero] = []
-    @Published var items: [Item] = []
-    @Published var catalogIcons: [CatalogIcon] = []
-    @Published var selection = ""
-    @Published var status = ""
+@MainActor final class Store: ObservableObject {
+    @Published var state: MapState?
+    @Published var status = "Загрузка состояния карты…"
+    @Published var busy = false
+    @Published var showDisabled = false
     let root: URL
-    let iconRoot: URL
 
     init() {
         root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        let environment = ProcessInfo.processInfo.environment
-        if let override = environment["HERO_WORKSHOP_ICON_ROOT"], !override.isEmpty {
-            iconRoot = URL(fileURLWithPath: override)
-        } else {
-            var configured: String?
-            for name in ["workshop.json", "workshop.local.json"] {
-                let url = root.appendingPathComponent(name)
-                if let data = try? Data(contentsOf: url),
-                   let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let value = object["icon_root"] as? String { configured = value }
-            }
-            if let configured, configured.hasPrefix("/") {
-                iconRoot = URL(fileURLWithPath: configured)
-            } else {
-                iconRoot = root.appendingPathComponent(configured ?? "assets/icons")
-            }
+        refresh()
+    }
+
+    var mapName: String { state.map { URL(fileURLWithPath: $0.map).lastPathComponent } ?? "—" }
+
+    func previewURL(_ res: Resolved) -> URL? {
+        guard let p = res.preview, let work = state?.work_dir else { return nil }
+        return URL(fileURLWithPath: work).appendingPathComponent(p)
+    }
+
+    /// Runs workshop.py with the given arguments off the main thread, then calls back on the main actor.
+    func run(_ args: [String], then: @escaping @MainActor @Sendable (Int32, String) -> Void) {
+        busy = true
+        let root = self.root
+        DispatchQueue.global(qos: .userInitiated).async {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+            process.arguments = ["python3", "workshop.py"] + args
+            process.currentDirectoryURL = root
+            let pipe = Pipe(); process.standardOutput = pipe; process.standardError = pipe
+            var output = ""; var code: Int32 = -1
+            do {
+                try process.run()
+                output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+                process.waitUntilExit(); code = process.terminationStatus
+            } catch { output = error.localizedDescription }
+            let rc = code, text = output.trimmingCharacters(in: .whitespacesAndNewlines)
+            Task { @MainActor in then(rc, text) }
         }
-        reload()
     }
-    var selected: Hero? { heroes.first { $0.id == selection } }
-    func heroFolder(_ hero: Hero) -> URL {
-        let section = hero.is_unit == true ? "units" : "heroes"
-        return root.appendingPathComponent(section).appendingPathComponent("\(safe(hero.hero))__\(hero.unit_rawcode)")
+
+    func refresh(message: String? = nil) {
+        run(["state"]) { code, out in
+            defer { self.busy = false }
+            guard code == 0, let path = out.split(separator: "\n").last else { self.status = "Ошибка: \(out)"; return }
+            do {
+                let data = try Data(contentsOf: URL(fileURLWithPath: String(path)))
+                self.state = try JSONDecoder().decode(MapState.self, from: data)
+                self.status = message ?? "Карта: \(self.mapName) · героев \(self.state!.heroes.count) · предметов \(self.state!.items.count)"
+            } catch { self.status = "Не удалось прочитать состояние: \(error.localizedDescription)" }
+        }
     }
-    func itemFolder(_ item: Item) -> URL { root.appendingPathComponent("items/\(safe(item.item))__\(item.item_rawcode)") }
-    func heroAssetFolder(_ hero: Hero) -> URL {
-        let section = hero.is_unit == true ? "units" : "heroes"
-        return iconRoot.appendingPathComponent(section).appendingPathComponent("\(safe(hero.hero))__\(hero.unit_rawcode)")
+
+    func setIcon(key: String, file: URL) {
+        let ext = file.pathExtension.lowercased()
+        guard ["png", "blp", "bmp", "tga", "jpg", "jpeg"].contains(ext) else { status = "Нужен PNG или BLP (можно BMP/TGA/JPG)"; return }
+        status = "Применяю \(file.lastPathComponent) → \(key)…"
+        run(["set-icon", key, file.path]) { code, out in
+            if code == 0 { self.refresh(message: out.split(separator: "\n").last.map(String.init) ?? "Готово") }
+            else { self.busy = false; self.status = "Ошибка: \(out)" }
+        }
     }
-    func itemAssetFolder(_ item: Item) -> URL { iconRoot.appendingPathComponent("items/\(safe(item.item))__\(item.item_rawcode)") }
-    func slotFolder(_ hero: Hero, _ index: Int, _ ability: Ability) -> URL {
-        heroAssetFolder(hero).appendingPathComponent(String(format: "slots/%02d_%@", index + 1, ability.base_ability))
+    func clearIcon(key: String) {
+        run(["clear-icon", key]) { code, out in
+            if code == 0 { self.refresh(message: "Возвращена исходная иконка: \(key)") } else { self.busy = false; self.status = "Ошибка: \(out)" }
+        }
     }
-    func safe(_ name: String) -> String {
-        name.replacingOccurrences(of: "[^A-Za-z0-9_]", with: "_", options: .regularExpression)
-            .trimmingCharacters(in: CharacterSet(charactersIn: "_"))
+    func setScale(hero: Hero, scale: Double, morph: Double?, alt: Double?) {
+        var args = ["set-scale", hero.code, String(format: "%.3f", scale)]
+        if let morph { args += ["--morph", String(format: "%.3f", morph)] }
+        if let alt, hero.alt != nil { args += ["--alt", String(format: "%.3f", alt)] }
+        run(args) { code, out in
+            if code == 0 { self.refresh(message: out.split(separator: "\n").last.map(String.init) ?? "Масштаб применён") } else { self.busy = false; self.status = "Ошибка: \(out)" }
+        }
     }
-    func reload() {
-        let directory = root.appendingPathComponent("heroes")
-        let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
-        heroes = files.compactMap { folder in
-            let config = folder.appendingPathComponent("hero.json")
-            guard let data = try? Data(contentsOf: config) else { return nil }
-            return try? JSONDecoder().decode(Hero.self, from: data)
-        }.sorted { $0.hero.localizedCaseInsensitiveCompare($1.hero) == .orderedAscending }
-        if selection.isEmpty || !heroes.contains(where: { $0.id == selection }) { selection = heroes.first?.id ?? "" }
-        let unitDirectory = root.appendingPathComponent("units")
-        let unitFiles = (try? FileManager.default.contentsOfDirectory(at: unitDirectory, includingPropertiesForKeys: nil)) ?? []
-        units = unitFiles.compactMap { folder in
-            guard let data = try? Data(contentsOf: folder.appendingPathComponent("hero.json")) else { return nil }
-            return try? JSONDecoder().decode(Hero.self, from: data)
-        }.sorted { $0.hero.localizedCaseInsensitiveCompare($1.hero) == .orderedAscending }
-        let itemDirectory = root.appendingPathComponent("items")
-        let itemFiles = (try? FileManager.default.contentsOfDirectory(at: itemDirectory, includingPropertiesForKeys: nil)) ?? []
-        items = itemFiles.compactMap { folder in try? JSONDecoder().decode(Item.self, from: Data(contentsOf: folder.appendingPathComponent("item.json"))) }.sorted { $0.item.localizedCaseInsensitiveCompare($1.item) == .orderedAscending }
-        let catalog = iconRoot.appendingPathComponent("catalog")
-        let files = FileManager.default.enumerator(at: catalog, includingPropertiesForKeys: [.isRegularFileKey])?.compactMap { $0 as? URL } ?? []
-        catalogIcons = files
-            .filter { $0.pathExtension.lowercased() == "png" }
-            .map(CatalogIcon.init)
-            .sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
-        status = "Героев: \(heroes.count) · юнитов: \(units.count)"
+    func setScale(code: String, scale: Double) {
+        run(["set-scale", code, String(format: "%.3f", scale)]) { rc, out in
+            if rc == 0 { self.refresh(message: out.split(separator: "\n").last.map(String.init) ?? "Масштаб применён") } else { self.busy = false; self.status = "Ошибка: \(out)" }
+        }
     }
-    func save(_ hero: Hero) {
-        if hero.is_unit == true, let i = units.firstIndex(where: { $0.id == hero.id }) { units[i] = hero }
-        else if let i = heroes.firstIndex(where: { $0.id == hero.id }) { heroes[i] = hero }
-        else { return }
-        do {
-            let data = try JSONEncoder.pretty.encode(hero)
-            try data.write(to: heroFolder(hero).appendingPathComponent("hero.json"), options: .atomic)
-            status = "Сохранено: \(hero.hero)"
-        } catch { status = "Ошибка сохранения: \(error.localizedDescription)" }
+    func addRelated(hero: String, unit: String) {
+        run(["add-related", hero, unit]) { rc, out in
+            if rc == 0 { self.refresh(message: out) } else { self.busy = false; self.status = "Ошибка: \(out)" }
+        }
     }
-    func importAsset(from source: URL, folder: URL, kind: String) {
-        let ext = source.pathExtension.lowercased()
-        guard ["blp", "png"].contains(ext) else { status = "Нужен PNG или BLP"; return }
-        let target = folder.appendingPathComponent("\(kind).\(ext)")
-        do {
-            try FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try? FileManager.default.removeItem(at: folder.appendingPathComponent("\(kind).png"))
-            try? FileManager.default.removeItem(at: folder.appendingPathComponent("\(kind).blp"))
-            try? FileManager.default.removeItem(at: folder.appendingPathComponent("\(kind).preview.png"))
-            try? FileManager.default.removeItem(at: target)
-            try FileManager.default.copyItem(at: source, to: target)
-            if ext == "blp" { createBLPPreview(source: target, at: folder.appendingPathComponent("\(kind).preview.png")) }
-            status = "Импортирован: \(source.lastPathComponent)"
-            objectWillChange.send()
-        } catch { status = "Ошибка импорта: \(error.localizedDescription)" }
-    }
-    func createBLPPreview(source: URL, at preview: URL) {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        process.arguments = ["python3", "blp_to_png.py", source.path, preview.path]
-        process.currentDirectoryURL = root
-        try? process.run()
-        process.waitUntilExit()
-    }
-    func removeAsset(folder: URL, kind: String) { try? FileManager.default.removeItem(at: folder.appendingPathComponent("\(kind).png")); try? FileManager.default.removeItem(at: folder.appendingPathComponent("\(kind).blp")); try? FileManager.default.removeItem(at: folder.appendingPathComponent("\(kind).preview.png")); status = "Слот очищен"; objectWillChange.send() }
-    func addTriggered(to hero: Hero, rawcode: String) {
-        let code = rawcode.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard code.count == 4 else { status = "Rawcode должен состоять из 4 символов"; return }
-        guard !hero.allAbilities.contains(where: { $0.base_ability == code }) else { status = "Этот rawcode уже есть"; return }
-        var updated = hero; updated.extra_abilities = (updated.extra_abilities ?? []) + [Ability(base_ability: code, source: "triggered")]
-        save(updated)
-        let folder = slotFolder(updated, updated.allAbilities.count - 1, updated.allAbilities.last!)
-        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        status = "Добавлена trigger-ability \(code)"
-    }
-    func addRelatedModel(to hero: Hero, rawcode: String, label: String) {
-        let code = rawcode.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard code.count == 4 else { status = "Rawcode модели должен состоять из 4 символов"; return }
-        guard !hero.relatedModels.contains(where: { $0.rawcode == code }) else { status = "Эта связанная модель уже добавлена"; return }
-        var updated = hero
-        updated.related_models = updated.relatedModels + [RelatedModel(rawcode: code, label: label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Связанная модель" : label, model_scale: 1.0, model_scale_base: nil)]
-        save(updated); reload()
-    }
-    func saveRelatedScale(hero: Hero, rawcode: String, scale: Double) {
-        var updated = hero
-        guard var related = updated.related_models, let index = related.firstIndex(where: { $0.rawcode == rawcode }) else { return }
-        related[index].model_scale = scale
-        updated.related_models = related
-        save(updated)
-    }
-    func apply(_ hero: Hero) {
-        let process = Process(); process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        process.arguments = ["python3", "workshop.py", "apply", hero.unit_rawcode]
-        process.currentDirectoryURL = root
-        let pipe = Pipe(); process.standardOutput = pipe; process.standardError = pipe
-        do { try process.run(); process.waitUntilExit()
-            let text = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
-            status = process.terminationStatus == 0 ? "Применено: \(hero.hero)" : "Ошибка применения: \(text)"
-        } catch { status = "Не удалось запустить конвейер: \(error.localizedDescription)" }
-    }
-    func applyItem(_ item: Item) {
-        let process = Process(); process.executableURL = URL(fileURLWithPath: "/usr/bin/env"); process.arguments = ["python3", "workshop.py", "apply-item", item.item_rawcode]; process.currentDirectoryURL = root
-        let pipe = Pipe(); process.standardOutput = pipe; process.standardError = pipe
-        do { try process.run(); process.waitUntilExit(); let text=String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self); status = process.terminationStatus == 0 ? "Применён предмет: \(item.item)" : "Ошибка применения: \(text)" } catch { status="Не удалось применить предмет: \(error.localizedDescription)" }
+    func removeRelated(hero: String, unit: String) {
+        run(["remove-related", hero, unit]) { rc, out in
+            if rc == 0 { self.refresh(message: out) } else { self.busy = false; self.status = "Ошибка: \(out)" }
+        }
     }
 }
 
-extension JSONEncoder {
-    static var pretty: JSONEncoder { let e = JSONEncoder(); e.outputFormatting = [.prettyPrinted, .sortedKeys]; return e }
+// MARK: - HUD colours
+
+enum HUD {
+    static let stone = LinearGradient(colors: [Color(red: 0.16, green: 0.17, blue: 0.19), Color(red: 0.08, green: 0.09, blue: 0.10)], startPoint: .top, endPoint: .bottom)
+    static let panel = Color(red: 0.11, green: 0.12, blue: 0.13)
+    static let gold = Color(red: 0.82, green: 0.66, blue: 0.28)
+    static let slot = Color(red: 0.04, green: 0.04, blue: 0.05)
 }
 
-struct BlpSlot: View {
-    @ObservedObject var store: WorkshopStore
-    let hero: Hero
-    let index: Int
-    let ability: Ability
-    let kind: String
-    var folder: URL { store.slotFolder(hero, index, ability) }
-    var asset: URL? { [folder.appendingPathComponent(kind + ".png"), folder.appendingPathComponent(kind + ".blp")].first { FileManager.default.fileExists(atPath: $0.path) } }
-    var preview: URL? { [folder.appendingPathComponent(kind + ".png"), folder.appendingPathComponent(kind + ".preview.png")].first { FileManager.default.fileExists(atPath: $0.path) } }
+// MARK: - Icon slot (drop target)
+
+struct IconSlot: View {
+    @ObservedObject var store: Store
+    let key: String
+    let title: String
+    let subtitle: String
+    let icon: IconInfo
+    var size: CGFloat = 64
+    @State private var targeted = false
     @State private var importing = false
+
+    var resolved: Resolved { store.showDisabled ? icon.disabled : icon.normal }
+    var originText: String {
+        switch resolved.source {
+        case "map": return "в карте"
+        case "disk": return "на диске"
+        case "standard": return "стандарт WC3"
+        case "missing": return "файл не найден"
+        default: return "нет иконки"
+        }
+    }
     var body: some View {
-        HStack {
-            Text(kind == "normal" ? "Активная" : "Неактивная").frame(width: 88, alignment: .leading)
-            if let preview, let image = NSImage(contentsOf: preview) {
-                Image(nsImage: image).resizable().interpolation(.none).scaledToFit().frame(width: 56, height: 56)
-                    .background(.black, in: RoundedRectangle(cornerRadius: 5))
-            } else {
-                Image(systemName: "photo").frame(width: 56, height: 56).foregroundStyle(.secondary)
-            }
-            Text(asset?.lastPathComponent ?? "перетащите PNG или BLP сюда")
-                .foregroundStyle(asset == nil ? .secondary : .primary)
-                .lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
-                .padding(7).background(.quaternary, in: RoundedRectangle(cornerRadius: 6))
-                .onDrop(of: [.fileURL], isTargeted: nil) { providers in
-                    providers.first?.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { value, _ in
-                        if let data = value as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) { DispatchQueue.main.async { store.importAsset(from: url, folder: folder, kind: kind) } }
-                    }; return true
+        VStack(spacing: 3) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 4).fill(HUD.slot)
+                if let url = store.previewURL(resolved), let image = NSImage(contentsOf: url) {
+                    Image(nsImage: image).resizable().interpolation(.none).frame(width: size - 6, height: size - 6).cornerRadius(3)
+                } else {
+                    VStack(spacing: 2) {
+                        Image(systemName: resolved.source == "standard" ? "shield.lefthalf.filled" : "questionmark.square.dashed").foregroundStyle(.secondary)
+                        if resolved.source == "standard" { Text("WC3").font(.system(size: 8)).foregroundStyle(.secondary) }
+                    }
                 }
-            Button("Выбрать") { importing = true }.fileImporter(isPresented: $importing, allowedContentTypes: [.png, UTType(filenameExtension: "blp")!]) { result in
-                if case let .success(url) = result { store.importAsset(from: url, folder: folder, kind: kind) }
+                if icon.override != nil {
+                    Circle().fill(Color.green).frame(width: 9, height: 9).overlay(Circle().stroke(.black, lineWidth: 1))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing).padding(3)
+                }
             }
-            Button(role: .destructive) { store.removeAsset(folder: folder, kind: kind) } label: { Image(systemName: "trash") }.disabled(asset == nil)
+            .frame(width: size, height: size)
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(targeted ? Color.green : HUD.gold.opacity(0.55), lineWidth: targeted ? 2 : 1))
+            .onDrop(of: [.fileURL], isTargeted: $targeted) { providers in
+                guard let provider = providers.first else { return false }
+                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { value, _ in
+                    if let data = value as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+                        Task { @MainActor in store.setIcon(key: key, file: url) }
+                    }
+                }
+                return true
+            }
+            .onTapGesture(count: 2) { importing = true }
+            .contextMenu {
+                Button("Выбрать файл…") { importing = true }
+                if icon.override != nil { Button("Вернуть исходную иконку") { store.clearIcon(key: key) } }
+                if let path = resolved.path, resolved.source == "disk" {
+                    Button("Показать файл в Finder") {
+                        let url = URL(fileURLWithPath: store.state?.game_root ?? "/").appendingPathComponent(path.replacingOccurrences(of: "\\", with: "/"))
+                        NSWorkspace.shared.activateFileViewerSelecting([url])
+                    }
+                }
+            }
+            .help("\(title)\n\(subtitle)\nПуть: \(icon.art ?? "—")\nИсточник: \(originText)" + (icon.override.map { "\nЗаменена: \($0.applied ?? "")" } ?? ""))
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.png, .bmp, .jpeg, UTType(filenameExtension: "blp") ?? .data, UTType(filenameExtension: "tga") ?? .data]) { result in
+                if case let .success(url) = result { store.setIcon(key: key, file: url) }
+            }
+            Text(title).font(.system(size: 10)).lineLimit(1).frame(width: size + 14)
+            Text(originText).font(.system(size: 8)).foregroundStyle(icon.override != nil ? Color.green : Color.secondary).lineLimit(1)
         }
     }
 }
 
-struct HeroEditor: View {
-    @ObservedObject var store: WorkshopStore
-    let hero: Hero
-    @State private var primaryScale: Double
-    @State private var alternativeScale: Double
-    @State private var triggered = ""
-    @State private var relatedRawcode = ""
-    @State private var relatedLabel = ""
-    init(store: WorkshopStore, hero: Hero) {
-        self.store = store
-        self.hero = hero
-        _primaryScale = State(initialValue: hero.primary_model_scale ?? 1.0)
-        _alternativeScale = State(initialValue: hero.alternative_model_scale ?? 1.0)
+// MARK: - Command card layout (4×3, by in-game Buttonpos; extra abilities go to the overflow row)
+
+func commandGrid(_ abilities: [Ability]) -> [[Ability?]] {
+    var cells: [[Ability?]] = Array(repeating: Array(repeating: nil, count: 4), count: 3)
+    var rest: [Ability] = []
+    for a in abilities where a.visible {
+        if let p = a.buttonpos, p.count == 2, (0..<4).contains(p[0]), (0..<3).contains(p[1]), cells[p[1]][p[0]] == nil { cells[p[1]][p[0]] = a }
+        else { rest.append(a) }
     }
-    func abilityTitle(_ ability: Ability, index: Int) -> String {
-        ability.label ?? "Способность \(index + 1)"
+    for a in rest {
+        var placed = false
+        for y in 0..<3 where !placed { for x in 0..<4 where cells[y][x] == nil && !placed { cells[y][x] = a; placed = true } }
     }
-    func sourceTitle(_ source: String) -> String {
-        switch source {
-        case "heroAbilList": return "геройская"
-        case "abilList": return "обычная"
-        default: return "триггерная"
+    return cells
+}
+func gridOverflow(_ abilities: [Ability]) -> [Ability] {
+    let placed = Set(commandGrid(abilities).flatMap { $0 }.compactMap { $0?.code })
+    return abilities.filter { $0.visible && !placed.contains($0.code) }
+}
+
+struct CommandCard: View {
+    @ObservedObject var store: Store
+    let abilities: [Ability]
+    var body: some View {
+        let grid = commandGrid(abilities)
+        VStack(spacing: 8) {
+            ForEach(0..<3, id: \.self) { y in
+                HStack(spacing: 8) {
+                    ForEach(0..<4, id: \.self) { x in
+                        if let a = grid[y][x] {
+                            IconSlot(store: store, key: "ability:\(a.code)", title: a.name, subtitle: "Способность \(a.code)" + (a.hero ? " (геройская)" : ""), icon: a.icon)
+                        } else {
+                            RoundedRectangle(cornerRadius: 4).fill(HUD.slot.opacity(0.6)).frame(width: 64, height: 64)
+                                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.08)))
+                                .frame(width: 78, height: 88, alignment: .top)
+                        }
+                    }
+                }
+            }
         }
+        .padding(10).background(HUD.stone, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(HUD.gold.opacity(0.4)))
     }
+}
+
+struct RelatedUnitCard: View {
+    @ObservedObject var store: Store
+    let hero: Hero
+    let unit: RelatedUnit
+    @State private var scale: Double
+    init(store: Store, hero: Hero, unit: RelatedUnit) {
+        self.store = store; self.hero = hero; self.unit = unit
+        _scale = State(initialValue: unit.saved_scales?.scale ?? unit.scale ?? 1.0)
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(unit.name).font(.headline); Text("[\(unit.code)]").foregroundStyle(.secondary)
+                Text("· \(unit.relation)").font(.caption).foregroundStyle(HUD.gold)
+                Spacer()
+                if unit.relation.hasPrefix("добавлен") {
+                    Button("Убрать") { store.removeRelated(hero: hero.code, unit: unit.code) }.controlSize(.small)
+                }
+            }
+            HStack(alignment: .top, spacing: 14) {
+                IconSlot(store: store, key: "unit:\(unit.code)", title: unit.name, subtitle: "Иконка юнита", icon: unit.icon, size: 64)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("Масштаб").font(.callout)
+                        TextField("1.0", value: $scale, format: .number.precision(.fractionLength(2))).frame(width: 64)
+                        Stepper("", value: $scale, in: 0.1...5.0, step: 0.05).labelsHidden()
+                        Button("Применить") { store.setScale(code: unit.code, scale: scale) }.controlSize(.small).disabled(store.busy)
+                    }
+                    Text("в карте \(unit.scale.map { $0.formatted() } ?? "—")" + (unit.p3_scale.map { " · P3 \($0.formatted())" } ?? "")).font(.caption2).foregroundStyle(.secondary)
+                    if let m = unit.model { Text(m).font(.caption2).foregroundStyle(.secondary).lineLimit(1).textSelection(.enabled) }
+                }
+                if unit.abilities.contains(where: { $0.visible }) { CommandCard(store: store, abilities: unit.abilities) }
+            }
+        }
+        .padding(10).background(HUD.panel, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+// MARK: - Hero console
+
+struct HeroConsole: View {
+    @ObservedObject var store: Store
+    let hero: Hero
+    @State private var scale: Double
+    @State private var morph: Double
+    @State private var alt: Double
+    @State private var relatedCode = ""
+
+    init(store: Store, hero: Hero) {
+        self.store = store; self.hero = hero
+        _scale = State(initialValue: hero.saved_scales?.scale ?? hero.scale ?? 1.0)
+        _morph = State(initialValue: hero.saved_scales?.morph ?? hero.morph_scale ?? hero.scale ?? 1.0)
+        _alt = State(initialValue: hero.saved_scales?.alt ?? hero.alt_scale ?? 1.0)
+    }
+
+    var grid: [[Ability?]] { commandGrid(hero.abilities) }
+    var overflow: [Ability] { gridOverflow(hero.abilities) }
+    var hidden: [Ability] { hero.abilities.filter { !$0.visible } }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack { Text(hero.hero).font(.title.bold()); Text("[\(hero.unit_rawcode)]").foregroundStyle(.secondary); Spacer()
-                    Button("Применить в карту") { store.apply(hero) }.buttonStyle(.borderedProminent) }
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Основная модель")
-                        TextField("1.0", value: $primaryScale, format: .number.precision(.fractionLength(2))).frame(width: 90)
-                        Stepper("", value: $primaryScale, in: 0.20...3.00, step: 0.05).labelsHidden()
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(hero.name).font(.title.bold())
+                    Text("[\(hero.code)]").foregroundStyle(.secondary)
+                    if let t = hero.txt_name, t != hero.name { Text("· \(t)").foregroundStyle(.secondary) }
+                    Spacer()
+                    Toggle("Серые (DISBTN)", isOn: $store.showDisabled).toggleStyle(.switch).controlSize(.small)
+                }
+                if let model = hero.model { Text("Модель: \(model)").font(.caption).foregroundStyle(.secondary).textSelection(.enabled) }
+
+                // The in-game bottom console: portrait | info + scales | command card
+                HStack(alignment: .top, spacing: 18) {
+                    VStack(spacing: 6) {
+                        Text("Портрет / иконка").font(.caption).foregroundStyle(HUD.gold)
+                        IconSlot(store: store, key: "unit:\(hero.code)", title: hero.name, subtitle: "Иконка героя (Art юнита)", icon: hero.icon, size: 96)
                     }
-                    HStack {
-                        Text("Альтернативная модель")
-                        TextField("1.0", value: $alternativeScale, format: .number.precision(.fractionLength(2))).frame(width: 90)
-                        Stepper("", value: $alternativeScale, in: 0.20...3.00, step: 0.05).labelsHidden()
-                    }
-                    HStack {
-                        Text("Число — итоговый масштаб модели: 1.20 всегда записывает ровно 1.20.").foregroundStyle(.secondary)
-                        Spacer()
-                        Button("Сохранить масштабы") {
-                            var h = hero
-                            h.primary_model_scale = primaryScale
-                            h.alternative_model_scale = alternativeScale
-                            store.save(h)
-                        }
+                    scaleBox
+                    VStack(spacing: 6) {
+                        Text("Панель команд").font(.caption).foregroundStyle(HUD.gold)
+                        CommandCard(store: store, abilities: hero.abilities)
                     }
                 }
-                Divider()
-                GroupBox("Призванные существа и превращения") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Добавьте rawcode юнита для призыва, метаморфозы или иной связанной модели. Её итоговый масштаб хранится отдельно от героя.")
-                            .font(.footnote).foregroundStyle(.secondary)
-                        ForEach(hero.relatedModels) { related in
-                            RelatedModelRow(store: store, hero: hero, related: related)
-                        }
-                        HStack {
-                            TextField("Rawcode, например H000", text: $relatedRawcode).frame(width: 150)
-                            TextField("Название, например Медведь", text: $relatedLabel)
-                            Button("Добавить") { store.addRelatedModel(to: hero, rawcode: relatedRawcode, label: relatedLabel); relatedRawcode = ""; relatedLabel = "" }
-                        }
-                    }.padding(.vertical, 4)
-                }
-                Divider()
-                GroupBox("Иконка героя") {
-                    PortraitSlot(store: store, folder: store.heroAssetFolder(hero), kind: "portrait")
-                    Text("Это кнопка/иконка героя, а не 3D-портрет модели.")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }
-                ForEach(Array(hero.allAbilities.enumerated()), id: \.element.id) { index, ability in
-                    VStack(alignment: .leading, spacing: 7) {
-                        Text("\(index + 1). \(abilityTitle(ability, index: index))").font(.headline)
-                        Text("Rawcode: \(ability.base_ability) · \(sourceTitle(ability.source))")
-                            .font(.footnote).foregroundStyle(.secondary)
-                        BlpSlot(store: store, hero: hero, index: index, ability: ability, kind: "normal")
-                        BlpSlot(store: store, hero: hero, index: index, ability: ability, kind: "disabled")
-                    }.padding().background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
-                }
-                if hero.hero.lowercased().contains("invoker") {
-                    GroupBox("Invoker: заклинание, выдаваемое триггером") {
-                        HStack { TextField("Rawcode, например A123", text: $triggered); Button("Добавить слот") { store.addTriggered(to: hero, rawcode: triggered); triggered = "" } }
+                .padding(14).background(HUD.panel, in: RoundedRectangle(cornerRadius: 12))
+
+                if !overflow.isEmpty {
+                    Text("Способности без места на панели").font(.headline)
+                    LazyVGrid(columns: Array(repeating: GridItem(.fixed(84)), count: 8), spacing: 10) {
+                        ForEach(overflow) { a in IconSlot(store: store, key: "ability:\(a.code)", title: a.name, subtitle: "Способность \(a.code)", icon: a.icon) }
                     }
                 }
+                Text("Связанные юниты: морф-форма, альтернативная модель, призывы").font(.headline)
+                ForEach(hero.related ?? []) { unit in RelatedUnitCard(store: store, hero: hero, unit: unit) }
+                HStack {
+                    TextField("Rawcode юнита, например n0EE", text: $relatedCode).frame(width: 220)
+                    Button("Добавить связанный юнит") {
+                        store.addRelated(hero: hero.code, unit: relatedCode.trimmingCharacters(in: .whitespaces)); relatedCode = ""
+                    }.disabled(relatedCode.trimmingCharacters(in: .whitespaces).count != 4 || store.busy)
+                    Text("Для призывов, которые создаются триггером и не видны в данных способности.").font(.caption2).foregroundStyle(.secondary)
+                }
+                if !hidden.isEmpty {
+                    DisclosureGroup("Скрытые / служебные способности (\(hidden.count))") {
+                        Text(hidden.map { "\($0.code) \($0.name)" }.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                    }
+                }
+                Text("Перетащите PNG или BLP на любую ячейку: файл сразу конвертируется в BLP 64×64, серая версия создаётся автоматически и всё записывается в карту или в папку мода по текущему пути иконки.")
+                    .font(.footnote).foregroundStyle(.secondary)
             }.padding()
         }
     }
-}
 
-struct RelatedModelRow: View {
-    @ObservedObject var store: WorkshopStore
-    let hero: Hero
-    let related: RelatedModel
-    @State private var scale: Double
-    init(store: WorkshopStore, hero: Hero, related: RelatedModel) {
-        self.store = store; self.hero = hero; self.related = related
-        _scale = State(initialValue: related.model_scale)
-    }
-    var body: some View {
-        HStack {
-            Text(related.label).frame(minWidth: 160, alignment: .leading)
-            Text("[\(related.rawcode)]").foregroundStyle(.secondary)
-            Spacer()
-            TextField("1.0", value: $scale, format: .number.precision(.fractionLength(2))).frame(width: 80)
-            Stepper("", value: $scale, in: 0.20...3.00, step: 0.05).labelsHidden()
-            Button("Сохранить") { store.saveRelatedScale(hero: hero, rawcode: related.rawcode, scale: scale) }
+    var scaleBox: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Масштаб модели").font(.caption).foregroundStyle(HUD.gold)
+            scaleRow("Основная", value: $scale, current: hero.scale, extra: hero.p3_scale.map { "P3 \($0.formatted())" })
+            if let m = hero.morph { scaleRow("Морф \(m)", value: $morph, current: hero.morph_scale, extra: nil) }
+            if let a = hero.alt { scaleRow("Альтернатива \(a)", value: $alt, current: hero.alt_scale, extra: nil) }
+            HStack {
+                Button("Применить масштаб") {
+                    store.setScale(hero: hero, scale: scale, morph: hero.morph != nil ? morph : nil, alt: hero.alt != nil ? alt : nil)
+                }.buttonStyle(.borderedProminent).disabled(store.busy)
+                if let saved = hero.saved_scales?.applied { Text("сохранено \(saved)").font(.caption2).foregroundStyle(.secondary) }
+            }
+            Text("Значение абсолютное: 1.20 записывает ровно 1.20 в unitUI и в таблицу P3, поэтому масштаб переживает смерть героя.")
+                .font(.caption2).foregroundStyle(.secondary).frame(width: 230)
         }
+        .padding(10).background(HUD.stone, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(HUD.gold.opacity(0.4)))
     }
-}
-
-struct ItemEditor: View {
-    @ObservedObject var store: WorkshopStore
-    @State private var selection = ""
-    @State private var search = ""
-    var filtered: [Item] { store.items.filter { search.isEmpty || $0.item.localizedCaseInsensitiveContains(search) || $0.item_rawcode.localizedCaseInsensitiveContains(search) } }
-    var selected: Item? { store.items.first { $0.id == selection } }
-    var body: some View {
-        HSplitView {
-            VStack { TextField("Поиск предмета или rawcode", text: $search).textFieldStyle(.roundedBorder).padding(8); List(selection: $selection) { ForEach(filtered) { Text($0.item).tag($0.id) } } }.frame(minWidth: 240)
-            if let item=selected { ScrollView { VStack(alignment: .leading, spacing: 14) { HStack { Text(item.item).font(.title.bold()); Text("[\(item.item_rawcode)]").foregroundStyle(.secondary); Spacer(); Button("Применить в карту") { store.applyItem(item) }.buttonStyle(.borderedProminent) }
-                ForEach(Array(item.abilities.enumerated()), id: \.element.id) { index, ability in
-                    let folder=store.itemAssetFolder(item).appendingPathComponent(String(format:"slots/%02d_%@",index+1,ability.base_ability))
-                    VStack(alignment:.leading) {
-                        Text(ability.label ?? "Способность предмета \(index + 1)").font(.headline)
-                        Text("Rawcode: \(ability.base_ability)").font(.footnote).foregroundStyle(.secondary)
-                        ItemSlot(store:store, folder:folder, kind:"normal")
-                        ItemSlot(store:store, folder:folder, kind:"disabled")
-                    }.padding().background(.thinMaterial,in:RoundedRectangle(cornerRadius:10))
-                }
-            }.padding() } } else { Text("Выберите предмет").frame(maxWidth:.infinity,maxHeight:.infinity) }
-        }.onAppear { selection=store.items.first?.id ?? "" }
-    }
-}
-
-struct ItemSlot: View {
-    @ObservedObject var store: WorkshopStore; let folder: URL; let kind: String; @State private var importing=false
-    var asset: URL? { [folder.appendingPathComponent(kind+".png"),folder.appendingPathComponent(kind+".blp")].first { FileManager.default.fileExists(atPath:$0.path) } }
-    var preview: URL? { [folder.appendingPathComponent(kind+".png"),folder.appendingPathComponent(kind+".preview.png")].first { FileManager.default.fileExists(atPath:$0.path) } }
-    var body: some View { HStack { Text(kind == "normal" ? "Активная" : "Неактивная").frame(width:88,alignment:.leading); if let preview,let image=NSImage(contentsOf:preview) { Image(nsImage:image).resizable().interpolation(.none).scaledToFit().frame(width:56,height:56).background(.black,in:RoundedRectangle(cornerRadius:5)) } else { Image(systemName:"photo").frame(width:56,height:56).foregroundStyle(.secondary) }; Text(asset?.lastPathComponent ?? "Перетащите PNG или BLP сюда").foregroundStyle(asset == nil ? .secondary : .primary).frame(maxWidth:.infinity,alignment:.leading).padding(7).background(.quaternary,in:RoundedRectangle(cornerRadius:6)).onDrop(of:[.fileURL],isTargeted:nil){providers in providers.first?.loadItem(forTypeIdentifier:UTType.fileURL.identifier,options:nil){value,_ in if let data=value as? Data,let url=URL(dataRepresentation:data,relativeTo:nil){DispatchQueue.main.async{store.importAsset(from:url,folder:folder,kind:kind)}}};return true}; Button("Выбрать"){importing=true}.fileImporter(isPresented:$importing,allowedContentTypes:[.png,UTType(filenameExtension:"blp")!]){result in if case let .success(url)=result {store.importAsset(from:url,folder:folder,kind:kind)}}; Button(role:.destructive){store.removeAsset(folder:folder,kind:kind)}label:{Image(systemName:"trash")}.disabled(asset==nil) } }
-}
-
-struct PortraitSlot: View {
-    @ObservedObject var store: WorkshopStore; let folder: URL; let kind: String; @State private var importing = false
-    var asset: URL? { [folder.appendingPathComponent(kind+".png"),folder.appendingPathComponent(kind+".blp")].first { FileManager.default.fileExists(atPath:$0.path) } }
-    var preview: URL? { [folder.appendingPathComponent(kind+".png"),folder.appendingPathComponent(kind+".preview.png")].first { FileManager.default.fileExists(atPath:$0.path) } }
-    var body: some View { HStack { if let preview, let image=NSImage(contentsOf:preview) { Image(nsImage:image).resizable().interpolation(.none).scaledToFit().frame(width:64,height:64).background(.black,in:RoundedRectangle(cornerRadius:5)) } else { Image(systemName:"person.crop.square").frame(width:64,height:64).foregroundStyle(.secondary) }; Text(asset?.lastPathComponent ?? "Перетащите PNG или BLP сюда").foregroundStyle(asset == nil ? .secondary : .primary).frame(maxWidth:.infinity,alignment:.leading).padding(7).background(.quaternary,in:RoundedRectangle(cornerRadius:6)).onDrop(of:[.fileURL],isTargeted:nil){providers in providers.first?.loadItem(forTypeIdentifier:UTType.fileURL.identifier,options:nil){value,_ in if let data=value as? Data,let url=URL(dataRepresentation:data,relativeTo:nil){DispatchQueue.main.async{store.importAsset(from:url,folder:folder,kind:kind)}}};return true}; Button("Выбрать"){importing=true}.fileImporter(isPresented:$importing,allowedContentTypes:[.png,UTType(filenameExtension:"blp")!]){result in if case let .success(url)=result {store.importAsset(from:url,folder:folder,kind:kind)}}; Button(role:.destructive){store.removeAsset(folder:folder,kind:kind)}label:{Image(systemName:"trash")}.disabled(asset==nil) } }
-}
-
-struct ContentView: View {
-    @StateObject private var store = WorkshopStore()
-    @State private var tab = "heroes"
-    @State private var unitSelection = ""
-    var body: some View {
-        VStack(spacing: 0) {
-            Picker("Раздел", selection: $tab) { Text("Герои").tag("heroes"); Text("Юниты и крипы").tag("units"); Text("Предметы").tag("items"); Text("Каталог иконок").tag("catalog") }.pickerStyle(.segmented).padding()
-            if tab == "heroes" {
-                HSplitView {
-                    List(selection: $store.selection) { ForEach(store.heroes) { Text($0.hero).tag($0.id) } }.frame(minWidth: 210)
-                    if let hero = store.selected { HeroEditor(store: store, hero: hero) } else { VStack { Image(systemName: "person.3").font(.largeTitle); Text("Нет героев") }.frame(maxWidth: .infinity, maxHeight: .infinity) }
-                }
-            } else if tab == "units" {
-                HSplitView {
-                    List(selection: $unitSelection) { ForEach(store.units) { Text($0.hero).tag($0.id) } }.frame(minWidth: 210)
-                    if let unit = store.units.first(where: { $0.id == unitSelection }) ?? store.units.first {
-                        HeroEditor(store: store, hero: unit)
-                    } else {
-                        VStack { Image(systemName: "pawprint").font(.largeTitle); Text("Нет юнитов") }.frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                }.onAppear { if unitSelection.isEmpty { unitSelection = store.units.first?.id ?? "" } }
-            } else if tab == "items" { ItemEditor(store: store) }
-            else { CatalogView(store: store) }
-            Text(store.status).font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(8).background(.quaternary)
-        }.frame(minWidth: 900, minHeight: 650)
-    }
-}
-
-struct CatalogView: View {
-    @ObservedObject var store: WorkshopStore
-    private let columns = Array(repeating: GridItem(.flexible(minimum: 86), spacing: 10), count: 8)
-    var body: some View {
-        ScrollView {
-            if store.catalogIcons.isEmpty {
-                ContentUnavailableView("Каталог пуст", systemImage: "photo.on.rectangle", description: Text("Поместите PNG или BLP-наборы в assets/icons/catalog/."))
-            } else {
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(store.catalogIcons) { icon in
-                        VStack(spacing: 4) {
-                            if let image = NSImage(contentsOf: icon.url) {
-                                Image(nsImage: image).resizable().interpolation(.none).scaledToFit()
-                                    .frame(width: 64, height: 64).background(.black, in: RoundedRectangle(cornerRadius: 5))
-                            }
-                            Text(icon.title).font(.caption2).lineLimit(2).multilineTextAlignment(.center)
-                        }.help(icon.title)
-                    }
-                }.padding()
+    func scaleRow(_ label: String, value: Binding<Double>, current: Double?, extra: String?) -> some View {
+        HStack {
+            Text(label).frame(width: 110, alignment: .leading).font(.callout)
+            TextField("1.0", value: value, format: .number.precision(.fractionLength(2))).frame(width: 64)
+            Stepper("", value: value, in: 0.1...5.0, step: 0.05).labelsHidden()
+            VStack(alignment: .leading, spacing: 0) {
+                Text("в карте \(current.map { $0.formatted() } ?? "—")").font(.caption2).foregroundStyle(.secondary)
+                if let extra { Text(extra).font(.caption2).foregroundStyle(.secondary) }
             }
         }
     }
 }
 
-@main struct HeroWorkshopUIApp: App { var body: some Scene { WindowGroup { ContentView() } } }
+// MARK: - Items
+
+struct ItemsView: View {
+    @ObservedObject var store: Store
+    @State private var search = ""
+    var items: [Item] {
+        let all = store.state?.items ?? []
+        guard !search.isEmpty else { return all }
+        return all.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.code.localizedCaseInsensitiveContains(search) }
+    }
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                TextField("Поиск предмета или rawcode", text: $search).textFieldStyle(.roundedBorder)
+                Toggle("Серые (DISBTN)", isOn: $store.showDisabled).toggleStyle(.switch).controlSize(.small)
+            }.padding(10)
+            ScrollView {
+                LazyVGrid(columns: Array(repeating: GridItem(.fixed(84), spacing: 6), count: 10), spacing: 10) {
+                    ForEach(items) { item in
+                        IconSlot(store: store, key: "item:\(item.code)", title: item.name, subtitle: "Предмет \(item.code)", icon: item.icon)
+                    }
+                }.padding(10).background(HUD.panel, in: RoundedRectangle(cornerRadius: 12)).padding()
+            }
+        }
+    }
+}
+
+// MARK: - Main window
+
+struct ContentView: View {
+    @StateObject private var store = Store()
+    @State private var tab = "heroes"
+    @State private var selection: String?
+    @State private var search = ""
+
+    var heroes: [Hero] {
+        let all = store.state?.heroes ?? []
+        guard !search.isEmpty else { return all }
+        return all.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.code.localizedCaseInsensitiveContains(search) || ($0.txt_name ?? "").localizedCaseInsensitiveContains(search) }
+    }
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Picker("", selection: $tab) { Text("Герои").tag("heroes"); Text("Предметы").tag("items") }.pickerStyle(.segmented).frame(width: 220)
+                Spacer()
+                Text(store.mapName).font(.caption).foregroundStyle(.secondary)
+                Button { store.refresh() } label: { Image(systemName: "arrow.clockwise") }.disabled(store.busy)
+            }.padding(10)
+            Divider()
+            if tab == "heroes" {
+                HSplitView {
+                    VStack(spacing: 0) {
+                        TextField("Поиск героя", text: $search).textFieldStyle(.roundedBorder).padding(8)
+                        List(selection: $selection) {
+                            ForEach(heroes) { h in
+                                HStack {
+                                    if let url = store.previewURL(h.icon.normal), let img = NSImage(contentsOf: url) {
+                                        Image(nsImage: img).resizable().interpolation(.none).frame(width: 22, height: 22).cornerRadius(3)
+                                    } else { Image(systemName: "person.crop.square").frame(width: 22, height: 22) }
+                                    Text(h.name)
+                                    Spacer()
+                                    if h.saved_scales != nil || h.icon.override != nil || h.abilities.contains(where: { $0.icon.override != nil }) {
+                                        Circle().fill(.green).frame(width: 6, height: 6)
+                                    }
+                                }.tag(h.code)
+                            }
+                        }
+                    }.frame(minWidth: 230, maxWidth: 300)
+                    if let hero = heroes.first(where: { $0.code == selection }) ?? heroes.first {
+                        HeroConsole(store: store, hero: hero).id(hero.code + (store.state?.generated ?? ""))
+                    } else {
+                        VStack { Image(systemName: "person.3").font(.largeTitle); Text(store.busy ? "Читаю карту…" : "Нет героев") }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+            } else {
+                ItemsView(store: store)
+            }
+            Divider()
+            HStack {
+                if store.busy { ProgressView().controlSize(.small) }
+                Text(store.status).font(.footnote).foregroundStyle(.secondary).lineLimit(2).textSelection(.enabled)
+                Spacer()
+            }.padding(8).background(.quaternary)
+        }
+        .frame(minWidth: 1100, minHeight: 720)
+        .onChange(of: store.state?.generated) { _ in if selection == nil { selection = heroes.first?.code } }
+    }
+}
+
+@main struct HeroWorkshopUIApp: App {
+    var body: some Scene { WindowGroup("Hero Workshop") { ContentView() } }
+}

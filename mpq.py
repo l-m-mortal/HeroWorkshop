@@ -203,6 +203,76 @@ class MPQ:
     def list(self):
         return sorted(self.names.values())
 
+    # ---- writing -----------------------------------------------------------
+    def _hash_slot(self, name: str):
+        """Return (index of existing entry for name) or (None, index of first free slot)."""
+        name = name.replace('/', '\\')
+        idx = hash_string(name, 0) & (self.ht_size - 1)
+        a, b = hash_string(name, 1), hash_string(name, 2)
+        start = idx; free = None
+        while True:
+            h1, h2, loc, plat, block = self.hashes[idx]
+            if block == self.HASH_EMPTY:
+                return None, (free if free is not None else idx)
+            if block == self.HASH_DELETED:
+                if free is None: free = idx
+            elif h1 == a and h2 == b:
+                return idx, idx
+            idx = (idx + 1) & (self.ht_size - 1)
+            if idx == start:
+                if free is None: raise ValueError('hash table full')
+                return None, free
+    def _encode(self, data: bytes) -> bytes:
+        n = max(1, (len(data) + self.sector_size - 1) // self.sector_size)
+        sectors = []
+        for i in range(n):
+            chunk = data[i * self.sector_size:(i + 1) * self.sector_size]
+            packed = b'\x02' + zlib.compress(chunk, 9)
+            sectors.append(packed if len(packed) < len(chunk) else chunk)
+        offs = [(n + 1) * 4]
+        for s in sectors: offs.append(offs[-1] + len(s))
+        return struct.pack('<%dI' % (n + 1), *offs) + b''.join(sectors)
+    def save(self, target, changes: dict, update_listfile: bool = True):
+        """Write a new archive with `changes` ({name: bytes to add/replace, or None to delete})."""
+        changes = dict(changes)
+        names = dict(self.names)
+        for name, data in list(changes.items()):
+            key = name.replace('/', '\\').lower()
+            if data is None: names.pop(key, None)
+            else: names[key] = name.replace('/', '\\')
+        if update_listfile:
+            listing = sorted(n for n in names.values() if n.lower() not in ('(listfile)', '(attributes)'))
+            changes['(listfile)'] = ('\r\n'.join(listing) + '\r\n').encode('latin1')
+            changes['(attributes)'] = None
+        hashes = [list(h) for h in self.hashes]
+        blocks = [list(b) for b in self.blocks]
+        data_end = max((b[0] + b[1] for b in blocks if b[3] & 0x80000000), default=self.header_size)
+        out = bytearray(self.data[:self.base + data_end])
+        for name, data in changes.items():
+            existing, slot = self._hash_slot(name)
+            if data is None:
+                if existing is not None: hashes[existing][4] = self.HASH_DELETED
+                continue
+            encoded = self._encode(data)
+            offset = len(out) - self.base
+            out.extend(encoded)
+            entry = [offset, len(encoded), len(data), 0x80000200]
+            if existing is not None:
+                blocks[hashes[existing][4]] = entry
+            else:
+                blocks.append(entry)
+                hashes[slot] = [hash_string(name, 1), hash_string(name, 2), 0, 0, len(blocks) - 1]
+            names[name.lower()] = name
+        htpos = len(out) - self.base
+        raw = b''.join(struct.pack('<IIHHI', *h) for h in hashes)
+        out.extend(encrypt(raw, hash_string('(hash table)', 3)))
+        btpos = len(out) - self.base
+        raw = b''.join(struct.pack('<IIII', *b) for b in blocks)
+        out.extend(encrypt(raw, hash_string('(block table)', 3)))
+        asize = len(out) - self.base
+        struct.pack_into('<4sIIHHIIII', out, self.base, b'MPQ\x1a', 32, asize, 0, (self.sector_size // 512).bit_length() - 1, htpos, btpos, self.ht_size, len(blocks))
+        Path(target).write_bytes(bytes(out))
+
 if __name__ == '__main__':
     import sys
     m = MPQ(sys.argv[1])
