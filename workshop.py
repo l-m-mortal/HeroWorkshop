@@ -416,41 +416,55 @@ class Workshop:
                 if any(s['code'] == code for s in out): continue
                 out.append({'code': code, 'name': self.name(code, 'UnitFunc'), 'units': sold})
         return sorted(out, key=lambda s: s['name'].lower())
+    @staticmethod
+    def item_base_name(name: str) -> str:
+        """'Aghanim's Scepter (Zeus)', 'Diffusal Blade Level 2' -> one family name."""
+        s = re.sub(r'\s*[\(\[].*$', '', name)
+        s = re.sub(r'\s*(level|lvl)\s*\d+\s*$', '', s, flags=re.I)
+        s = re.sub(r'\s*-\s*\d+\s*$', '', s)
+        return s.strip() or name
     def item_list(self):
-        """Items grouped by name. Each group joins the shop entry units (what the
-        shop shows) with the item rawcodes (what the inventory shows): DotA keeps
-        dozens of rawcodes per item, one icon should cover all of them."""
-        data, h, rows = self.items; groups = {}
-        def group(name):
-            return groups.setdefault(name, {'name': name, 'codes': [], 'shop_units': [], 'icon': None, 'icon_item': None, 'arts': {}})
+        """Items grouped into families by base name (all Aghanim's Scepters are one
+        family). A family joins its shop entry units (what the shop shows) with its
+        item rawcodes (what the inventory shows) and lists variants by distinct icon."""
+        data, h, rows = self.items; fam = {}
+        def family(base):
+            return fam.setdefault(base, {'name': base, 'names': [], 'codes': [], 'shop_units': [], 'variants': {}, 'icon': None, 'icon_item': None})
         for code, r in rows.items():
             name = self.name(code, 'ItemFunc')
             if name == code: continue
-            g = group(name); g['codes'].append(code)
+            g = family(self.item_base_name(name)); g['codes'].append(code)
+            if name not in g['names']: g['names'].append(name)
             info = self.icon_info('item:' + code)
-            if info['art']:
-                g['arts'][info['art']] = g['arts'].get(info['art'], 0) + 1
-                if g['icon_item'] is None or (g['icon_item']['normal']['where'] in ('none', 'standard') and info['normal']['where'] in ('map', 'disk')):
-                    g['icon_item'] = info
-        by_norm = {norm(n): n for n in groups}
+            v = g['variants'].setdefault(info['art'] or '', {'art': info['art'], 'names': [], 'codes': [], 'icon': info})
+            v['codes'].append(code)
+            if name not in v['names']: v['names'].append(name)
+            if info['art'] and (g['icon_item'] is None or (g['icon_item']['normal']['where'] in ('none', 'standard') and info['normal']['where'] in ('map', 'disk'))):
+                g['icon_item'] = info
+        by_norm = {norm(n): n for n in fam}
         for shop in self.shops():
             for i, u in enumerate(shop['units']):
-                uname = self.name(u, 'UnitFunc'); key = norm(uname)
-                name = by_norm.get(key) or next((n for k, n in by_norm.items() if k.startswith(key) and len(key) >= 5), None) or uname
-                g = group(name)
+                uname = self.name(u, 'UnitFunc'); key = norm(self.item_base_name(uname))
+                base = by_norm.get(key) or next((n for k, n in by_norm.items() if k.startswith(key) and len(key) >= 5), None) or self.item_base_name(uname)
+                g = family(base)
                 info = self.icon_info('unit:' + u)
                 g['shop_units'].append({'code': u, 'shop': shop['code'], 'shop_name': shop['name'], 'index': i, 'buttonpos': self.xy(u, 'Buttonpos'), 'icon': info})
                 if g['icon'] is None and info['art']: g['icon'] = info
         out = []
-        for g in groups.values():
-            if g['icon'] is None: g['icon'] = g['icon_item'] or self.icon_info('item:' + (g['codes'] or ['----'])[0])
-            if g['icon_item'] is None and g['codes']: g['icon_item'] = self.icon_info('item:' + g['codes'][0])
+        for g in fam.values():
+            variants = [v for v in g['variants'].values() if v['art']]
+            for v in variants:
+                v['label'] = ', '.join(v['names'][:3]) + (' …' if len(v['names']) > 3 else '')
+                v['keys'] = ','.join('item:' + c for c in v['codes'])
+            g['variants'] = sorted(variants, key=lambda v: (v['icon']['normal']['where'] in ('none', 'standard'), v['label']))
+            if g['icon_item'] is None: g['icon_item'] = self.icon_info('item:' + g['codes'][0]) if g['codes'] else None
+            if g['icon'] is None: g['icon'] = g['icon_item'] or self.icon_info('item:----')
             g['code'] = g['codes'][0] if g['codes'] else None
-            g['count'] = len(g['codes']); g['distinct_arts'] = len(g['arts'])
+            g['count'] = len(g['codes']); g['distinct_arts'] = len(variants)
             keys = ['unit:' + s['code'] for s in g['shop_units'] if s['icon']['art']] + ['item:' + c for c in g['codes'] if self.art_of('item:' + c)[1]]
             g['keys'] = ','.join(keys)
             g['in_shops'] = sorted({s['shop_name'] for s in g['shop_units']})
-            del g['arts']; out.append(g)
+            out.append(g)
         return sorted(out, key=lambda x: x['name'].lower())
     # ---- previews
     def preview(self, key: str, res: dict, suffix: str) -> str | None:
@@ -486,6 +500,7 @@ class Workshop:
                 self.with_previews('item:' + (it['code'] or 'none'), it['icon'])
                 if it['icon_item']: self.with_previews('item:' + (it['code'] or 'none'), it['icon_item'])
                 for s in it['shop_units']: self.with_previews('unit:' + s['code'], s['icon'])
+                for v in it['variants']: self.with_previews('item:' + v['codes'][0], v['icon'])
         out = {'map': str(MAP), 'game_root': str(GAME), 'generated': time.strftime('%Y-%m-%d %H:%M:%S'),
                'work_dir': str(WORK), 'heroes': heroes, 'items': items, 'shops': self.shops()}
         WORK.mkdir(parents=True, exist_ok=True)
