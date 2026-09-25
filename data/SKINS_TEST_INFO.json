@@ -1,0 +1,77 @@
+{
+  "primary_models": {
+    "Harf": "WC3Dota2Test\\Skins\\Omniknight\\OmniFinalReduceAndreariona",
+    "Ewar": "WC3Dota2Test\\Skins\\Phantom_Assassin\\MortredFinalReduceAndreariona",
+    "N0EG": "WC3Dota2Test\\Skins\\Windranger\\LyraleiFinalReduceAndreariona",
+    "UC42": "WC3Dota2Test\\Skins\\Doom\\DoomFinalReduceAndreariona",
+    "UC76": "WC3Dota2Test\\Skins\\Death_Prophet\\KrobelusFinalReduceAndreariona",
+    "Ulic": "WC3Dota2Test\\Skins\\Lich\\LichFinalReduceAndreariona",
+    "H001": "WC3Dota2Test\\Skins\\Sven\\SvenFinalReduceAndrea",
+    "UC01": "WC3Dota2Test\\Skins\\Queen_of_Pain\\AkashaFinalReduceAndreariona",
+    "Hjai": "WC3Dota2Test\\Skins\\Crystal_Maiden\\RylaiFinalReduceAndreariona",
+    "Nbbc": "WC3Dota2Test\\Skins\\Juggernaut\\JuggernautFinalReduceAndreariona",
+    "H004": "WC3Dota2Test\\Skins\\Lina\\LinaFinalReduceAndreariona",
+    "n00L": "WC3Dota2Test\\Skins\\Roshan\\RoshanFinalReduceAndreariona",
+    "Ofar": "WC3Dota2Test\\Skins\\Tidehunter\\TidehunterFinalReduceAndreariona",
+    "Opgh": "WC3Dota2Test\\Skins\\Axe\\AxeFinalReduce-Andreariona",
+    "Edem": "WC3Dota2Test\\Defaults\\AntiMage\\HeroDemonHunter",
+    "N0HP": "WC3Dota2Test\\Defaults\\AncientApparition\\IcyGhost",
+    "Udea": "WC3Dota2Test\\Defaults\\Abaddon\\HeroDeathKnight",
+    "H071": "WC3Dota2Test\\Fixes\\Slark\\MurlocNightCrawler_V1",
+    "H00Q": "WC3Dota2Test\\Fixes\\Huskar\\Headhunter_V1",
+    "TX24": "WC3Dota2Test\\units\\human\\Sorceress\\Sorceress",
+    "TX26": "WC3Dota2Test\\units\\demon\\ChaosHellscream\\ChaosHellscream",
+    "TX32": "WC3Dota2Test\\units\\demon\\DoomGuard\\DoomGuard",
+    "TX34": "WC3Dota2Test\\units\\nightelf\\HeroDemonHunter\\HeroDemonHunter"
+  },
+  "active_alternatives": {
+    "H004": "TX24",
+    "Opgh": "TX26",
+    "UC42": "TX32",
+    "Edem": "TX34",
+    "Ewar": "TX23",
+    "UC76": "TX25",
+    "Ulic": "TX27"
+  },
+  "hero_icons": {
+    "Omniknight": "WC3Dota2Test\\Icons\\Omniknight\\BTNHero-Omniknight.blp",
+    "Phantom_Assassin": "WC3Dota2Test\\Icons\\Phantom_Assassin\\BTNHero-PhantomAssassin.blp",
+    "Windranger": "WC3Dota2Test\\Icons\\Windranger\\BTNHero-Windrunner.blp",
+    "Doom": "WC3Dota2Test\\Icons\\Doom\\BTNHero-Doom.blp",
+    "Death_Prophet": "WC3Dota2Test\\Icons\\Death_Prophet\\BTNHero-DeathProphet.blp",
+    "Lich": "WC3Dota2Test\\Icons\\Lich\\BTNHero-Lich.blp",
+    "Sven": "WC3Dota2Test\\Icons\\Sven\\BTNHero-Sven.blp",
+    "Queen_of_Pain": "WC3Dota2Test\\Icons\\Queen_of_Pain\\BTNHero-QueenofPain.blp",
+    "Crystal_Maiden": "WC3Dota2Test\\Icons\\Crystal_Maiden\\BTNHero-CrystalMaiden.blp",
+    "Juggernaut": "WC3Dota2Test\\Icons\\Juggernaut\\BTNHero-Juggernaut.blp",
+    "Lina": "WC3Dota2Test\\Icons\\Lina\\BTNHero-Lina.blp",
+    "Roshan": "WC3Dota2Test\\Icons\\Roshan\\BTNHero-Roshan.blp",
+    "Tidehunter": "WC3Dota2Test\\Icons\\Tidehunter\\BTNTidehunter.blp",
+    "Axe": "WC3Dota2Test\\Icons\\Axe\\BTNAxe.blp"
+  },
+  "copied_assets": 129,
+  "patched_model_references": 115,
+  "capacity_failures": [],
+  "reviewed_primary_models": [
+    "Omniknight",
+    "Phantom Assassin",
+    "Windranger",
+    "Death Prophet",
+    "Queen of Pain",
+    "Lich",
+    "Tidehunter",
+    "Roshan",
+    "Anti-Mage",
+    "Abaddon",
+    "Ancient Apparition"
+  ],
+  "discarded_legacy_alternatives": [
+    "Omniknight",
+    "Windranger",
+    "Queen of Pain",
+    "Tidehunter"
+  ],
+  "portrait_adjustments": {
+    "Tidehunter": "Hero Clash model with camera from previous Dota portrait"
+  }
+}

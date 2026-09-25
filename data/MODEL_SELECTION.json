@@ -1,0 +1,786 @@
+[
+  {
+    "hero": "Vengeful Spirit",
+    "rawcode": "Hvwd",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\VENGE\\Venge",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\Vengeance\\Vengeance",
+    "alternative_rawcode": "S009"
+  },
+  {
+    "hero": "Zeus",
+    "rawcode": "Hmbr",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\ZEUS\\Zeus",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Enchantress",
+    "rawcode": "Emoo",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\ENCHANT\\Enchant",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\Dryad\\Dryad",
+    "alternative_rawcode": "S010"
+  },
+  {
+    "hero": "Morphling",
+    "rawcode": "O00P",
+    "primary": "WC3Dota2Test\\Units\\Creeps\\SeaElemental\\SeaElemental",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Crystal Maiden",
+    "rawcode": "Hjai",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\Maiden\\Maiden",
+    "alternative": "WC3Dota2Test\\Units\\Human\\Jaina\\Jaina",
+    "alternative_rawcode": "S005"
+  },
+  {
+    "hero": "Sven",
+    "rawcode": "H001",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\SVEN\\Sven",
+    "alternative": "WC3WardotaTest\\Units\\Demon\\FelgaurdBlue\\FelgaurdBlue",
+    "alternative_rawcode": "S003"
+  },
+  {
+    "hero": "Naga Siren",
+    "rawcode": "HC49",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\SIRENA\\Sirena",
+    "alternative": "WC3Dota2Test\\Units\\Naga\\NagaSiren\\NagaSiren",
+    "alternative_rawcode": "S012"
+  },
+  {
+    "hero": "Earthshaker",
+    "rawcode": "Otch",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\SHAKER\\Shaker",
+    "alternative": "WC3Dota2Test\\Units\\Orc\\Tauren\\Tauren",
+    "alternative_rawcode": "S011"
+  },
+  {
+    "hero": "Riki",
+    "rawcode": "HC92",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\Riki\\Riki",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Lone Druid",
+    "rawcode": "N01O",
+    "primary": "WC3Dota2Test\\Units\\NightElf\\DruidoftheClaw\\DruidOfTheClaw",
+    "alternative": "WC3WardotaTest\\Units\\NightElf\\DruidoftheClaw\\DruidoftheClaw",
+    "alternative_rawcode": "S056"
+  },
+  {
+    "hero": "Lina",
+    "rawcode": "H004",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\LINA\\Lina",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Juggernaut",
+    "rawcode": "Nbbc",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\YURNERO\\Yurnero",
+    "alternative": "WC3WardotaTest\\Units\\Demon\\HeroChaosBladeMaster\\HeroChaosBladeMaster",
+    "alternative_rawcode": "S006"
+  },
+  {
+    "hero": "Silencer",
+    "rawcode": "N01A",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\SILENCER\\Silencer",
+    "alternative": "WC3Dota2Test\\Units\\Human\\BloodElfSpellThief\\BloodElfSpellThief",
+    "alternative_rawcode": "S013"
+  },
+  {
+    "hero": "Treant Protector",
+    "rawcode": "Hamg",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\ROOF\\Roof",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Elder Titan",
+    "rawcode": "O015",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\ELDERTITAN\\ElderTitan",
+    "alternative": "WC3Dota2Test\\Units\\Orc\\HeroTaurenChieftain\\HeroTaurenChieftain",
+    "alternative_rawcode": "S014"
+  },
+  {
+    "hero": "Keeper of the Light",
+    "rawcode": "Hblm",
+    "primary": "WC3WardotaTest\\Units\\Human\\HeroArchMage\\HeroArchMage",
+    "alternative": "WC3Dota2Test\\Units\\Human\\HeroArchMage\\HeroArchMage",
+    "alternative_rawcode": "S015"
+  },
+  {
+    "hero": "Ursa",
+    "rawcode": "Huth",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\FurbolgTracker\\FurbolgTracker",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\FurbolgTracker\\FurbolgTracker",
+    "alternative_rawcode": "S016"
+  },
+  {
+    "hero": "Ogre Magi",
+    "rawcode": "Hmkg",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\OGREMAGIC\\OgreMagic",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Tinker",
+    "rawcode": "Ntin",
+    "primary": "WC3WardotaTest\\Units\\Custom\\HeroTinker\\HeroTinker",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\HeroTinker\\HeroTinker",
+    "alternative_rawcode": "S019"
+  },
+  {
+    "hero": "Nature's Prophet",
+    "rawcode": "Emns",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\FURION\\Furion",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\Malfurion\\MalFurionNoStag",
+    "alternative_rawcode": "S020"
+  },
+  {
+    "hero": "Phantom Lancer",
+    "rawcode": "Ogrh",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\PhantomLancer\\PhantomLancer",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\PL\\PL",
+    "alternative_rawcode": "S021"
+  },
+  {
+    "hero": "Tiny",
+    "rawcode": "Ucrl",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\TINY\\Tiny",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Techies",
+    "rawcode": "H00K",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\GoblinSapper\\GoblinSapper",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\goblinsapper\\goblinsapper",
+    "alternative_rawcode": "S022"
+  },
+  {
+    "hero": "Chen",
+    "rawcode": "H00A",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\CHEN\\Chen",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Luna",
+    "rawcode": "E005",
+    "primary": "WC3WardotaTest\\Units\\NightElf\\Huntress\\Huntress",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\Huntress\\Huntress",
+    "alternative_rawcode": "S023"
+  },
+  {
+    "hero": "Sniper",
+    "rawcode": "Usyl",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\SNIPER\\Sniper",
+    "alternative": "WC3Dota2Test\\Units\\Human\\Rifleman\\Rifleman",
+    "alternative_rawcode": "S008"
+  },
+  {
+    "hero": "Troll Warlord",
+    "rawcode": "N016",
+    "primary": "WC3WardotaTest\\Units\\Custom\\Troll\\TrollR",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\Troll\\TrollR",
+    "alternative_rawcode": "S024"
+  },
+  {
+    "hero": "Shadow Shaman",
+    "rawcode": "Orkn",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\RHASTA\\Rhasta",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Io",
+    "rawcode": "O01F",
+    "primary": "WC3WardotaTest\\Units\\Custom\\Wisp\\Wisp",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Brewmaster",
+    "rawcode": "Npbm",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\BREW\\Brew",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\PandarenBrewmaster\\PandarenBrewmaster",
+    "alternative_rawcode": "S025"
+  },
+  {
+    "hero": "Centaur Warrunner",
+    "rawcode": "H000",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\CENTA\\centa",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\CentaurKhan\\CentaurKhan",
+    "alternative_rawcode": "S026"
+  },
+  {
+    "hero": "Bounty Hunter",
+    "rawcode": "Naka",
+    "primary": "WC3WardotaTest\\Units\\Custom\\Gondar\\Gondar",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Dragon Knight",
+    "rawcode": "Hlgr",
+    "primary": "WC3Dota2Test\\Units\\Human\\TheCaptain\\TheCaptain",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Anti-Mage",
+    "rawcode": "Edem",
+    "primary": "WC3WardotaTest\\Units\\NightElf\\HeroDemonHunter\\HeroDemonHunter",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Drow Ranger",
+    "rawcode": "Nbrn",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\TRAX\\Trax",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\BansheeRanger\\BansheeRanger",
+    "alternative_rawcode": "S039"
+  },
+  {
+    "hero": "Omniknight",
+    "rawcode": "Harf",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\OMNI\\Omni",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Beastmaster",
+    "rawcode": "H00D",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\REXAR\\Rexar",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\Beastmaster\\BeastMaster",
+    "alternative_rawcode": "S028"
+  },
+  {
+    "hero": "Jakiro",
+    "rawcode": "E00P",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\JAKIRO\\jakiro",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Alchemist",
+    "rawcode": "N01I",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\ALCHEMIST\\Alchemist",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Mirana",
+    "rawcode": "N01V",
+    "primary": "WC3WardotaTest\\Units\\NightElf\\HeroMoonPriestess\\HeroMoonPriestess",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\HeroMoonPriestess\\HeroMoonPriestess",
+    "alternative_rawcode": "S029"
+  },
+  {
+    "hero": "Storm Spirit",
+    "rawcode": "H00S",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\STORM\\Storm",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Huskar",
+    "rawcode": "H00Q",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\HUSKAR\\Huskar",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Templar Assassin",
+    "rawcode": "E01Y",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\Templar\\Templar",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\Assassin\\Assassin",
+    "alternative_rawcode": "S030"
+  },
+  {
+    "hero": "Puck",
+    "rawcode": "N00B",
+    "primary": "WC3WardotaTest\\Units\\Custom\\Puck\\puck",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\Puck\\Puck",
+    "alternative_rawcode": "S031"
+  },
+  {
+    "hero": "Clockwerk",
+    "rawcode": "H00T",
+    "primary": "WC3WardotaTest\\Units\\Custom\\Clockwerk\\Clockwerk",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Kunkka",
+    "rawcode": "H06S",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\KUNKA\\kunka",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Windranger",
+    "rawcode": "N0EG",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\SylvanusWindrunner\\SylvanusWindrunner",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\SylvanusWindrunner\\SylvanusWindrunner",
+    "alternative_rawcode": "S032"
+  },
+  {
+    "hero": "Gyrocopter",
+    "rawcode": "E02N",
+    "primary": "WC3WardotaTest\\Units\\Human\\Gyrocopter\\Gyrocopter_V1",
+    "alternative": "WC3Dota2Test\\Units\\Human\\Gyrocopter\\Gyrocopter_V1",
+    "alternative_rawcode": "S007"
+  },
+  {
+    "hero": "Disruptor",
+    "rawcode": "E02J",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\TRALL\\Trall",
+    "alternative": "WC3Dota2Test\\Units\\Orc\\Thrall\\Thrall",
+    "alternative_rawcode": "S034"
+  },
+  {
+    "hero": "Tusk",
+    "rawcode": "E02I",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\TUSKAR\\Tuskar",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\TuskarLord\\TuskarLord",
+    "alternative_rawcode": "S033"
+  },
+  {
+    "hero": "Phoenix",
+    "rawcode": "E02F",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\FENIX\\Fenix",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Bristleback",
+    "rawcode": "H008",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\BRIST\\Brist",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Rubick",
+    "rawcode": "E02X",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\RUBICK\\Rubick",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\Medivh\\Medivh",
+    "alternative_rawcode": "S035"
+  },
+  {
+    "hero": "Ember Spirit",
+    "rawcode": "N0M0",
+    "primary": "WC3Dota2Test\\Units\\Custom\\Xin\\Xin",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Legion Commander",
+    "rawcode": "E02K",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\LEGION\\Legion",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\LordGarithos\\LordGarithos",
+    "alternative_rawcode": "S036"
+  },
+  {
+    "hero": "Skywrath Mage",
+    "rawcode": "H0DO",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\WindSerpent\\WindSerpent",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\WindSerpent\\WindSerpent",
+    "alternative_rawcode": "S037"
+  },
+  {
+    "hero": "Timbersaw",
+    "rawcode": "E032",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\TIMBER\\Timber",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Earth Spirit",
+    "rawcode": "N0MU",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\EARTH\\Earth",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\EarthPandarenBrewmaster\\EarthPandarenBrewmaster",
+    "alternative_rawcode": "S038"
+  },
+  {
+    "hero": "Oracle",
+    "rawcode": "N0MD",
+    "primary": "WC3Dota2Test\\Units\\Custom\\Priest\\Priest_V1",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Phantom Assassin",
+    "rawcode": "Ewar",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\Mortred\\Mortred",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\HeroWarden\\HeroWarden",
+    "alternative_rawcode": "S017"
+  },
+  {
+    "hero": "Medusa",
+    "rawcode": "H00V",
+    "primary": "WC3WardotaTest\\Units\\Naga\\LadyVashj\\LadyVashj",
+    "alternative": "WC3Dota2Test\\Units\\Naga\\LadyVashj\\LadyVashj",
+    "alternative_rawcode": "S040"
+  },
+  {
+    "hero": "Night Stalker",
+    "rawcode": "Udre",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\BALANAR\\Balanar",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Wraith King",
+    "rawcode": "NC00",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\LEORIC\\Leoric",
+    "alternative": "WC3Dota2Test\\Units\\Undead\\Skeleton\\Skeleton",
+    "alternative_rawcode": "S041"
+  },
+  {
+    "hero": "Doom",
+    "rawcode": "UC42",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\LUCI\\Luci",
+    "alternative": "WC3Dota2Test\\Units\\Demon\\DoomGuard\\DoomGuard",
+    "alternative_rawcode": "S004"
+  },
+  {
+    "hero": "Nyx Assassin",
+    "rawcode": "U000",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\NYX\\Nyx",
+    "alternative": "WC3WardotaTest\\Units\\Undead\\HeroCryptLord\\HeroCryptLord",
+    "alternative_rawcode": "S057"
+  },
+  {
+    "hero": "Slardar",
+    "rawcode": "UC91",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\SLARDAR\\slardar",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Queen of Pain",
+    "rawcode": "UC01",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\AKASHA\\Akasha",
+    "alternative": "WC3Dota2Test\\Units\\Demon\\DemonessBlue\\DemonessBlue",
+    "alternative_rawcode": "S042"
+  },
+  {
+    "hero": "Clinkz",
+    "rawcode": "E004",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\BurningArcher\\BurningArcher",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\BurningArcher\\BurningArcher",
+    "alternative_rawcode": "S044"
+  },
+  {
+    "hero": "Faceless Void",
+    "rawcode": "EC45",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\FacelessOne\\FacelessOne",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Viper",
+    "rawcode": "EC77",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\NetherDragon\\NetherDragon",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\NetherDragon\\NetherDragon",
+    "alternative_rawcode": "S043"
+  },
+  {
+    "hero": "Razor",
+    "rawcode": "E002",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\RAZOR\\Razor",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Lifestealer",
+    "rawcode": "U00C",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\NAIX\\Naix",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Pugna",
+    "rawcode": "H00H",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\PUGNA\\pugna",
+    "alternative": "WC3Dota2Test\\Units\\Undead\\SkeletonMage\\SkeletonMage",
+    "alternative_rawcode": "S045"
+  },
+  {
+    "hero": "Tidehunter",
+    "rawcode": "Ofar",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\TIDE\\Tide",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Bane",
+    "rawcode": "Oshd",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\Bane\\Bane",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\VoidWalker\\VoidWalker",
+    "alternative_rawcode": "S054"
+  },
+  {
+    "hero": "Necrophos",
+    "rawcode": "U00E",
+    "primary": "WC3WardotaTest\\Units\\Undead\\KelthuzadGhost\\KelThuzadGhost",
+    "alternative": "WC3Dota2Test\\Units\\Undead\\KelthuzadGhost\\KelthuzadGhost",
+    "alternative_rawcode": "S055"
+  },
+  {
+    "hero": "Pudge",
+    "rawcode": "U00F",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\PUDGE\\Pudge",
+    "alternative": "WC3Dota2Test\\Units\\Undead\\Abomination\\Abomination",
+    "alternative_rawcode": "S018"
+  },
+  {
+    "hero": "Spirit Breaker",
+    "rawcode": "O00J",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\BARA\\Bara",
+    "alternative": "WC3Dota2Test\\Units\\Orc\\Spiritwalker\\SpiritWalker",
+    "alternative_rawcode": "S063"
+  },
+  {
+    "hero": "Weaver",
+    "rawcode": "Ubal",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\NerubianQueen\\NerubianQueen",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Shadow Fiend",
+    "rawcode": "Nfir",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\SHADOWFIEND\\ShadowFiend",
+    "alternative": "WC3WardotaTest\\Units\\Custom\\HeroFlameLord\\HeroFlameLord",
+    "alternative_rawcode": "S058"
+  },
+  {
+    "hero": "Sand King",
+    "rawcode": "U00K",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\SANDKING\\SandKing",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\ArchnathidGreen\\ArchnathidGreen",
+    "alternative_rawcode": "S046"
+  },
+  {
+    "hero": "Axe",
+    "rawcode": "Opgh",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\AXE\\axe",
+    "alternative": "WC3WardotaTest\\Units\\Demon\\ChaosHellscream\\ChaosHellscream",
+    "alternative_rawcode": "S001"
+  },
+  {
+    "hero": "Bloodseeker",
+    "rawcode": "Hvsh",
+    "primary": "WC3WardotaTest\\Units\\Orc\\Shaman\\Shaman",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Abaddon",
+    "rawcode": "Udea",
+    "primary": "WC3Dota2Test\\Defaults\\Abaddon\\HeroDeathKnight",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Spectre",
+    "rawcode": "E01B",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\AGILIDAD\\MERCU\\Mercu",
+    "alternative": "WC3WardotaTest\\Units\\Custom\\Spectre\\Spectre",
+    "alternative_rawcode": "S059"
+  },
+  {
+    "hero": "Witch Doctor",
+    "rawcode": "E01A",
+    "primary": "WC3Dota2Test\\Units\\Orc\\WitchDoctor\\WitchDoctor",
+    "alternative": "WC3WardotaTest\\Units\\Orc\\WitchDoctor\\WitchDoctor",
+    "alternative_rawcode": "S060"
+  },
+  {
+    "hero": "Outworld Devourer",
+    "rawcode": "U00P",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\OD\\OD",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Warlock",
+    "rawcode": "E01C",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\WARLOCK\\Warlock",
+    "alternative": "WC3Dota2Test\\Units\\Orc\\OrcWarlockGuldan\\OrcWarlockGuldan",
+    "alternative_rawcode": "S047"
+  },
+  {
+    "hero": "Meepo",
+    "rawcode": "H00I",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\KoboldGeomancer\\KoboldGeomancer",
+    "alternative": "WC3Dota2Test\\Units\\Creeps\\KoboldGeomancer\\KoboldGeomancer",
+    "alternative_rawcode": "S048"
+  },
+  {
+    "hero": "Dazzle",
+    "rawcode": "N01W",
+    "primary": "WC3Dota2Test\\Units\\Creeps\\DarkTrollShadowPriest\\DarkTrollShadowPriest",
+    "alternative": "WC3WardotaTest\\Units\\Creeps\\DarkTrollShadowPriest\\DarkTrollShadowPriest",
+    "alternative_rawcode": "S061"
+  },
+  {
+    "hero": "Underlord",
+    "rawcode": "N00R",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\UNDER\\Under",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Undying",
+    "rawcode": "H00R",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\UNDING\\Unding",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Dark Seer",
+    "rawcode": "H00N",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\DARKSER\\Darkser",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Invoker",
+    "rawcode": "H00U",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\INVOKER\\invoker",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Enigma",
+    "rawcode": "Uktl",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\ENIGMA\\Enigma",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Batrider",
+    "rawcode": "O016",
+    "primary": "WC3WardotaTest\\Units\\Orc\\BatTroll\\BatTroll",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Ancient Apparition",
+    "rawcode": "N0HP",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\ANCIENT\\Ancient",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\IcyGhost\\IcyGhost",
+    "alternative_rawcode": "S002"
+  },
+  {
+    "hero": "Slark",
+    "rawcode": "H071",
+    "primary": "WC3Dota2Test\\Fixes\\Slark\\MurlocNightCrawler_V1",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Terrorblade",
+    "rawcode": "Eevi",
+    "primary": "WC3WardotaTest\\Units\\NightElf\\EvilIllidan\\IllidanEvil",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\EvilIllidan\\IllidanEvil",
+    "alternative_rawcode": "S027"
+  },
+  {
+    "hero": "Leshrac",
+    "rawcode": "Ekee",
+    "primary": "WC3WardotaTest\\Units\\NightElf\\HeroKeeperoftheGroveGhost\\HeroKeeperoftheGroveGhost",
+    "alternative": "WC3Dota2Test\\Units\\NightElf\\HeroKeeperoftheGroveGhost\\HeroKeeperoftheGroveGhost",
+    "alternative_rawcode": "S049"
+  },
+  {
+    "hero": "Shadow Demon",
+    "rawcode": "E02H",
+    "primary": "WC3WardotaTest\\Units\\Demon\\Warlock\\Warlock",
+    "alternative": "WC3Dota2Test\\Units\\Demon\\Warlock\\Warlock",
+    "alternative_rawcode": "S050"
+  },
+  {
+    "hero": "Lich",
+    "rawcode": "Ulic",
+    "primary": "WC3WardotaTest\\Units\\Custom\\Lich\\Lich",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\Lich\\Lich",
+    "alternative_rawcode": "S051"
+  },
+  {
+    "hero": "Death Prophet",
+    "rawcode": "UC76",
+    "primary": "WC3Dota2Test\\Skins\\Death_Prophet\\KrobelusFinalReduceAndreariona",
+    "alternative": "WC3Dota2Test\\Units\\Custom\\Banshee\\Banshee",
+    "alternative_rawcode": "S064"
+  },
+  {
+    "hero": "Lion",
+    "rawcode": "UC18",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\INTELIGENCIA\\LION\\Lion",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Venomancer",
+    "rawcode": "EC57",
+    "primary": "WC3Dota2Test\\Units\\Critters\\Hydralisk\\Hydralisk",
+    "alternative": "WC3WardotaTest\\Units\\Critters\\Hydralisk\\Hydralisk",
+    "alternative_rawcode": "S062"
+  },
+  {
+    "hero": "Magnus",
+    "rawcode": "UC11",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\MAGNUS\\magnus",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Visage",
+    "rawcode": "UC60",
+    "primary": "WC3WardotaTest\\Units\\Orc\\SpiritWyvern\\SpiritWyvern",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Chaos Knight",
+    "rawcode": "U00A",
+    "primary": "WC3WardotaTest\\Units\\Demon\\ChaosWarlord\\ChaosWarlord",
+    "alternative": "WC3Dota2Test\\Units\\Demon\\ChaosWarlord\\ChaosWarlord",
+    "alternative_rawcode": "S052"
+  },
+  {
+    "hero": "Winter Wyvern",
+    "rawcode": "N0M7",
+    "primary": "WC3Dota2Test\\Units\\Undead\\FrostWyrm\\FrostWyrm",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Arc Warden",
+    "rawcode": "N0MK",
+    "primary": "WC3Dota2Test\\Units\\Creeps\\GnollWarden\\GnollWarden",
+    "alternative": null,
+    "alternative_rawcode": null
+  },
+  {
+    "hero": "Lycan",
+    "rawcode": "U008",
+    "primary": "WC3Dota2Test\\UpdateSkins\\GameRoot\\HEROESD2\\FUERZA\\LYCAN\\Lycan",
+    "alternative": "WC3Dota2Test\\Units\\Demon\\Kiljaeden\\Kiljaeden",
+    "alternative_rawcode": "S053"
+  },
+  {
+    "hero": "Broodmother",
+    "rawcode": "U006",
+    "primary": "WC3WardotaTest\\Units\\Creeps\\SpiderBlack\\SpiderBlack",
+    "alternative": null,
+    "alternative_rawcode": null
+  }
+]

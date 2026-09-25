@@ -1,0 +1,6 @@
+Target dependency graph (3 targets)
+Target 'AllExcludingTests' in project 'Aggregate'
+➜ Explicit dependency on target 'HeroWorkshopUI-product' in project 'HeroWorkshopUI'
+➜ Explicit dependency on target 'HeroWorkshopUI' in project 'HeroWorkshopUI'
+Target 'HeroWorkshopUI' in project 'HeroWorkshopUI' (no dependencies)
+Target 'HeroWorkshopUI-product' in project 'HeroWorkshopUI' (no dependencies)

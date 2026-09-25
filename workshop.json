@@ -1,0 +1,7 @@
+{
+  "map_relative_to_game": "Maps/Downloads/D85 06 DotaHQv5.w3x",
+  "icon_root": "assets/icons",
+  "workspace": "../../Workspaces/Dota2",
+  "selection": "data/MODEL_SELECTION.json",
+  "skins": "data/SKINS_TEST_INFO.json"
+}

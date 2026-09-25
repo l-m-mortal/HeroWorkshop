@@ -1,0 +1,7 @@
+{
+  "game_root": "/absolute/path/to/Warcraft III",
+  "map": "/absolute/path/to/Maps/Downloads/D85 06 DotaHQv5.w3x",
+  "icon_root": "assets/icons",
+  "workspace": "/absolute/path/to/Dota Mod Project/Workspaces/Dota2",
+  "icon_audit": "/optional/path/to/Icon Audit/Heroes"
+}

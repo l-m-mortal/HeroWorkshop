@@ -1,0 +1,4 @@
+module HeroWorkshopUI {
+header "HeroWorkshopUI-Swift.h"
+export *
+}
