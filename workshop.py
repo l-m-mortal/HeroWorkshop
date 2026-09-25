@@ -52,6 +52,8 @@ STATE_DIR = ROOT / 'state' / re.sub(r'[^A-Za-z0-9_.-]+', '_', MAP.stem)
 BACKUPS = Path(_setting('HERO_WORKSHOP_BACKUPS', 'backups', GAME / 'Dota Mod Project/Archives/HeroWorkshop/Backups/HeroWorkshop'))
 TRASH = Path(_setting('HERO_WORKSHOP_TRASH', 'trash', GAME / 'Dota Mod Project/Archives/HeroWorkshop/Trash'))
 SELECTION = ROOT / 'data' / 'MODEL_SELECTION.json'
+DOTA2_REF = ROOT / 'data' / 'dota2_reference.json'
+HERO_ALIASES = ROOT / 'data' / 'hero_aliases.json'
 INVENTORY = ROOT / 'HeroWorkshop_inventory' / 'manifest.json.gz'
 MOD_PREFIX = re.compile(r'^WC3\w*Test\\', re.I)
 KEEP_BACKUPS = int(_setting('HERO_WORKSHOP_KEEP_BACKUPS', 'keep_backups', 10))
@@ -60,6 +62,9 @@ BACKUP_INTERVAL = 30 * 60  # seconds: consecutive edits share one backup
 def die(msg): raise SystemExit('ERROR: ' + msg)
 
 # ------------------------------------------------------------ text tables --
+def norm(s: str) -> str:
+    return re.sub(r'[^a-z0-9]', '', (s or '').lower())
+
 def strip_color(s: str) -> str:
     return re.sub(r'\|c[0-9a-fA-F]{8}|\|r', '', s).strip().strip('"')
 
@@ -145,6 +150,12 @@ class Workshop:
         self._inventory = None
         self._sample_index = None
         self._backed_up = False
+        self.dota2 = json.loads(DOTA2_REF.read_text()) if DOTA2_REF.exists() else {'heroes': {}, 'items': {}}
+        self.aliases = json.loads(HERO_ALIASES.read_text()).get('aliases', {}) if HERO_ALIASES.exists() else {}
+        self._d2_by_name = {norm(v['name']): k for k, v in self.dota2['heroes'].items()}
+        self._ability_index = None
+        self._groups = None
+        self._claimed = None
 
     # ---- lookups
     def txt_value(self, code: str, key: str, prefer: str):
@@ -242,6 +253,9 @@ class Workshop:
     def hero_groups(self):
         """Primary heroes (P3 table / model selection) and their form variants.
         A unit is a variant of a hero when it shares the hero's name or model."""
+        if self._groups is None: self._groups = self._hero_groups()
+        return self._groups
+    def _hero_groups(self):
         primary = [c for c in list(self.p3) + list(self.selection) if c in self.unit_ui[2]]
         primary = list(dict.fromkeys(primary))
         by_name = {}; by_model = {}
@@ -324,20 +338,71 @@ class Workshop:
             for u in self.summoned_by(a['code']): add(u, f'призыв: {a["name"]}')
         for u in self.state['related'].get(code, []): add(u, 'добавлен вручную')
         return out
+    def dota2_hero(self, code):
+        """Dota 2 reference entry for a map hero (by name or alias)."""
+        for nm in (self.hero_name(code), self.name(code, 'UnitFunc')):
+            k = norm(nm); k = self.aliases.get(k, k)
+            key = self._d2_by_name.get(k) or (k if k in self.dota2['heroes'] else None)
+            if key: return key, self.dota2['heroes'][key]
+        return None, None
+    def ability_index(self):
+        """normalized ability name -> [rawcodes] over every ability defined in the map."""
+        if self._ability_index is None:
+            idx = {}
+            for n, t in self.txt.items():
+                if 'ability' not in n.lower(): continue
+                for c, sec in t.sections.items():
+                    if 'name' in sec:
+                        idx.setdefault(norm(strip_color(sec['name'][1].split(',')[0])), []).append(c)
+            self._ability_index = idx
+        return self._ability_index
     def hero(self, code):
         p3 = self.p3.get(code); sel = self.selection.get(code, {})
         alt = sel.get('alternative_rawcode')
         cells, h, rows = self.unit_ui
         abilities = self.abilities(code)
+        d2key, d2 = self.dota2_hero(code)
+        d2names = [a['name'] for a in d2['abilities']] if d2 else []
+        order = {norm(n): i for i, n in enumerate(d2names)}
+        # Own abilities in Dota 2 order, the rest by button position.
+        abilities.sort(key=lambda a: (order.get(norm(a['name']), 99), (a['buttonpos'] or [9, 9])[1], (a['buttonpos'] or [9, 9])[0]))
+        for a in abilities:
+            if norm(a['name']) in order: a['dota2'] = d2['abilities'][order[norm(a['name'])]]
+        related = self.related_units(code, abilities)
+        forms = [u for u in related if u['relation'].startswith(('вариант', 'альтернатив'))]
+        summons = [u for u in related if u['relation'].startswith(('призыв', 'добавлен'))]
+        tavern = next((u for u in related if u['relation'].startswith('юнит в таверне')), None)
+        own = {a['code'] for a in abilities}
+        for f in forms:
+            # A form repeats most of the hero's kit; show only what is new on it.
+            f['abilities'] = [a for a in f['abilities'] if a['code'] not in own]
+        taken = own | {a['code'] for u in related for a in u['abilities']}
+        if self._claimed is None:
+            uab, uh, urows = self.unit_abils
+            self._claimed = {c.strip() for hc in self.hero_like() for f in ('heroAbilList', 'abilList') for c in uab.get((uh[f], urows[hc]), '').split(',') if c.strip()}
+        claimed = self._claimed
+        extra = []
+        for nm in d2names:
+            if norm(nm) in {norm(a['name']) for a in abilities}: continue
+            for c in self.ability_index().get(norm(nm), []):
+                # Only map-made abilities (A + uppercase/digits); standard Warcraft ones share these names.
+                if not re.match(r'^A[0-9A-Z]{3}$', c): continue
+                if c in taken or c in claimed or c in {x['code'] for x in extra}: continue
+                info = self.icon_info('ability:' + c)
+                if info['art'] is None: continue
+                extra.append({'code': c, 'name': self.name(c, 'AbilityFunc'), 'hero': False, 'buttonpos': self.xy(c, 'Buttonpos'),
+                              'researchpos': None, 'icon': info, 'dota2': d2['abilities'][order[norm(nm)]]})
         return {'code': code, 'name': self.hero_name(code), 'txt_name': self.name(code, 'UnitFunc'),
                 'group': 'hero' if (p3 or code in self.selection) else 'other',
+                'dota2': {'key': d2key, 'name': d2['name'], 'img': d2['img']} if d2 else None,
                 'model': cells.get((h['file'], rows[code])) if code in rows else None,
                 'scale': self.model_scale(code), 'p3_scale': p3['scale'] if p3 else None,
                 'morph': p3['morph'] if p3 else None, 'morph_scale': self.model_scale(p3['morph']) if p3 else None,
                 'alt': alt, 'alt_scale': self.model_scale(alt) if alt else None,
                 'saved_scales': self.state['scales'].get(code),
                 'icon': self.icon_info('unit:' + code), 'abilities': abilities,
-                'related': self.related_units(code, abilities)}
+                'extra_abilities': extra, 'forms': forms, 'summons': summons, 'tavern': tavern,
+                'related': related}
     def item_list(self):
         """Items grouped by name: DotA keeps dozens of rawcodes per item (one per
         hero for Aghanim's Scepter, upgrade levels, shop copies). One card per name."""
@@ -386,7 +451,7 @@ class Workshop:
         if previews:
             for hd in heroes:
                 self.with_previews('unit:' + hd['code'], hd['icon'])
-                for a in hd['abilities']: self.with_previews('ability:' + a['code'], a['icon'])
+                for a in hd['abilities'] + hd['extra_abilities']: self.with_previews('ability:' + a['code'], a['icon'])
                 for u in hd['related']:
                     self.with_previews('unit:' + u['code'], u['icon'])
                     for a in u['abilities']: self.with_previews('ability:' + a['code'], a['icon'])
