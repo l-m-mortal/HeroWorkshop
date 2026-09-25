@@ -79,15 +79,48 @@ struct Hero: Codable, Hashable, Identifiable {
     var group: String?              // hero | other
     var id: String { code }
 }
+struct ShopUnit: Codable, Hashable, Identifiable {
+    var code: String
+    var shop: String
+    var shop_name: String
+    var index: Int
+    var buttonpos: [Int]?
+    var icon: IconInfo
+    var id: String { code + shop + String(index) }
+}
+struct Shop: Codable, Hashable, Identifiable {
+    var code: String
+    var name: String
+    var units: [String]
+    var id: String { code }
+}
 struct Item: Codable, Hashable, Identifiable {
     var code: String?
     var name: String
     var codes: [String]
-    var keys: String                // "item:A,item:B" — every rawcode of this item that has an icon
+    var keys: String                // "unit:X,item:A,item:B" — every rawcode this drop must apply to
     var count: Int
     var distinct_arts: Int
-    var icon: IconInfo
+    var icon: IconInfo               // what the shop card shows (dummy-unit icon)
+    var icon_item: IconInfo?         // what the hero inventory shows (item icon), if different in the data
+    var in_shops: [String]?
+    var shop_units: [ShopUnit]
     var id: String { name }
+
+    enum CodingKeys: String, CodingKey { case code, name, codes, keys, count, distinct_arts, icon, icon_item, in_shops, shop_units }
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        code = try c.decodeIfPresent(String.self, forKey: .code)
+        name = try c.decode(String.self, forKey: .name)
+        codes = try c.decode([String].self, forKey: .codes)
+        keys = try c.decode(String.self, forKey: .keys)
+        count = try c.decode(Int.self, forKey: .count)
+        distinct_arts = try c.decode(Int.self, forKey: .distinct_arts)
+        icon = try c.decode(IconInfo.self, forKey: .icon)
+        icon_item = try c.decodeIfPresent(IconInfo.self, forKey: .icon_item)
+        in_shops = try c.decodeIfPresent([String].self, forKey: .in_shops)
+        shop_units = try c.decodeIfPresent([ShopUnit].self, forKey: .shop_units) ?? []
+    }
 }
 struct Candidate: Codable, Hashable, Identifiable {
     var file: String
@@ -104,6 +137,7 @@ struct MapState: Codable {
     var work_dir: String
     var heroes: [Hero]
     var items: [Item]
+    var shops: [Shop]?
 }
 
 // MARK: - Store
@@ -569,29 +603,155 @@ struct HeroConsole: View {
     }
 }
 
-// MARK: - Items
+// MARK: - Items / shops
+
+/// One filled cell of a shop's 4×3 command card: the dummy unit sold there and the item it drops.
+struct ShopSlot: Identifiable {
+    var id: String   // unit code + a disambiguator, unique within one shop's grid
+    var unit: ShopUnit
+    var item: Item
+}
+
+/// Lays out a shop's units exactly like the in-game shop card: by `buttonpos` where known, then by shop order.
+func shopGrid(shop: Shop, items: [Item]) -> [[ShopSlot?]] {
+    var cells: [[ShopSlot?]] = Array(repeating: Array(repeating: nil, count: 4), count: 3)
+    var pairs: [(unit: ShopUnit, item: Item)] = []
+    for code in shop.units {
+        guard let item = items.first(where: { it in it.shop_units.contains { $0.code == code && $0.shop == shop.code } }),
+              let unit = item.shop_units.first(where: { $0.code == code && $0.shop == shop.code }) else { continue }
+        pairs.append((unit, item))
+    }
+    var rest: [(unit: ShopUnit, item: Item)] = []
+    for (i, pair) in pairs.enumerated() {
+        if let p = pair.unit.buttonpos, p.count == 2, (0..<4).contains(p[0]), (0..<3).contains(p[1]), cells[p[1]][p[0]] == nil {
+            cells[p[1]][p[0]] = ShopSlot(id: "\(pair.unit.code)#\(i)", unit: pair.unit, item: pair.item)
+        } else {
+            rest.append(pair)
+        }
+    }
+    for (i, pair) in rest.enumerated() {
+        var placed = false
+        for y in 0..<3 where !placed {
+            for x in 0..<4 where cells[y][x] == nil && !placed { cells[y][x] = ShopSlot(id: "\(pair.unit.code)#rest\(i)", unit: pair.unit, item: pair.item); placed = true }
+        }
+    }
+    return cells
+}
+
+/// Shop card, laid out like `CommandCard`: one IconSlot per sold unit, keyed so a drop updates the shop unit
+/// and every inventory rawcode of the item it sells at once.
+struct ShopCardView: View {
+    @ObservedObject var store: Store
+    let shop: Shop
+    var body: some View {
+        let grid = shopGrid(shop: shop, items: store.state?.items ?? [])
+        VStack(spacing: 8) {
+            ForEach(0..<3, id: \.self) { y in
+                HStack(spacing: 8) {
+                    ForEach(0..<4, id: \.self) { x in
+                        if let slot = grid[y][x] {
+                            IconSlot(store: store, key: slot.item.keys, title: slot.item.name,
+                                      subtitle: "Магазин: \(shop.name)\nRawcode юнита \(slot.unit.code); предметы: \(slot.item.codes.joined(separator: ", "))",
+                                      icon: slot.unit.icon)
+                        } else {
+                            RoundedRectangle(cornerRadius: 4).fill(HUD.slot.opacity(0.6)).frame(width: 64, height: 64)
+                                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.08)))
+                                .frame(width: 78, height: 88, alignment: .top)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(10).background(HUD.stone, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(HUD.gold.opacity(0.4)))
+    }
+}
 
 struct ItemsView: View {
     @ObservedObject var store: Store
     @State private var search = ""
-    var items: [Item] {
+    @State private var selectedShop: String? = nil   // nil = "Все предметы"
+    @State private var showMode = 0                  // 0 = shop icon, 1 = inventory icon
+
+    var shops: [Shop] { store.state?.shops ?? [] }
+
+    var filteredItems: [Item] {
         let all = store.state?.items ?? []
         guard !search.isEmpty else { return all }
-        return all.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.codes.contains { $0.localizedCaseInsensitiveContains(search) } }
+        return all.filter { item in
+            item.name.localizedCaseInsensitiveContains(search)
+                || item.codes.contains { $0.localizedCaseInsensitiveContains(search) }
+                || item.shop_units.contains { $0.code.localizedCaseInsensitiveContains(search) }
+        }
     }
+
     var body: some View {
+        HSplitView {
+            List(selection: $selectedShop) {
+                Section("Магазины") {
+                    ForEach(shops) { shop in
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(shop.name)
+                            Text("\(shop.code) · юнитов \(shop.units.count)").font(.caption2).foregroundStyle(.secondary)
+                        }.tag(shop.code as String?)
+                    }
+                    Text("Все предметы").tag(String?.none)
+                }
+            }.frame(minWidth: 220, maxWidth: 300)
+
+            Group {
+                if let code = selectedShop, let shop = shops.first(where: { $0.code == code }) {
+                    shopDetail(shop)
+                } else {
+                    allItemsGrid
+                }
+            }.frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    @ViewBuilder func shopDetail(_ shop: Shop) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(shop.name).font(.title.bold())
+                    Text("[\(shop.code)]").foregroundStyle(.secondary)
+                    Spacer()
+                    Toggle("Герой рядом", isOn: Binding(get: { !store.showDisabled }, set: { store.showDisabled = !$0 }))
+                        .toggleStyle(.switch).controlSize(.small)
+                }
+                ShopCardView(store: store, shop: shop)
+                Text("Иконка ячейки берётся у юнита-товара; при замене та же картинка ставится и предметам в инвентаре.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }.padding()
+        }
+    }
+
+    var allItemsGrid: some View {
         VStack(spacing: 0) {
             HStack {
                 TextField("Поиск предмета или rawcode", text: $search).textFieldStyle(.roundedBorder)
+                Picker("Показывать", selection: $showMode) {
+                    Text("Магазин").tag(0)
+                    Text("Инвентарь").tag(1)
+                }.pickerStyle(.segmented).frame(width: 220)
                 Toggle("Серые (DISBTN)", isOn: $store.showDisabled).toggleStyle(.switch).controlSize(.small)
             }.padding(10)
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.fixed(84), spacing: 6), count: 10), spacing: 10) {
-                    ForEach(items) { item in
-                        IconSlot(store: store, key: item.keys, title: item.count > 1 ? "\(item.name) ×\(item.count)" : item.name,
-                                 subtitle: "Rawcode: \(item.codes.joined(separator: ", "))" + (item.distinct_arts > 1 ? "\nРазных иконок сейчас: \(item.distinct_arts)" : ""), icon: item.icon)
-                    }
+                    ForEach(filteredItems) { item in itemCell(item) }
                 }.padding(10).background(HUD.panel, in: RoundedRectangle(cornerRadius: 12)).padding()
+            }
+        }
+    }
+
+    @ViewBuilder func itemCell(_ item: Item) -> some View {
+        let bigIcon = showMode == 1 ? (item.icon_item ?? item.icon) : item.icon
+        VStack(spacing: 4) {
+            IconSlot(store: store, key: item.keys, title: item.count > 1 ? "\(item.name) ×\(item.count)" : item.name,
+                     subtitle: "Rawcode: \(item.codes.joined(separator: ", "))" + (item.distinct_arts > 1 ? "\nРазных иконок сейчас: \(item.distinct_arts)" : ""),
+                     icon: bigIcon)
+            if let inv = item.icon_item, inv.art != item.icon.art {
+                IconSlot(store: store, key: item.keys, title: "Инвентарь", subtitle: "Иконка в инвентаре: \(item.name)", icon: inv, size: 40)
             }
         }
     }
