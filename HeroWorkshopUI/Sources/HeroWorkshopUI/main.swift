@@ -23,6 +23,11 @@ struct IconInfo: Codable, Hashable {
     var disabled: Resolved
     var override: Override?
 }
+struct Dota2Ref: Codable, Hashable {
+    var key: String?
+    var name: String
+    var img: String?
+}
 struct Ability: Codable, Hashable, Identifiable {
     var code: String
     var name: String
@@ -30,8 +35,14 @@ struct Ability: Codable, Hashable, Identifiable {
     var buttonpos: [Int]?
     var researchpos: [Int]?
     var icon: IconInfo
+    var dota2: Dota2Ref?
     var id: String { code }
     var visible: Bool { icon.art != nil || buttonpos != nil }
+    /// Dota 2 name, shown only when it differs from the in-map name (used next to command-card slots).
+    var dota2NoteIfDifferent: String? {
+        guard let d = dota2, d.name != name else { return nil }
+        return d.name
+    }
 }
 struct SavedScales: Codable, Hashable { var scale: Double?; var morph: Double?; var alt: Double?; var applied: String? }
 struct RelatedUnit: Codable, Hashable, Identifiable {
@@ -44,6 +55,7 @@ struct RelatedUnit: Codable, Hashable, Identifiable {
     var saved_scales: SavedScales?
     var icon: IconInfo
     var abilities: [Ability]
+    var dota2: Dota2Ref?             // unused in the UI so far, kept for forward compatibility
     var id: String { code }
 }
 struct Hero: Codable, Hashable, Identifiable {
@@ -53,14 +65,17 @@ struct Hero: Codable, Hashable, Identifiable {
     var model: String?
     var scale: Double?
     var p3_scale: Double?
-    var morph: String?
-    var morph_scale: Double?
     var alt: String?
     var alt_scale: Double?
     var saved_scales: SavedScales?
     var icon: IconInfo
     var abilities: [Ability]
-    var related: [RelatedUnit]?
+    var dota2: Dota2Ref?
+    var extra_abilities: [Ability]?
+    var forms: [RelatedUnit]?
+    var summons: [RelatedUnit]?
+    var tavern: RelatedUnit?
+    var related: [RelatedUnit]?     // kept for backward compatibility with older state.json files; not used in the UI anymore
     var group: String?              // hero | other
     var id: String { code }
 }
@@ -211,6 +226,7 @@ struct IconSlot: View {
     let subtitle: String
     let icon: IconInfo
     var size: CGFloat = 64
+    var note: String? = nil
     @State private var targeted = false
     @State private var importing = false
     @State private var pickerOpen = false
@@ -321,6 +337,9 @@ struct IconSlot: View {
             }
             Text(title).font(.system(size: 10)).lineLimit(1).frame(width: size + 14)
             Text(originText).font(.system(size: 8)).foregroundStyle(icon.override != nil ? Color.green : Color.secondary).lineLimit(1)
+            if let note {
+                Text(note).font(.system(size: 8)).foregroundStyle(.secondary).lineLimit(1).frame(width: size + 14)
+            }
         }
     }
 }
@@ -355,7 +374,7 @@ struct CommandCard: View {
                 HStack(spacing: 8) {
                     ForEach(0..<4, id: \.self) { x in
                         if let a = grid[y][x] {
-                            IconSlot(store: store, key: "ability:\(a.code)", title: a.name, subtitle: "Способность \(a.code)" + (a.hero ? " (геройская)" : ""), icon: a.icon)
+                            IconSlot(store: store, key: "ability:\(a.code)", title: a.name, subtitle: "Способность \(a.code)" + (a.hero ? " (геройская)" : ""), icon: a.icon, note: a.dota2NoteIfDifferent)
                         } else {
                             RoundedRectangle(cornerRadius: 4).fill(HUD.slot.opacity(0.6)).frame(width: 64, height: 64)
                                 .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.08)))
@@ -405,7 +424,11 @@ struct RelatedUnitCard: View {
                     }
                     if let m = unit.model { Text(m).font(.caption2).foregroundStyle(.secondary).lineLimit(1).textSelection(.enabled) }
                 }
-                if unit.abilities.contains(where: { $0.visible }) { CommandCard(store: store, abilities: unit.abilities) }
+                if unit.abilities.contains(where: { $0.visible }) {
+                    CommandCard(store: store, abilities: unit.abilities)
+                } else {
+                    Text("Способности те же, что у героя").font(.caption).foregroundStyle(.secondary)
+                }
             }
         }
         .padding(10).background(HUD.panel, in: RoundedRectangle(cornerRadius: 10))
@@ -434,16 +457,20 @@ struct HeroConsole: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(hero.name).font(.title.bold())
-                    Text("[\(hero.code)]").foregroundStyle(.secondary)
-                    if let t = hero.txt_name, t != hero.name { Text("· \(t)").foregroundStyle(.secondary) }
-                    Spacer()
-                    Toggle("Серые (DISBTN)", isOn: $store.showDisabled).toggleStyle(.switch).controlSize(.small)
+                // 1. Header: name, code, txt name, Dota 2 label, DISBTN toggle, model line.
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(hero.name).font(.title.bold())
+                        Text("[\(hero.code)]").foregroundStyle(.secondary)
+                        if let t = hero.txt_name, t != hero.name { Text("· \(t)").foregroundStyle(.secondary) }
+                        Spacer()
+                        Toggle("Серые (DISBTN)", isOn: $store.showDisabled).toggleStyle(.switch).controlSize(.small)
+                    }
+                    if let d = hero.dota2 { Text("Dota 2: \(d.name)").font(.caption).foregroundStyle(.secondary) }
                 }
                 if let model = hero.model { Text("Модель: \(model)").font(.caption).foregroundStyle(.secondary).textSelection(.enabled) }
 
-                // The in-game bottom console: portrait | info + scales | command card
+                // 2. The in-game bottom console: portrait | info + scales | command card
                 HStack(alignment: .top, spacing: 18) {
                     VStack(spacing: 6) {
                         Text("Портрет / иконка").font(.caption).foregroundStyle(HUD.gold)
@@ -460,11 +487,33 @@ struct HeroConsole: View {
                 if !overflow.isEmpty {
                     Text("Способности без места на панели").font(.headline)
                     LazyVGrid(columns: Array(repeating: GridItem(.fixed(84)), count: 8), spacing: 10) {
-                        ForEach(overflow) { a in IconSlot(store: store, key: "ability:\(a.code)", title: a.name, subtitle: "Способность \(a.code)", icon: a.icon) }
+                        ForEach(overflow) { a in
+                            IconSlot(store: store, key: "ability:\(a.code)", title: a.name, subtitle: "Способность \(a.code)", icon: a.icon, note: a.dota2NoteIfDifferent)
+                        }
                     }
                 }
-                Text("Связанные юниты: морф-форма, альтернативная модель, призывы").font(.headline)
-                ForEach(hero.related ?? []) { unit in RelatedUnitCard(store: store, hero: hero, unit: unit) }
+
+                // 3. Extra abilities: hero's own abilities that live elsewhere in the map (Invoker's spells, etc.)
+                if let extra = hero.extra_abilities, !extra.isEmpty {
+                    Text("Дополнительные способности").font(.headline)
+                    LazyVGrid(columns: Array(repeating: GridItem(.fixed(84)), count: 8), spacing: 10) {
+                        ForEach(extra) { a in
+                            IconSlot(store: store, key: "ability:\(a.code)", title: a.name, subtitle: "Способность \(a.code)" + (a.hero ? " (геройская)" : ""), icon: a.icon, note: a.dota2?.name)
+                        }
+                    }
+                }
+
+                // 4. Hero forms / alternative variants
+                if let forms = hero.forms, !forms.isEmpty {
+                    Text("Формы героя").font(.headline)
+                    ForEach(forms) { unit in RelatedUnitCard(store: store, hero: hero, unit: unit) }
+                }
+
+                // 5. Summoned units, plus the always-available "add related unit" row for trigger-made summons.
+                if let summons = hero.summons, !summons.isEmpty {
+                    Text("Призванные существа").font(.headline)
+                    ForEach(summons) { unit in RelatedUnitCard(store: store, hero: hero, unit: unit) }
+                }
                 HStack {
                     TextField("Rawcode юнита, например n0EE", text: $relatedCode).frame(width: 220)
                     Button("Добавить связанный юнит") {
@@ -472,6 +521,13 @@ struct HeroConsole: View {
                     }.disabled(relatedCode.trimmingCharacters(in: .whitespaces).count != 4 || store.busy)
                     Text("Для призывов, которые создаются триггером и не видны в данных способности.").font(.caption2).foregroundStyle(.secondary)
                 }
+
+                // 6. Tavern pick unit note
+                if let tavern = hero.tavern {
+                    Text("Юнит таверны выбора \(tavern.code) получает масштаб героя автоматически.").font(.caption).foregroundStyle(.secondary)
+                }
+
+                // 7. Hidden/service abilities + footer hint
                 if !hidden.isEmpty {
                     DisclosureGroup("Скрытые / служебные способности (\(hidden.count))") {
                         Text(hidden.map { "\($0.code) \($0.name)" }.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
