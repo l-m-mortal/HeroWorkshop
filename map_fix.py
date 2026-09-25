@@ -33,18 +33,47 @@ def fix_shops(w: workshop.Workshop, apply: bool):
     for code, label, model, sound, scale, sel in plan:
         w.set_model(code, model, sound, scale, sel)
 
-FIXES = {'shops': fix_shops}
+def fix_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types: str | None = None):
+    """Copy doodad placements from a reference map (default: DotA v6.77b) for
+    doodad types that the reference places but this map does not (stairs, fences...).
+
+    --ref <map.w3x>   reference map (relative to the game root or absolute)
+    --types A,B,C     only these doodad type ids (default: every type absent here)"""
+    import doo
+    from mpq import MPQ
+    from pathlib import Path
+    ref_path = Path(ref) if ref else Path('Dota Mod Project/Sources/Maps/DotA v6.77b.w3x')
+    if not ref_path.is_absolute(): ref_path = workshop.GAME / ref_path
+    if not ref_path.is_file(): workshop.die(f'эталонная карта не найдена: {ref_path} (укажите --ref)')
+    cur = doo.parse(w.mpq.read('war3map.doo')); src = doo.parse(MPQ(ref_path).read('war3map.doo'))
+    here = {e['type'] for e in cur['entries']}
+    wanted = set(types.split(',')) if types else {e['type'] for e in src['entries']} - here
+    picked = [e for e in src['entries'] if e['type'] in wanted]
+    by_type = {}
+    for e in picked: by_type[e['type']] = by_type.get(e['type'], 0) + 1
+    print(f'Эталон: {ref_path.name}, версия doo {src["version"]}; здесь версия {cur["version"]}, размещений {len(cur["entries"])}')
+    for t, n in sorted(by_type.items(), key=lambda x: -x[1]): print(f'  {t}: {n} шт.' + ('' if t not in here else ' (тип уже есть в карте)'))
+    if not picked: print('Нечего переносить.'); return
+    if not apply: print(f'\nПлан: добавить {len(picked)} размещений. Запустите с --apply.'); return
+    doo.append(cur, picked)
+    w.changes['war3map.doo'] = doo.serialize(cur); w.commit()
+    print(f'Добавлено {len(picked)} размещений; теперь {len(cur["entries"])}.')
+
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('fix', choices=list(FIXES) + ['list'])
     ap.add_argument('--apply', action='store_true')
+    ap.add_argument('--ref', help='эталонная карта для doodads')
+    ap.add_argument('--types', help='список типов декораций через запятую для doodads')
     a = ap.parse_args()
     if a.fix == 'list':
         for k, f in FIXES.items(): print(f'{k:10s} {f.__doc__.strip().splitlines()[0]}')
         return
     w = workshop.Workshop()
-    FIXES[a.fix](w, a.apply)
+    if a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types)
+    else: FIXES[a.fix](w, a.apply)
 
 if __name__ == '__main__':
     main()
