@@ -143,6 +143,7 @@ class Workshop:
         self.state = json.loads((STATE_DIR / 'state.json').read_text()) if (STATE_DIR / 'state.json').exists() else {}
         for k in ('icons', 'scales', 'related'): self.state.setdefault(k, {})
         self._inventory = None
+        self._sample_index = None
         self._backed_up = False
 
     # ---- lookups
@@ -175,9 +176,34 @@ class Workshop:
         for c in cands:
             if c.lower() in self.inventory(): return {'where': 'disk', 'path': c, 'inventory': True}
         return {'where': 'standard' if not MOD_PREFIX.match(art) else 'missing', 'path': cands[0]}
+    def sample_index(self):
+        """basename (lowercase, no extension) -> inventory records with that basename
+        and an image extension. Built once, lazily, so it never slows down `resolve`."""
+        if self._sample_index is None:
+            idx = {}
+            for r in self.inventory().values():
+                p = r['path'].replace('\\', '/')
+                if Path(p).suffix.lower() not in ('.blp', '.png', '.tga'): continue
+                idx.setdefault(Path(p).stem.lower(), []).append(r)
+            self._sample_index = idx
+        return self._sample_index
+    def sample_for(self, art: str) -> str | None:
+        """Best-effort stand-in for a standard icon: some other file anywhere under the
+        game folder with the same basename, that actually exists on disk."""
+        base = Path(art.replace('\\', '/')).stem.lower()
+        recs = self.sample_index().get(base)
+        if not recs: return None
+        rank = {'wc3dotahqtest': 0, 'icon audit': 1}
+        for r in sorted(recs, key=lambda r: rank.get(r['root'].lower(), 2)):
+            p = GAME / r['root'] / r['path'].replace('\\', '/')
+            if p.is_file(): return r['root'] + '\\' + r['path']
+        return None
     def read_icon(self, res: dict) -> bytes | None:
         if res.get('where') == 'map': return self.mpq.read(res['path'])
         if res.get('where') == 'disk' and res.get('file'): return Path(res['file']).read_bytes()
+        if res.get('where') == 'standard' and res.get('sample'):
+            p = GAME / res['sample'].replace('\\', '/')
+            if p.is_file(): return p.read_bytes()
         return None
     @staticmethod
     def disk(game_path: str) -> Path:
@@ -336,6 +362,9 @@ class Workshop:
 
     # ---- previews
     def preview(self, key: str, res: dict, suffix: str) -> str | None:
+        if res.get('where') == 'standard' and 'sample' not in res:
+            s = self.sample_for(res.get('path', ''))
+            if s: res['sample'] = s
         data = self.read_icon(res)
         if not data: return None
         pdir = WORK / 'previews'; pdir.mkdir(parents=True, exist_ok=True)
@@ -455,6 +484,48 @@ class Workshop:
             self.commit()
         self.save_state(); print(f'Restored {key}')
 
+    def all_icons(self):
+        """(key, icon_info) for every icon export_state renders, same order/objects."""
+        for hd in [self.hero(c) for c in self.hero_codes()]:
+            yield 'unit:' + hd['code'], hd['icon']
+            for a in hd['abilities']: yield 'ability:' + a['code'], a['icon']
+            for u in hd['related']:
+                yield 'unit:' + u['code'], u['icon']
+                for a in u['abilities']: yield 'ability:' + a['code'], a['icon']
+        for it in self.item_list(): yield 'item:' + it['code'], it['icon']
+    def regen_disabled(self, apply: bool, scope: str) -> dict:
+        """Rebuild every disabled icon from its normal one (blp.disabled), for icons
+        whose normal image is readable (in the map or on disk)."""
+        seen = {}
+        for _, info in self.all_icons():
+            art = info.get('art')
+            if art and art not in seen: seen[art] = info
+        map_arts = [a for a, i in seen.items() if i['normal']['where'] == 'map']
+        disk_arts = [a for a, i in seen.items() if i['normal']['where'] == 'disk']
+        skipped = len(seen) - len(map_arts) - len(disk_arts)
+        targets = []
+        if scope in ('all', 'map'): targets += [seen[a] for a in map_arts]
+        if scope in ('all', 'disk'): targets += [seen[a] for a in disk_arts]
+        written_map = written_disk = 0
+        if apply:
+            for info in targets:
+                normal = info['normal']
+                data = self.read_icon(normal)
+                if not data: continue
+                im = blp.fit_square(blp.decode(data))
+                out = blp.encode(blp.disabled(im))
+                dis_path = self.disabled_path(normal['path'])
+                if normal['where'] == 'map':
+                    self.changes[dis_path] = out; written_map += 1
+                else:
+                    target = self.disk(dis_path)
+                    if target.exists(): self.trash(target)
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(out); written_disk += 1
+            if self.changes: self.commit()
+        return {'found': len(seen), 'map': len(map_arts), 'disk': len(disk_arts), 'skipped': skipped,
+                'scope': scope, 'apply': apply, 'written_map': written_map, 'written_disk': written_disk}
+
     def set_scale(self, code: str, scale: float, morph: float | None = None, alt: float | None = None):
         cells, h, rows = self.unit_ui
         if code not in rows: die(f'{code} нет в unitUI.slk')
@@ -494,6 +565,7 @@ def main():
     s = sub.add_parser('set-scale'); s.add_argument('rawcode'); s.add_argument('scale', type=float); s.add_argument('--morph', type=float); s.add_argument('--alt', type=float)
     s = sub.add_parser('add-related'); s.add_argument('hero'); s.add_argument('unit')
     s = sub.add_parser('remove-related'); s.add_argument('hero'); s.add_argument('unit')
+    s = sub.add_parser('regen-disabled'); s.add_argument('--apply', action='store_true'); s.add_argument('--scope', choices=['all', 'map', 'disk'], default='all')
     a = ap.parse_args()
     if a.cmd == 'doctor': return doctor()
     w = Workshop()
@@ -512,6 +584,17 @@ def main():
         else:
             if a.unit in lst: lst.remove(a.unit)
         w.save_state(); print('Related units for', a.hero, ':', ', '.join(lst) or '—')
+    elif a.cmd == 'regen-disabled':
+        r = w.regen_disabled(a.apply, a.scope)
+        print(f'Normal icons found (unique art path): {r["found"]}')
+        print(f'  in map:                              {r["map"]}')
+        print(f'  on disk:                              {r["disk"]}')
+        print(f'  skipped (standard/none):              {r["skipped"]}')
+        if a.apply:
+            print(f'Disabled written to map:              {r["written_map"]}')
+            print(f'Disabled written to disk:             {r["written_disk"]}')
+        else:
+            print('Dry run, nothing written. Re-run with --apply to write the disabled icons.')
 
 if __name__ == '__main__':
     main()

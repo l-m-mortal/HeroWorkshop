@@ -76,6 +76,7 @@ python3 workshop.py set-icon item:I0B4 scepter.png
 python3 workshop.py clear-icon ability:A136
 python3 workshop.py set-scale H06S 1.25 [--morph 1.25] [--alt 1.0]
 python3 workshop.py add-related H06S n0EE      # призыв, созданный триггером
+python3 workshop.py regen-disabled [--apply] [--scope all|map|disk]  # перегенерировать disabled-иконки
 ```
 
 Ключи: `unit:<rawcode>`, `ability:<rawcode>`, `item:<rawcode>`.

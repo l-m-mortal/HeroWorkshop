@@ -324,13 +324,17 @@ struct RelatedUnitCard: View {
             HStack(alignment: .top, spacing: 14) {
                 IconSlot(store: store, key: "unit:\(unit.code)", title: unit.name, subtitle: "Иконка юнита", icon: unit.icon, size: 64)
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text("Масштаб").font(.callout)
-                        TextField("1.0", value: $scale, format: .number.precision(.fractionLength(2))).frame(width: 64)
-                        Stepper("", value: $scale, in: 0.1...5.0, step: 0.05).labelsHidden()
-                        Button("Применить") { store.setScale(code: unit.code, scale: scale) }.controlSize(.small).disabled(store.busy)
+                    if unit.relation.hasPrefix("юнит в таверне") {
+                        Text("Масштаб как у героя: \(unit.scale.map { $0.formatted() } ?? "—")").font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        HStack {
+                            Text("Масштаб").font(.callout)
+                            TextField("1.0", value: $scale, format: .number.precision(.fractionLength(2))).frame(width: 64)
+                            Stepper("", value: $scale, in: 0.1...5.0, step: 0.05).labelsHidden()
+                            Button("Применить") { store.setScale(code: unit.code, scale: scale) }.controlSize(.small).disabled(store.busy)
+                        }
+                        Text("в карте \(unit.scale.map { $0.formatted() } ?? "—")" + (unit.p3_scale.map { " · P3 \($0.formatted())" } ?? "")).font(.caption2).foregroundStyle(.secondary)
                     }
-                    Text("в карте \(unit.scale.map { $0.formatted() } ?? "—")" + (unit.p3_scale.map { " · P3 \($0.formatted())" } ?? "")).font(.caption2).foregroundStyle(.secondary)
                     if let m = unit.model { Text(m).font(.caption2).foregroundStyle(.secondary).lineLimit(1).textSelection(.enabled) }
                 }
                 if unit.abilities.contains(where: { $0.visible }) { CommandCard(store: store, abilities: unit.abilities) }
@@ -346,14 +350,12 @@ struct HeroConsole: View {
     @ObservedObject var store: Store
     let hero: Hero
     @State private var scale: Double
-    @State private var morph: Double
     @State private var alt: Double
     @State private var relatedCode = ""
 
     init(store: Store, hero: Hero) {
         self.store = store; self.hero = hero
         _scale = State(initialValue: hero.saved_scales?.scale ?? hero.scale ?? 1.0)
-        _morph = State(initialValue: hero.saved_scales?.morph ?? hero.morph_scale ?? hero.scale ?? 1.0)
         _alt = State(initialValue: hero.saved_scales?.alt ?? hero.alt_scale ?? 1.0)
     }
 
@@ -417,15 +419,14 @@ struct HeroConsole: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Масштаб модели").font(.caption).foregroundStyle(HUD.gold)
             scaleRow("Основная", value: $scale, current: hero.scale, extra: hero.p3_scale.map { "P3 \($0.formatted())" })
-            if let m = hero.morph { scaleRow("Морф \(m)", value: $morph, current: hero.morph_scale, extra: nil) }
             if let a = hero.alt { scaleRow("Альтернатива \(a)", value: $alt, current: hero.alt_scale, extra: nil) }
             HStack {
                 Button("Применить масштаб") {
-                    store.setScale(hero: hero, scale: scale, morph: hero.morph != nil ? morph : nil, alt: hero.alt != nil ? alt : nil)
+                    store.setScale(hero: hero, scale: scale, morph: nil, alt: hero.alt != nil ? alt : nil)
                 }.buttonStyle(.borderedProminent).disabled(store.busy)
                 if let saved = hero.saved_scales?.applied { Text("сохранено \(saved)").font(.caption2).foregroundStyle(.secondary) }
             }
-            Text("Значение абсолютное: 1.20 записывает ровно 1.20 в unitUI и в таблицу P3, поэтому масштаб переживает смерть героя.")
+            Text("Значение абсолютное: 1.20 записывает ровно 1.20 в unitUI и в таблицу P3, поэтому масштаб переживает смерть героя. Юнит таверны выбора получает тот же масштаб автоматически.")
                 .font(.caption2).foregroundStyle(.secondary).frame(width: 230)
         }
         .padding(10).background(HUD.stone, in: RoundedRectangle(cornerRadius: 8))
