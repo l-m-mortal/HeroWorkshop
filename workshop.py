@@ -604,6 +604,18 @@ class Workshop:
         self.state['icons'][key] = entry
         self.commit(); self.save_state()
         print(f'Applied {key}: {entry["target"]}')
+    def buffs_of(self, ability: str) -> list[str]:
+        """Buff rawcodes an ability applies (BuffID fields of AbilityData.slk)."""
+        data, h, rows = self.abil_data
+        r = rows.get(ability)
+        if not r: return []
+        out = []
+        for col, x in h.items():
+            if re.match(r'BuffID\d+$', col):
+                for b in data.get((x, r), '').split(','):
+                    b = b.strip().strip('"')
+                    if len(b) == 4 and b not in out: out.append(b)
+        return out
     def set_art(self, key: str, file: str, value: str):
         kind, code = key.split(':', 1)
         t = self.txt[file]
@@ -612,6 +624,15 @@ class Workshop:
         if kind == 'ability':
             for rk in ('Researchart', 'researchart'):
                 if t.get(code, rk) is not None: t.set(code, rk, value)
+            # Status (buff) icons follow the ability icon, no separate file needed.
+            for buff in self.buffs_of(code):
+                bfile, _ = self.txt_value(buff, 'Buffart', 'AbilityFunc')
+                if bfile is None: bfile, _ = self.txt_value(buff, 'Art', 'AbilityFunc')
+                if bfile is None: continue
+                bt = self.txt[bfile]
+                bkey = next((k for k in ('Buffart', 'buffart', 'Art', 'art') if bt.get(buff, k) is not None), 'Buffart')
+                bt.set(buff, bkey, value)
+                self.changes[bfile] = bt.text().encode('latin1', 'replace')
         self.changes[file] = t.text().encode('latin1', 'replace')
     def clear_icon(self, key: str):
         entry = self.state['icons'].pop(key, None)
