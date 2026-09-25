@@ -187,6 +187,12 @@ class Workshop:
             if p.is_file(): return {'where': 'disk', 'path': c, 'file': str(p)}
         for c in cands:
             if c.lower() in self.inventory(): return {'where': 'disk', 'path': c, 'inventory': True}
+        if not MOD_PREFIX.match(art):
+            # The HQ mod keeps copies of standard icons under WC3DotaHQTest\A: usable as a sample.
+            for c in cands:
+                alt = 'WC3DotaHQTest\\A\\' + c
+                p = self.disk(alt)
+                if p.is_file(): return {'where': 'standard', 'path': c, 'sample': alt, 'file': str(p)}
         return {'where': 'standard' if not MOD_PREFIX.match(art) else 'missing', 'path': cands[0]}
     def sample_index(self):
         """basename (lowercase, no extension) -> inventory records with that basename
@@ -232,6 +238,9 @@ class Workshop:
     # ---- model
     def art_of(self, key: str):
         kind, code = key.split(':', 1)
+        if kind == 'common':
+            base = next((b for n, _, b in self.COMMON if n == code), None)
+            return ('common', f'ReplaceableTextures\\CommandButtons\\{base}.blp') if base else (None, None)
         if kind == 'unit': return self.txt_value(code, 'Art', 'UnitFunc')
         if kind == 'item': return self.txt_value(code, 'Art', 'ItemFunc')
         file, art = self.txt_value(code, 'Art', 'AbilityFunc')
@@ -466,6 +475,20 @@ class Workshop:
             g['in_shops'] = sorted({s['shop_name'] for s in g['shop_units']})
             out.append(g)
         return sorted(out, key=lambda x: x['name'].lower())
+    COMMON = [('Move', 'Движение', 'BTNMove'), ('Stop', 'Стоп', 'BTNStop'), ('HoldPosition', 'Удерживать позицию', 'BTNHoldPosition'),
+              ('Attack', 'Атака', 'BTNAttack'), ('Patrol', 'Патруль', 'BTNPatrol'), ('Cancel', 'Отмена', 'BTNCancel'),
+              ('Skillz', 'Изучить способность (+)', 'BTNSkillz'), ('SelectHero', 'Выбор героя', 'BTNSelectHero')]
+    def common_icons(self):
+        """Command buttons shared by every unit. Their art lives at fixed standard
+        paths; a file at that path inside the map overrides the game's own."""
+        out = []
+        for name, label, base in self.COMMON:
+            art = f'ReplaceableTextures\\CommandButtons\\{base}.blp'
+            info = self.icon_info('common:' + name)
+            out.append({'key': 'common:' + name, 'name': label, 'base': base, 'icon': info})
+        info = self.icon_info('ability:A0NR')
+        out.insert(0, {'key': 'ability:A0NR', 'name': 'Attribute Bonus (плюс к атрибутам)', 'base': 'StatUp', 'icon': info})
+        return out
     # ---- previews
     def preview(self, key: str, res: dict, suffix: str) -> str | None:
         if res.get('where') == 'standard' and 'sample' not in res:
@@ -501,8 +524,11 @@ class Workshop:
                 if it['icon_item']: self.with_previews('item:' + (it['code'] or 'none'), it['icon_item'])
                 for s in it['shop_units']: self.with_previews('unit:' + s['code'], s['icon'])
                 for v in it['variants']: self.with_previews('item:' + v['codes'][0], v['icon'])
+        common = self.common_icons()
+        if previews:
+            for c in common: self.with_previews(c['key'], c['icon'])
         out = {'map': str(MAP), 'game_root': str(GAME), 'generated': time.strftime('%Y-%m-%d %H:%M:%S'),
-               'work_dir': str(WORK), 'heroes': heroes, 'items': items, 'shops': self.shops()}
+               'work_dir': str(WORK), 'heroes': heroes, 'items': items, 'shops': self.shops(), 'common': common}
         WORK.mkdir(parents=True, exist_ok=True)
         (WORK / 'state.json').write_text(json.dumps(out, ensure_ascii=False, indent=1))
         return WORK / 'state.json'
@@ -542,6 +568,14 @@ class Workshop:
         file, art = self.art_of(key)
         if file is None: die(f'{key}: не найден Art= в txt-файлах карты')
         normal, dis = blp.to_button_blp(source)
+        if kind == 'common':
+            target = art; dtarget = self.disabled_path(art)
+            self.changes[target] = normal; self.changes[dtarget] = dis
+            STATE_DIR.joinpath('icons').mkdir(parents=True, exist_ok=True)
+            kept = STATE_DIR / 'icons' / f'{key.replace(":", "_")}{source.suffix.lower()}'
+            if source.resolve() != kept.resolve(): shutil.copy2(source, kept)
+            self.state['icons'][key] = {'original_art': art, 'where': 'map', 'target': target, 'disabled_target': dtarget, 'source': str(kept.relative_to(ROOT)), 'applied': time.strftime('%Y-%m-%d %H:%M:%S')}
+            self.commit(); self.save_state(); print(f'Applied {key}: {target} (в карте)'); return
         STATE_DIR.joinpath('icons').mkdir(parents=True, exist_ok=True)
         kept = STATE_DIR / 'icons' / f'{key.replace(":", "_")}{source.suffix.lower()}'
         if source.resolve() != kept.resolve(): shutil.copy2(source, kept)
@@ -589,7 +623,7 @@ class Workshop:
             else: target.unlink(missing_ok=True)
             dtarget.unlink(missing_ok=True)
         else:
-            self.set_art(key, entry['art_file'], entry['original_art'])
+            if entry.get('art_file'): self.set_art(key, entry['art_file'], entry['original_art'])
             self.changes[entry['target']] = None; self.changes[entry['disabled_target']] = None
             self.commit()
         self.save_state(); print(f'Restored {key}')
@@ -697,9 +731,24 @@ def candidates(key: str, w: 'Workshop'):
                 target = g['name']; break
         want = {('item', target)}
     elif kind == 'unit':
-        want = {('unit', code), ('hero-misc', code)}
+        want = {('unit', code)}
+    elif kind == 'common':
+        base = next((b for n, _, b in w.COMMON if n == code), code)
+        want = {('unassigned', base.lower()), ('unassigned', re.sub(r'^BTN', '', base).lower())}
     else:
         want = {(kind, code)}
+    # Fallback pool: the hero's unmatched icons (Icon Audit folder) for its abilities and portrait.
+    fallback = set()
+    if kind == 'ability':
+        owner = next((h for h in w.hero_like() if any(a['code'] == code for a in w.abilities(h))), None)
+        if owner: fallback = {('hero-misc', w.hero_groups()[0].get(owner) and owner or owner)}
+        for hero, forms in w.hero_groups()[0].items():
+            if owner in forms: fallback = {('hero-misc', hero)}
+    elif kind == 'unit':
+        fallback = {('hero-misc', code)}
+    aliases = set()
+    if kind == 'unit':
+        aliases = {norm(x) for x in (w.hero_name(code), w.name(code, 'UnitFunc')) if x and len(norm(x)) >= 4}
     index_path = LIBRARY / 'index.json'
     if not index_path.is_file():
         print('[]')
@@ -709,6 +758,13 @@ def candidates(key: str, w: 'Workshop'):
     seen = set(); out = []
     for e in data.get('entries', []):
         how = next((m.get('how') for m in e.get('matches', []) if (m.get('kind'), m.get('id')) in want), None)
+        rank = 0
+        if how is None and fallback:
+            how = next((m.get('how') for m in e.get('matches', []) if (m.get('kind'), m.get('id')) in fallback), None)
+            if how is None: continue
+            base = e.get('base', '')
+            if kind == 'unit' and not any(a in base or base in a for a in aliases) and 'hero' not in base: continue
+            how = 'папка героя, вручную: ' + how; rank = 1
         if how is None: continue
         files = e.get('files') or []
         if not files: continue
@@ -723,12 +779,12 @@ def candidates(key: str, w: 'Workshop'):
         out.append({
             'file': str((LIBRARY / chosen).resolve()),
             'preview': str((LIBRARY / png_file).resolve()) if png_file else str((LIBRARY / chosen).resolve()),
-            'set': e.get('set', ''), 'source': e.get('path', ''), 'how': how,
+            'set': e.get('set', ''), 'source': e.get('path', ''), 'how': how, 'rank': rank,
         })
     def sort_key(item):
         s = item['set']
         pri = 3 if s.startswith('map-') else 0 if s.startswith('audit-') else 1
-        return (pri, s)
+        return (item['rank'], pri, s)
     out.sort(key=sort_key)
     print(json.dumps(out, ensure_ascii=False))
 

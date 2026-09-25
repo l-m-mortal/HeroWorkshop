@@ -162,6 +162,28 @@ class Matcher:
                     for b in bases: self.targets.setdefault(b, []).append(('item', self.item_by_code[code]))
     def _add_art(self, art, kind, ident):
         if art: self.targets.setdefault(base_of(art), []).append((kind, ident))
+    def match_in_hero(self, hero, base):
+        """Match an icon file name against one hero's abilities: 'AbbaCoil' -> Death Coil,
+        'AAIceBlast' -> Ice Blast, 'XUlti' -> the ultimate."""
+        b = norm(base)
+        abils = self.qwer.get(hero, []) + [c for c, h in self.hero_of_ability.items() if h == hero and c not in self.qwer.get(hero, [])]
+        # strip a hero prefix: full alias, or an abbreviation that is a prefix of the alias
+        rest = b
+        for alias in sorted((a for a, h in self.hero_alias.items() if h == hero), key=len, reverse=True):
+            if b.startswith(alias): rest = b[len(alias):]; break
+        else:
+            for k in range(min(6, len(b) - 3), 1, -1):
+                if any(alias.startswith(b[:k]) for alias, h in self.hero_alias.items() if h == hero): rest = b[k:]; break
+        if (rest in ('ulti', 'ult', 'ultimate') or b.endswith(('ulti', 'ultimate'))) and len(self.qwer.get(hero, [])) >= 4: return (self.qwer[hero][-1], 'ульта по Q/W/E/R')
+        best = None
+        for a in abils:
+            n = norm(self.ability_label.get(a, '')); words = [w for w in re.findall(r'[a-z]+', self.ability_label.get(a, '').lower()) if len(w) >= 4 and w not in ('the', 'with', 'from')]
+            score = 0
+            if n and (n in b or (rest and rest in n and len(rest) >= 4)): score = 3
+            elif any(w in b for w in words): score = 2
+            elif rest and n.startswith(rest[:4]) and len(rest) >= 4: score = 1
+            if score and (best is None or score > best[0]): best = (score, a)
+        return (best[1], 'ключевое слово в папке героя') if best else None
     def match(self, e: Entry):
         """Return list of (kind, ident, how)."""
         hits = []
@@ -172,9 +194,10 @@ class Matcher:
         if m:
             hero = self.hero_alias.get(norm(m.group(1)))
             if hero:
-                for a in self.qwer.get(hero, []) + [c for c, h in self.hero_of_ability.items() if h == hero]:
-                    n = norm(self.ability_label.get(a, ''))
-                    if len(n) >= 4 and n in norm(e.base): return [('ability', a, 'имя в папке Icon Audit')]
+                hit = self.match_in_hero(hero, e.base)
+                if hit: return [('ability', hit[0], hit[1])]
+                hn = norm(self.hero_label[hero]); b = norm(e.base)
+                if b.startswith('hero') or b in hn or hn in b: return [('unit', hero, 'портрет в папке Icon Audit')]
                 return [('hero-misc', hero, 'папка Icon Audit')]
         m = re.search(r'IconsGrouped/([^/]+)/', rel)
         if m or re.match(r'^[a-z]+[qwer]$', e.base):
