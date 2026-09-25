@@ -86,7 +86,79 @@ def undo_doodads(w: workshop.Workshop, apply: bool, types: str | None = None):
     if not types: w.state['doodads_added'] = []; w.save_state()
     print(f'Удалено {len(victims)}; осталось {len(cur["entries"])}.')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads}
+def mdx_textures(data: bytes) -> list[str]:
+    """Texture paths referenced by an MDX (TEXS chunk), replaceable ids skipped."""
+    import struct
+    out = []
+    if data[:4] != b'MDLX': return out
+    o = 4
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; o += 8
+        if tag == b'TEXS':
+            for i in range(size // 268):
+                rid = struct.unpack_from('<I', data, o + i * 268)[0]
+                name = data[o + i * 268 + 4:o + i * 268 + 260].split(b'\0')[0].decode('latin1')
+                if not rid and name: out.append(name)
+        o += size
+    return out
+
+def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads'):
+    """Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
+    the map at their standard paths, so the map shows them without a root overlay.
+
+    --into map|root   write into the map archive (default) or copy next to the game
+    --match text      only paths containing text (e.g. Fence, Stairs, Northrend)
+    --folders A,B     top folders under WC3DotaHQTest\A to take (default Doodads)"""
+    from pathlib import Path
+    a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+    if not a_root.is_dir(): workshop.die(f'нет папки {a_root}')
+    files = {}
+    for top in folders.split(','):
+        base = a_root / top.strip()
+        if not base.is_dir(): print(f'WARN: нет {base}'); continue
+        for p in base.rglob('*'):
+            if p.is_file() and not p.name.startswith('._'):
+                rel = str(p.relative_to(a_root)).replace('/', '\\')
+                if match and match.lower() not in rel.lower(): continue
+                files[rel.lower()] = (rel, p)
+    # textures referenced by the models but living elsewhere under A (or the game root)
+    extra = {}
+    index = None
+    for rel, p in list(files.values()):
+        if p.suffix.lower() != '.mdx': continue
+        for tex in mdx_textures(p.read_bytes()):
+            t = tex.replace('/', '\\')
+            if t.lower() in files or t.lower() in extra: continue
+            cand = a_root / t.replace('\\', '/')
+            if cand.is_file(): extra[t.lower()] = (t, cand); continue
+            if index is None:
+                index = {}
+                for q in a_root.rglob('*'):
+                    if q.is_file(): index.setdefault(q.name.lower(), q)
+            q = index.get(t.split('\\')[-1].lower())
+            if q: extra[t.lower()] = (t, q)
+            else: print(f'WARN: текстура {tex} для {rel} не найдена')
+    files.update(extra)
+    total = sum(p.stat().st_size for _, p in files.values())
+    kinds = {}
+    for rel, p in files.values(): kinds[p.suffix.lower()] = kinds.get(p.suffix.lower(), 0) + 1
+    print(f'Файлов: {len(files)} ({", ".join(f"{k} {v}" for k, v in sorted(kinds.items()))}), {total / 1e6:.1f} МБ, назначение: {"карта" if into == "map" else "корень игры"}')
+    for rel, p in sorted(files.values())[:15]: print('  ', rel)
+    if len(files) > 15: print('   …')
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    if into == 'map':
+        for rel, p in files.values(): w.changes[rel] = p.read_bytes()
+        w.commit(); print(f'Записано в карту {len(files)} файлов.')
+    else:
+        import shutil
+        for rel, p in files.values():
+            dst = workshop.GAME / rel.replace('\\', '/')
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if dst.exists(): w.trash(dst)
+            shutil.copy2(p, dst)
+        print(f'Скопировано в корень игры {len(files)} файлов.')
+
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -95,6 +167,9 @@ def main():
     ap.add_argument('--ref', help='эталонная карта для doodads')
     ap.add_argument('--types', help='список типов декораций через запятую для doodads')
     ap.add_argument('--undo', action='store_true', help='doodads: удалить ранее добавленные размещения')
+    ap.add_argument('--into', choices=['map', 'root'], default='map', help='hq-doodads: куда класть файлы')
+    ap.add_argument('--match', help='hq-doodads: только пути, содержащие текст')
+    ap.add_argument('--folders', default='Doodads', help='hq-doodads: папки под WC3DotaHQTest\\A через запятую')
     a = ap.parse_args()
     if a.fix == 'list':
         for k, f in FIXES.items(): print(f'{k:10s} {f.__doc__.strip().splitlines()[0]}')
@@ -102,6 +177,7 @@ def main():
     w = workshop.Workshop()
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types)
+    elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders)
     else: FIXES[a.fix](w, a.apply)
 
 if __name__ == '__main__':
