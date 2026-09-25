@@ -19,3 +19,4 @@ __MACOSX/
 library_manifest/
 library_manifest.zip
 .work/
+state/
