@@ -5,14 +5,14 @@
  "models": {
   "u010": {
    "model": "WC3DotaHQTest\\A\\Buildings\\Other\\Merchant\\Merchant",
-   "applied": "2026-09-25 22:15:14",
+   "applied": "2026-09-25 22:15:34",
    "unitSound": "Merchant",
    "modelScale": "1",
    "scale": "2.5"
   },
   "uC74": {
    "model": "units\\custom\\ShopKeeper\\ShopKeeper",
-   "applied": "2026-09-25 22:15:15",
+   "applied": "2026-09-25 22:15:34",
    "unitSound": "SecretShop",
    "modelScale": "1.2",
    "scale": "1"

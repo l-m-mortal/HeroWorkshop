@@ -122,7 +122,8 @@ def slk_set(text: str, x: int, y: int, value) -> str:
     # Drop earlier overrides of the same cell so the row stays clean.
     lines = lines[:start + 1] + [l for l in lines[start + 1:end] if not re.match(rf'^C;Y{y};X{x};K', l)] + lines[end:]
     end = next((i for i in range(start + 1, len(lines)) if re.match(r'^C;(?:X1;Y\d+|Y\d+;X1);K', lines[i]) or lines[i].rstrip('\r') == 'E'), len(lines))
-    lines.insert(end, f'C;Y{y};X{x};K{json.dumps(str(value))}{eol}')
+    # SYLK strings are not JSON: backslashes stay as they are, only quotes are escaped.
+    lines.insert(end, f'C;Y{y};X{x};K"{str(value).replace(chr(34), chr(92) + chr(34))}"{eol}')
     return '\n'.join(lines)
 
 # ---------------------------------------------------------------- the map --
