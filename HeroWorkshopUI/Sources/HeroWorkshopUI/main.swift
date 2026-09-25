@@ -61,13 +61,18 @@ struct Hero: Codable, Hashable, Identifiable {
     var icon: IconInfo
     var abilities: [Ability]
     var related: [RelatedUnit]?
+    var group: String?              // hero | other
     var id: String { code }
 }
 struct Item: Codable, Hashable, Identifiable {
-    var code: String
+    var code: String?
     var name: String
+    var codes: [String]
+    var keys: String                // "item:A,item:B" — every rawcode of this item that has an icon
+    var count: Int
+    var distinct_arts: Int
     var icon: IconInfo
-    var id: String { code }
+    var id: String { name }
 }
 struct MapState: Codable {
     var map: String
@@ -447,7 +452,7 @@ struct ItemsView: View {
     var items: [Item] {
         let all = store.state?.items ?? []
         guard !search.isEmpty else { return all }
-        return all.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.code.localizedCaseInsensitiveContains(search) }
+        return all.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.codes.contains { $0.localizedCaseInsensitiveContains(search) } }
     }
     var body: some View {
         VStack(spacing: 0) {
@@ -458,7 +463,8 @@ struct ItemsView: View {
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.fixed(84), spacing: 6), count: 10), spacing: 10) {
                     ForEach(items) { item in
-                        IconSlot(store: store, key: "item:\(item.code)", title: item.name, subtitle: "Предмет \(item.code)", icon: item.icon)
+                        IconSlot(store: store, key: item.keys, title: item.count > 1 ? "\(item.name) ×\(item.count)" : item.name,
+                                 subtitle: "Rawcode: \(item.codes.joined(separator: ", "))" + (item.distinct_arts > 1 ? "\nРазных иконок сейчас: \(item.distinct_arts)" : ""), icon: item.icon)
                     }
                 }.padding(10).background(HUD.panel, in: RoundedRectangle(cornerRadius: 12)).padding()
             }
@@ -493,18 +499,9 @@ struct ContentView: View {
                     VStack(spacing: 0) {
                         TextField("Поиск героя", text: $search).textFieldStyle(.roundedBorder).padding(8)
                         List(selection: $selection) {
-                            ForEach(heroes) { h in
-                                HStack {
-                                    if let url = store.previewURL(h.icon.normal), let img = NSImage(contentsOf: url) {
-                                        Image(nsImage: img).resizable().interpolation(.none).frame(width: 22, height: 22).cornerRadius(3)
-                                    } else { Image(systemName: "person.crop.square").frame(width: 22, height: 22) }
-                                    Text(h.name)
-                                    Spacer()
-                                    if h.saved_scales != nil || h.icon.override != nil || h.abilities.contains(where: { $0.icon.override != nil }) {
-                                        Circle().fill(.green).frame(width: 6, height: 6)
-                                    }
-                                }.tag(h.code)
-                            }
+                            Section("Герои (\(heroes.filter { $0.group != "other" }.count))") { ForEach(heroes.filter { $0.group != "other" }) { h in heroRow(h) } }
+                            let others = heroes.filter { $0.group == "other" }
+                            if !others.isEmpty { Section("Прочие юниты с геройскими способностями (\(others.count))") { ForEach(others) { h in heroRow(h) } } }
                         }
                     }.frame(minWidth: 230, maxWidth: 300)
                     if let hero = heroes.first(where: { $0.code == selection }) ?? heroes.first {
@@ -525,6 +522,18 @@ struct ContentView: View {
         }
         .frame(minWidth: 1100, minHeight: 720)
         .onChange(of: store.state?.generated) { _ in if selection == nil { selection = heroes.first?.code } }
+    }
+    func heroRow(_ h: Hero) -> some View {
+        HStack {
+            if let url = store.previewURL(h.icon.normal), let img = NSImage(contentsOf: url) {
+                Image(nsImage: img).resizable().interpolation(.none).frame(width: 22, height: 22).cornerRadius(3)
+            } else { Image(systemName: "person.crop.square").frame(width: 22, height: 22) }
+            Text(h.name)
+            Spacer()
+            if h.saved_scales != nil || h.icon.override != nil || h.abilities.contains(where: { $0.icon.override != nil }) {
+                Circle().fill(.green).frame(width: 6, height: 6)
+            }
+        }.tag(h.code)
     }
 }
 

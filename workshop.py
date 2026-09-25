@@ -206,12 +206,33 @@ class Workshop:
         ov = self.state['icons'].get(key)
         if ov: info['override'] = ov
         return info
-    def hero_codes(self):
+    def hero_like(self):
+        """Every unit with hero abilities (uppercase rawcode = hero in Warcraft)."""
         ab, h, rows = self.unit_abils
-        codes = [c for c, r in rows.items() if c[0].isupper() and ab.get((h['heroAbilList'], r), '').strip()]
-        for c in list(self.p3) + list(self.selection):
-            if c in rows and c not in codes: codes.append(c)
-        return sorted(set(codes), key=lambda c: self.hero_name(c).lower())
+        return [c for c, r in rows.items() if c[0].isupper() and ab.get((h['heroAbilList'], r), '').strip()]
+    def unit_model(self, code):
+        cells, h, rows = self.unit_ui
+        return cells.get((h['file'], rows[code])) if code in rows else None
+    def hero_groups(self):
+        """Primary heroes (P3 table / model selection) and their form variants.
+        A unit is a variant of a hero when it shares the hero's name or model."""
+        primary = [c for c in list(self.p3) + list(self.selection) if c in self.unit_ui[2]]
+        primary = list(dict.fromkeys(primary))
+        by_name = {}; by_model = {}
+        for c in primary:
+            by_name.setdefault(self.name(c, 'UnitFunc').lower(), c)
+            m = self.unit_model(c)
+            if m: by_model.setdefault(m.lower(), c)
+        variants = {c: [] for c in primary}; others = []
+        for c in self.hero_like():
+            if c in variants: continue
+            owner = by_name.get(self.name(c, 'UnitFunc').lower()) or by_model.get((self.unit_model(c) or '').lower())
+            if owner: variants[owner].append(c)
+            else: others.append(c)
+        return variants, others
+    def hero_codes(self):
+        variants, others = self.hero_groups()
+        return sorted(variants, key=lambda c: self.hero_name(c).lower()) + sorted(others, key=lambda c: self.hero_name(c).lower())
     def hero_name(self, code):
         sel = self.selection.get(code)
         return sel['hero'] if sel and sel.get('hero') else self.name(code, 'UnitFunc')
@@ -270,8 +291,9 @@ class Workshop:
                 seen.append(u); card = self.unit_card(u, rel)
                 if card: out.append(card)
         p3 = self.p3.get(code); sel = self.selection.get(code, {})
-        if p3: add(p3['morph'], 'морф-форма (P3)')
+        if p3: add(p3['morph'], 'юнит в таверне выбора (P3)')
         add(sel.get('alternative_rawcode'), 'альтернативная модель')
+        for u in self.hero_groups()[0].get(code, []): add(u, 'вариант / форма героя')
         for a in abilities:
             for u in self.summoned_by(a['code']): add(u, f'призыв: {a["name"]}')
         for u in self.state['related'].get(code, []): add(u, 'добавлен вручную')
@@ -282,6 +304,7 @@ class Workshop:
         cells, h, rows = self.unit_ui
         abilities = self.abilities(code)
         return {'code': code, 'name': self.hero_name(code), 'txt_name': self.name(code, 'UnitFunc'),
+                'group': 'hero' if (p3 or code in self.selection) else 'other',
                 'model': cells.get((h['file'], rows[code])) if code in rows else None,
                 'scale': self.model_scale(code), 'p3_scale': p3['scale'] if p3 else None,
                 'morph': p3['morph'] if p3 else None, 'morph_scale': self.model_scale(p3['morph']) if p3 else None,
@@ -290,13 +313,25 @@ class Workshop:
                 'icon': self.icon_info('unit:' + code), 'abilities': abilities,
                 'related': self.related_units(code, abilities)}
     def item_list(self):
-        data, h, rows = self.items; out = []
+        """Items grouped by name: DotA keeps dozens of rawcodes per item (one per
+        hero for Aghanim's Scepter, upgrade levels, shop copies). One card per name."""
+        data, h, rows = self.items; groups = {}
         for code, r in rows.items():
             name = self.name(code, 'ItemFunc')
             if name == code: continue
-            _, pos = self.txt_value(code, 'Buttonpos', 'ItemFunc')
-            out.append({'code': code, 'name': name, 'icon': self.icon_info('item:' + code),
-                        'abilities': [a.strip() for a in data.get((h['abilList'], r), '').split(',') if a.strip()]})
+            info = self.icon_info('item:' + code)
+            g = groups.setdefault(name, {'name': name, 'codes': [], 'code': None, 'icon': None, 'arts': {}})
+            g['codes'].append(code)
+            if info['art']:
+                g['arts'][info['art']] = g['arts'].get(info['art'], 0) + 1
+                if g['icon'] is None or (g['icon']['normal']['where'] in ('none', 'standard') and info['normal']['where'] in ('map', 'disk')):
+                    g['icon'] = info; g['code'] = code
+        out = []
+        for g in groups.values():
+            if g['icon'] is None: g['icon'] = self.icon_info('item:' + g['codes'][0]); g['code'] = g['codes'][0]
+            g['count'] = len(g['codes']); g['distinct_arts'] = len(g['arts'])
+            g['keys'] = ','.join('item:' + c for c in g['codes'] if self.art_of('item:' + c)[1])
+            del g['arts']; out.append(g)
         return sorted(out, key=lambda x: x['name'].lower())
 
     # ---- previews
@@ -463,8 +498,11 @@ def main():
     if a.cmd == 'doctor': return doctor()
     w = Workshop()
     if a.cmd == 'state': print(w.export_state(not a.no_previews))
-    elif a.cmd == 'set-icon': w.set_icon(a.key, Path(a.file).expanduser())
-    elif a.cmd == 'clear-icon': w.clear_icon(a.key)
+    elif a.cmd == 'set-icon':
+        for key in [k.strip() for k in a.key.split(',') if k.strip()]: w.set_icon(key, Path(a.file).expanduser())
+    elif a.cmd == 'clear-icon':
+        for key in [k.strip() for k in a.key.split(',') if k.strip()]:
+            if key in w.state['icons']: w.clear_icon(key)
     elif a.cmd == 'set-scale': w.set_scale(a.rawcode.strip(), a.scale, a.morph, a.alt)
     elif a.cmd in ('add-related', 'remove-related'):
         lst = w.state['related'].setdefault(a.hero, [])
