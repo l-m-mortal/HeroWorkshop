@@ -404,28 +404,54 @@ class Workshop:
                 'icon': self.icon_info('unit:' + code), 'abilities': abilities,
                 'extra_abilities': extra, 'forms': forms, 'summons': summons, 'tavern': tavern,
                 'related': related}
+    def shops(self):
+        """Item shops: units selling dummy units (one per item). Shop entries carry
+        the icon seen in the shop; the script converts a bought unit into the item."""
+        out = []
+        for n, t in self.txt.items():
+            for code, sec in t.sections.items():
+                if 'sellunits' not in sec or not code[0].islower(): continue
+                sold = [x.strip() for x in sec['sellunits'][1].split(',') if x.strip()]
+                if len(sold) < 4 or not all(s[0].islower() for s in sold): continue
+                if any(s['code'] == code for s in out): continue
+                out.append({'code': code, 'name': self.name(code, 'UnitFunc'), 'units': sold})
+        return sorted(out, key=lambda s: s['name'].lower())
     def item_list(self):
-        """Items grouped by name: DotA keeps dozens of rawcodes per item (one per
-        hero for Aghanim's Scepter, upgrade levels, shop copies). One card per name."""
+        """Items grouped by name. Each group joins the shop entry units (what the
+        shop shows) with the item rawcodes (what the inventory shows): DotA keeps
+        dozens of rawcodes per item, one icon should cover all of them."""
         data, h, rows = self.items; groups = {}
+        def group(name):
+            return groups.setdefault(name, {'name': name, 'codes': [], 'shop_units': [], 'icon': None, 'icon_item': None, 'arts': {}})
         for code, r in rows.items():
             name = self.name(code, 'ItemFunc')
             if name == code: continue
+            g = group(name); g['codes'].append(code)
             info = self.icon_info('item:' + code)
-            g = groups.setdefault(name, {'name': name, 'codes': [], 'code': None, 'icon': None, 'arts': {}})
-            g['codes'].append(code)
             if info['art']:
                 g['arts'][info['art']] = g['arts'].get(info['art'], 0) + 1
-                if g['icon'] is None or (g['icon']['normal']['where'] in ('none', 'standard') and info['normal']['where'] in ('map', 'disk')):
-                    g['icon'] = info; g['code'] = code
+                if g['icon_item'] is None or (g['icon_item']['normal']['where'] in ('none', 'standard') and info['normal']['where'] in ('map', 'disk')):
+                    g['icon_item'] = info
+        by_norm = {norm(n): n for n in groups}
+        for shop in self.shops():
+            for i, u in enumerate(shop['units']):
+                uname = self.name(u, 'UnitFunc'); key = norm(uname)
+                name = by_norm.get(key) or next((n for k, n in by_norm.items() if k.startswith(key) and len(key) >= 5), None) or uname
+                g = group(name)
+                info = self.icon_info('unit:' + u)
+                g['shop_units'].append({'code': u, 'shop': shop['code'], 'shop_name': shop['name'], 'index': i, 'buttonpos': self.xy(u, 'Buttonpos'), 'icon': info})
+                if g['icon'] is None and info['art']: g['icon'] = info
         out = []
         for g in groups.values():
-            if g['icon'] is None: g['icon'] = self.icon_info('item:' + g['codes'][0]); g['code'] = g['codes'][0]
+            if g['icon'] is None: g['icon'] = g['icon_item'] or self.icon_info('item:' + (g['codes'] or ['----'])[0])
+            if g['icon_item'] is None and g['codes']: g['icon_item'] = self.icon_info('item:' + g['codes'][0])
+            g['code'] = g['codes'][0] if g['codes'] else None
             g['count'] = len(g['codes']); g['distinct_arts'] = len(g['arts'])
-            g['keys'] = ','.join('item:' + c for c in g['codes'] if self.art_of('item:' + c)[1])
+            keys = ['unit:' + s['code'] for s in g['shop_units'] if s['icon']['art']] + ['item:' + c for c in g['codes'] if self.art_of('item:' + c)[1]]
+            g['keys'] = ','.join(keys)
+            g['in_shops'] = sorted({s['shop_name'] for s in g['shop_units']})
             del g['arts']; out.append(g)
         return sorted(out, key=lambda x: x['name'].lower())
-
     # ---- previews
     def preview(self, key: str, res: dict, suffix: str) -> str | None:
         if res.get('where') == 'standard' and 'sample' not in res:
@@ -456,9 +482,12 @@ class Workshop:
                 for u in hd['related']:
                     self.with_previews('unit:' + u['code'], u['icon'])
                     for a in u['abilities']: self.with_previews('ability:' + a['code'], a['icon'])
-            for it in items: self.with_previews('item:' + it['code'], it['icon'])
+            for it in items:
+                self.with_previews('item:' + (it['code'] or 'none'), it['icon'])
+                if it['icon_item']: self.with_previews('item:' + (it['code'] or 'none'), it['icon_item'])
+                for s in it['shop_units']: self.with_previews('unit:' + s['code'], s['icon'])
         out = {'map': str(MAP), 'game_root': str(GAME), 'generated': time.strftime('%Y-%m-%d %H:%M:%S'),
-               'work_dir': str(WORK), 'heroes': heroes, 'items': items}
+               'work_dir': str(WORK), 'heroes': heroes, 'items': items, 'shops': self.shops()}
         WORK.mkdir(parents=True, exist_ok=True)
         (WORK / 'state.json').write_text(json.dumps(out, ensure_ascii=False, indent=1))
         return WORK / 'state.json'
@@ -642,7 +671,9 @@ def candidates(key: str, w: 'Workshop'):
     of a possibly comma-separated multi-key string, e.g. "item:I0B4,item:I0B5").
     """
     from library_build import LIBRARY
-    first = next((k.strip() for k in key.split(',') if k.strip()), key.strip())
+    keys = [k.strip() for k in key.split(',') if k.strip()]
+    # Item groups mix shop-unit keys and item keys: the item key names the group.
+    first = next((k for k in keys if k.startswith('item:')), keys[0] if keys else key.strip())
     kind, code = first.split(':', 1)
     if kind == 'item':
         target = code
