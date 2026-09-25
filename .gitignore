@@ -1,0 +1,12 @@
+.venv/
+.work/
+__pycache__/
+Backups/
+.build/
+._*
+__MACOSX/
+.DS_Store
+workshop.local.json
+*.w3x
+library_manifest/
+library_manifest.zip
