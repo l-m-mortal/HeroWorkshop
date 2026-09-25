@@ -178,7 +178,7 @@ class Workshop:
     def resolve(self, art: str | None) -> dict:
         """Where does this art path load from right now?"""
         if not art: return {'where': 'none'}
-        cands = [art] if re.search(r'\.(blp|tga|dds)$', art, re.I) else [art + '.blp', art + '.tga']
+        cands = [art] if re.search(r'\.(blp|tga|dds|mdx|mdl)$', art, re.I) else [art + '.blp', art + '.tga']
         for c in cands:
             if self.mpq.has(c): return {'where': 'map', 'path': c}
         for c in cands:
@@ -591,6 +591,28 @@ class Workshop:
         return {'found': len(seen), 'map': len(map_arts), 'disk': len(disk_arts), 'skipped': skipped,
                 'scope': scope, 'apply': apply, 'written_map': written_map, 'written_disk': written_disk}
 
+    def set_unit_ui(self, code: str, values: dict):
+        """Write unitUI.slk cells (file, unitSound, modelScale, scale, ...) for one unit."""
+        cells, h, rows = self.unit_ui
+        if code not in rows: die(f'{code} нет в unitUI.slk')
+        text = self.unit_ui_text
+        for col, v in values.items():
+            if col not in h: die(f'нет колонки {col} в unitUI.slk')
+            text = slk_set(text, h[col], rows[code], v); cells[(h[col], rows[code])] = str(v)
+        self.unit_ui_text = text; self.changes['units\\unitUI.slk'] = text.encode('latin1', 'replace')
+    def set_model(self, code: str, model: str, sound: str | None = None, scale: float | None = None, selection: float | None = None):
+        model = model.replace('/', '\\'); model = re.sub(r'\.(mdx|mdl)$', '', model, flags=re.I)
+        res = self.resolve(model + '.mdx')
+        if res['where'] not in ('map', 'disk'):
+            print(f'WARN: модель {model}.mdx не найдена ни в карте, ни на диске ({res["where"]}); записываю как есть')
+        values = {'file': model}
+        if sound is not None: values['unitSound'] = sound
+        if scale is not None: values['modelScale'] = f'{scale:g}'
+        if selection is not None: values['scale'] = f'{selection:g}'
+        self.set_unit_ui(code, values)
+        self.state.setdefault('models', {})[code] = {'model': model, 'applied': time.strftime('%Y-%m-%d %H:%M:%S'), **{k: v for k, v in values.items() if k != 'file'}}
+        self.commit(); self.save_state()
+        print(f'Model {code}: {model} ({res["where"]})' + (f', sound={sound}' if sound else '') + (f', modelScale={scale:g}' if scale is not None else ''))
     def set_scale(self, code: str, scale: float, morph: float | None = None, alt: float | None = None):
         cells, h, rows = self.unit_ui
         if code not in rows: die(f'{code} нет в unitUI.slk')
@@ -679,6 +701,7 @@ def main():
     s = sub.add_parser('set-icon'); s.add_argument('key'); s.add_argument('file')
     s = sub.add_parser('clear-icon'); s.add_argument('key')
     s = sub.add_parser('set-scale'); s.add_argument('rawcode'); s.add_argument('scale', type=float); s.add_argument('--morph', type=float); s.add_argument('--alt', type=float)
+    s = sub.add_parser('set-model', help='сменить модель юнита (unitUI.slk:file)'); s.add_argument('unit'); s.add_argument('model'); s.add_argument('--sound'); s.add_argument('--scale', type=float); s.add_argument('--selection', type=float)
     s = sub.add_parser('add-related'); s.add_argument('hero'); s.add_argument('unit')
     s = sub.add_parser('remove-related'); s.add_argument('hero'); s.add_argument('unit')
     s = sub.add_parser('regen-disabled'); s.add_argument('--apply', action='store_true'); s.add_argument('--scope', choices=['all', 'map', 'disk'], default='all')
@@ -694,6 +717,7 @@ def main():
         for key in [k.strip() for k in a.key.split(',') if k.strip()]:
             if key in w.state['icons']: w.clear_icon(key)
     elif a.cmd == 'set-scale': w.set_scale(a.rawcode.strip(), a.scale, a.morph, a.alt)
+    elif a.cmd == 'set-model': w.set_model(a.unit.strip(), a.model, a.sound, a.scale, a.selection)
     elif a.cmd in ('add-related', 'remove-related'):
         lst = w.state['related'].setdefault(a.hero, [])
         if a.cmd == 'add-related':
