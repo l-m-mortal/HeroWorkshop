@@ -42,9 +42,11 @@ def fix_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types
     import doo
     from mpq import MPQ
     from pathlib import Path
-    ref_path = Path(ref) if ref else Path('Dota Mod Project/Sources/Maps/DotA v6.77b.w3x')
-    if not ref_path.is_absolute(): ref_path = workshop.GAME / ref_path
-    if not ref_path.is_file(): workshop.die(f'эталонная карта не найдена: {ref_path} (укажите --ref)')
+    candidates = [Path(ref)] if ref else [Path('Dota Mod Project/Sources/Packs/DOTA 2 mod/DOTA-HQv5_RePack.part01/Maps/Download/DotA v6.77b.w3x'),
+                                          Path('Dota Mod Project/Sources/Maps/DotA v6.77b.w3x')]
+    candidates = [p if p.is_absolute() else workshop.GAME / p for p in candidates]
+    ref_path = next((p for p in candidates if p.is_file()), None)
+    if ref_path is None: workshop.die('эталонная карта 6.77b не найдена, укажите --ref <путь к DotA v6.77b.w3x>')
     cur = doo.parse(w.mpq.read('war3map.doo')); src = doo.parse(MPQ(ref_path).read('war3map.doo'))
     here = {e['type'] for e in cur['entries']}
     wanted = set(types.split(',')) if types else {e['type'] for e in src['entries']} - here
