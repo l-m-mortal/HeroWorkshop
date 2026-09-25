@@ -57,9 +57,34 @@ def fix_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types
     for t, n in sorted(by_type.items(), key=lambda x: -x[1]): print(f'  {t}: {n} шт.' + ('' if t not in here else ' (тип уже есть в карте)'))
     if not picked: print('Нечего переносить.'); return
     if not apply: print(f'\nПлан: добавить {len(picked)} размещений. Запустите с --apply.'); return
-    doo.append(cur, picked)
+    first_id = max((e['editor_id'] for e in cur['entries']), default=0) + 1
+    doo.append(cur, picked, first_id)
     w.changes['war3map.doo'] = doo.serialize(cur); w.commit()
-    print(f'Добавлено {len(picked)} размещений; теперь {len(cur["entries"])}.')
+    w.state.setdefault('doodads_added', []).append({'ref': ref_path.name, 'types': sorted(wanted), 'editor_ids': [first_id, first_id + len(picked) - 1], 'applied': __import__('time').strftime('%Y-%m-%d %H:%M:%S')})
+    w.save_state()
+    print(f'Добавлено {len(picked)} размещений; теперь {len(cur["entries"])}. Откат: map_fix.py doodads --undo --apply')
+
+def undo_doodads(w: workshop.Workshop, apply: bool, types: str | None = None):
+    """Remove doodad placements added by `doodads` (from state) or all placements of --types."""
+    import doo
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    if types:
+        kill = set(types.split(',')); victims = [e for e in cur['entries'] if e['type'] in kill]
+    else:
+        added = w.state.get('doodads_added', [])
+        if not added: workshop.die('нет записей о добавленных декорациях; укажите --types')
+        ids = set()
+        for rec in added: ids.update(range(rec['editor_ids'][0], rec['editor_ids'][1] + 1))
+        victims = [e for e in cur['entries'] if e['editor_id'] in ids]
+    by_type = {}
+    for e in victims: by_type[e['type']] = by_type.get(e['type'], 0) + 1
+    for t, n in sorted(by_type.items()): print(f'  {t}: удалить {n} шт.')
+    if not victims: print('Нечего удалять.'); return
+    if not apply: print(f'\nПлан: удалить {len(victims)} размещений. Запустите с --apply.'); return
+    cur['entries'] = [e for e in cur['entries'] if e not in victims]
+    w.changes['war3map.doo'] = doo.serialize(cur); w.commit()
+    if not types: w.state['doodads_added'] = []; w.save_state()
+    print(f'Удалено {len(victims)}; осталось {len(cur["entries"])}.')
 
 FIXES = {'shops': fix_shops, 'doodads': fix_doodads}
 
@@ -69,12 +94,14 @@ def main():
     ap.add_argument('--apply', action='store_true')
     ap.add_argument('--ref', help='эталонная карта для doodads')
     ap.add_argument('--types', help='список типов декораций через запятую для doodads')
+    ap.add_argument('--undo', action='store_true', help='doodads: удалить ранее добавленные размещения')
     a = ap.parse_args()
     if a.fix == 'list':
         for k, f in FIXES.items(): print(f'{k:10s} {f.__doc__.strip().splitlines()[0]}')
         return
     w = workshop.Workshop()
-    if a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types)
+    if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
+    elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types)
     else: FIXES[a.fix](w, a.apply)
 
 if __name__ == '__main__':
