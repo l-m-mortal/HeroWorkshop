@@ -665,15 +665,17 @@ def _build_parts(w, result: list[dict]) -> None:
         j = body.find('Total Cost')
         if j > 0: body = body[:j]
         body = re.sub(r'\|c[0-9a-fA-F]{8}|\|r', '', body).replace('|n', '\n')
-        comps = []
+        comps = []; has_recipe = False
         for line in body.split('\n')[1:]:
             line = line.strip()
             m = re.match(r'^(.+?)\s*-\s*\d+', line)
             if not m: continue
             name = m.group(1).strip()
-            if name.lower() == 'recipe': continue
+            if name.lower() == 'recipe': has_recipe = True; continue
             comps.append(name)
-        return comps
+        # an entry WITHOUT a recipe line is bought whole by one click (the shop hands
+        # over the finished item, e.g. Ring of Basilius): never expand those
+        return comps if has_recipe else []
 
     def expand(ci: int, it: dict, visited: set, skipped: list) -> list:
         parts = [(ci, it['unit'], it['cost'], it['name'])]
