@@ -1362,6 +1362,33 @@ def fix_part_probe(w: workshop.Workshop, apply: bool, path: str | None = None, t
     fix_model_lift(w, apply, path, types, 'all', 0.0, None, False)
     if parts: fix_model_lift(w, apply, path, types, parts, offset, None, False)
 
+def fix_model_shift(w: workshop.Workshop, apply: bool, match: str | None = None, dz: float = 0.0, undo: bool = False):
+    """Raise or lower WHOLE models (all geosets) that the map holds under Doodads\\...
+    by dz, rebuilt from the WC3DotaHQTest\\A copy every time (absolute value). Use it
+    for HQ props whose placement height the game ignores.
+
+    --match text   models whose path contains text (e.g. Ashenvale\\Props, AshenObilisk)
+    --dz N         vertical shift; 0 restores the original
+    --undo         same as --dz 0"""
+    a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+    if undo: dz = 0.0
+    rec = w.state.setdefault('model_shift', {})
+    n = 0
+    for name in w.mpq.list():
+        if not name.lower().endswith('.mdx') or not name.lower().startswith('doodads\\'): continue
+        if match and match.lower().replace('/', '\\') not in name.lower(): continue
+        src = _hq_file(a_root, name)
+        if src is None: continue
+        data = src.read_bytes(); boxes = mdx_geoset_boxes(data)
+        if not boxes: continue
+        out = mdx_translate_geosets(data, {i: dz for i in range(len(boxes))}) if dz else data
+        w.changes[name] = out; rec[name] = dz; n += 1
+        print(f'  {name}: сдвиг {dz:+.0f}')
+    print(f'Моделей: {n}')
+    if not n: w.changes.clear(); return
+    if not apply: w.changes.clear(); print('\nПлан. Запустите с --apply.'); return
+    w.commit(); w.save_state(); print('Записано.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1556,7 +1583,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: fl
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels, 'part-probe': fix_part_probe}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels, 'part-probe': fix_part_probe, 'model-shift': fix_model_shift}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1570,6 +1597,7 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--dz', type=float, default=0.0, help='model-shift: сдвиг по вертикали')
     ap.add_argument('--events', help='model-events: СОБЫТИЕ@КАДР через запятую')
     ap.add_argument('--right', type=float, default=0.0, help='shop-ui: правый край панели (0 = 0.8, -1 = по размеру окна, число = вручную)')
     ap.add_argument('--top', type=float, default=None, help='shop-ui: верх панели (0.555)')
@@ -1605,6 +1633,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'model-shift': FIXES[a.fix](w, a.apply, a.match, a.dz, a.undo)
     elif a.fix == 'part-probe': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset or 800.0)
     elif a.fix == 'part-labels': FIXES[a.fix](w, a.apply, a.path, a.types, a.undo)
     elif a.fix == 'model-events': FIXES[a.fix](w, a.apply, a.path, a.source, a.events, a.undo, a.into)
