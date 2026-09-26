@@ -279,7 +279,7 @@ def fix_static_models(w: workshop.Workshop, apply: bool, match: str | None = Non
     (Experimental: on the HQ fences this made the models jitter instead of appearing.)
 
     --match text   only paths containing text
-    --undo         restore every model the map holds from its copy in WC3DotaHQTest\A"""
+    --undo         restore every model the map holds from its copy in WC3DotaHQTest\\A"""
     if undo:
         a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
         plan = []
@@ -351,7 +351,7 @@ def fix_repack_textures(w: workshop.Workshop, apply: bool, match: str | None = N
 
 _HQ_INDEX = None
 def _hq_file(a_root, rel: str):
-    """Case-insensitive lookup of a game path under WC3DotaHQTest\A."""
+    """Case-insensitive lookup of a game path under WC3DotaHQTest\\A."""
     global _HQ_INDEX
     if _HQ_INDEX is None:
         _HQ_INDEX = {}
@@ -364,7 +364,7 @@ def fix_custom_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None
     """Port the reference map's custom doodad/destructable types (D0xx/B0xx and modified
     standard types) together with their placements. Each ported type gets a fresh id
     here (D0H0.., B0H0..), so nothing existing is touched. Models the types use are
-    put into the map: HQ replacements from WC3DotaHQTest\A at their standard path
+    put into the map: HQ replacements from WC3DotaHQTest\\A at their standard path
     (with textures), imported models copied from the reference map.
 
     --types A,B     only these type ids of the reference (default: every custom or
