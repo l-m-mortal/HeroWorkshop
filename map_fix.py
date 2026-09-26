@@ -742,6 +742,21 @@ def fix_overlaps(w: workshop.Workshop, apply: bool, radius: float = 64.0, pairs:
     w.state.setdefault('removed_placements', []).extend(victims.values()); w.save_state()
     print(f'Удалено {len(victims)}. Вернуть: map_fix.py remove --undo --apply')
 
+def fix_model_bounds(w: workshop.Workshop, apply: bool, match: str | None = None):
+    """Vertical extents of the models inside the map (HQ doodads): a model whose lowest
+    vertex is far below 0 sits underground when placed on the ground; the offset for
+    doodads-z is about -min z.
+
+    --match text   only paths containing text"""
+    rows = []
+    for name in w.mpq.list():
+        if not name.lower().endswith('.mdx') or not name.lower().startswith('doodads\\'): continue
+        if match and match.lower() not in name.lower(): continue
+        b = mdx_bounds(w.mpq.read(name))
+        if b: rows.append((b[1][2], b[2][2], name))
+    for lo, hi, name in sorted(rows):
+        print(f'  z {lo:7.0f} .. {hi:6.0f}   {name}' + ('   <- утоплена, offset ~%d' % -lo if lo < -40 else ''))
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -881,7 +896,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -921,6 +936,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'model-bounds': FIXES[a.fix](w, a.apply, a.match)
     elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius, a.pairs, a.prefer)
     elif a.fix == 'model-cut': FIXES[a.fix](w, a.apply, a.path, a.drop, a.source)
     elif a.fix == 'remove': FIXES[a.fix](w, a.apply, a.ids, a.undo)
