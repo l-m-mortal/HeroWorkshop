@@ -1504,7 +1504,31 @@ def fix_cliffs(w: workshop.Workshop, apply: bool, undo: bool = False, split: boo
     cl = t['cliffs']; cells = t['cells']; W, H, ox, oy = t['w'], t['h'], t['ox'], t['oy']
     grass = next((i for i, c in enumerate(cl) if c.endswith('gr')), None); dirt = next((i for i, c in enumerate(cl) if c.endswith('di')), None)
     if grass is None or dirt is None: workshop.die(f'типы склонов в карте: {cl}, нужен один *gr и один *di')
-    side_of = lambda i, j: 'R' if (ox + i * 128) + (oy + j * 128) < 0 else 'D'
+    # Team side = which bank of the river a cell is on: the river is the largest connected
+    # group of water cells; every cell takes its nearest river cell and compares the
+    # x+y diagonal position with it (Radiant is below-left of the river).
+    from collections import deque
+    water = [((cells[k * 7 + 4] >> 4) & 4) != 0 for k in range(W * H)]
+    seen = [False] * (W * H); river = []
+    for k0 in range(W * H):
+        if not water[k0] or seen[k0]: continue
+        comp = [k0]; seen[k0] = True; q = deque([k0])
+        while q:
+            k = q.popleft(); i, j = k % W, k // W
+            for ni, nj in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)):
+                if 0 <= ni < W and 0 <= nj < H and water[nj * W + ni] and not seen[nj * W + ni]:
+                    seen[nj * W + ni] = True; comp.append(nj * W + ni); q.append(nj * W + ni)
+        if len(comp) > len(river): river = comp
+    src = [-1] * (W * H); q = deque()
+    for k in river: src[k] = k; q.append(k)
+    while q:
+        k = q.popleft(); i, j = k % W, k // W
+        for ni, nj in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)):
+            if 0 <= ni < W and 0 <= nj < H and src[nj * W + ni] < 0: src[nj * W + ni] = src[k]; q.append(nj * W + ni)
+    def side_of(i, j):
+        if not river: return 'R' if (ox + i * 128) + (oy + j * 128) < 0 else 'D'
+        s = src[j * W + i]; return 'R' if i + j < (s % W) + (s // W) else 'D'
+    print(f'Река: {len(river)} клеток воды; сторона клетки = берег реки')
     from collections import Counter
     cnt = Counter(); changes = []
     for j in range(H):
