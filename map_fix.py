@@ -634,9 +634,15 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
         xy = w.xy(code, 'Buttonpos')
         if xy and 0 <= xy[0] <= 3 and 0 <= xy[1] <= 2:
             ids.append(code); positions[code] = xy[1] * 4 + xy[0]
+    # Parked: Invoker's invoked spells share one data slot and the game shuffles them
+    # at runtime; numbers landed in the wrong cell. Skip them until a better rule exists.
+    skip_names = re.compile(r'^(cold snap|ghost walk|tornado|emp|alacrity|chaos meteor|sun strike|forge spirit|ice wall|deafening blast)', re.I)
+    parked = [c for c in ids if positions.get(c) == 5 and skip_names.match(w.name(c, 'AbilityFunc') or '')]
+    ids = [c for c in ids if c not in parked]
+    for c in parked: positions.pop(c, None)
     new = cooldown_jass.remove(script) if undo else cooldown_jass.inject(script, ids, font, positions, parent, debug)
     if not undo:
-        print(f'Способностей в списке для опроса: {len(ids)}, с известной позицией кнопки: {len(positions)}')
+        print(f'Способностей в списке для опроса: {len(ids)}, с известной позицией кнопки: {len(positions)}; пропущено (Инвокер): {len(parked)}')
         print(f'Родитель текста: {parent}; отладка: {"вкл" if debug else "выкл"}')
     present = 'HW_COOLDOWN_BEGIN' in script
     print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
