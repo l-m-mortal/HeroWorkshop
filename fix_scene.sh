@@ -19,8 +19,8 @@ python3 map_fix.py doodads --undo --types VOfs,VOfl --apply || true
 step "3. Лишнее у фонтана по номерам (фонарь в стене, стойка, второй фонарь)"
 python3 map_fix.py remove --ids 5254,5244,5253 --apply || true
 
-step "4. Перенесённые фонари и факелы (AOsr, IOst, LOth, LOsk, NOfl): убрать все, родные остаются"
-python3 map_fix.py doodads --undo --types AOsr,IOst,LOth,LOsk,NOfl --ported --apply || true
+step "4. Перенесённые фонари, факелы и мелкие украшения (все типы): убрать, родные 6.85 остаются"
+python3 map_fix.py doodads --undo --types AOsr,IOst,LOth,LOsk,NOfl,LOtz,LOic,CPct,JOgr,LOlp,NOtb,NObt,LObz,CPlp,NOfg,NOfp,ZWfs,CPms,APtv,AObd,LOss,LOsh,NOok,NOal,OOal,OOsk,CSbc,AOks,AOsk,ATtc --ported --apply || true
 
 step "5. Лестница и камни 6.77b (ARrk): убрать родные камни ZRrk на тех же местах"
 python3 map_fix.py overlaps --pairs ARrk:ZRrk --radius 100 --prefer ported --apply || true
