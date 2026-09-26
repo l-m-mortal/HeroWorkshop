@@ -103,7 +103,7 @@ def mdx_textures(data: bytes) -> list[str]:
     return out
 
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads'):
-    """Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
+    r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
 
     --into map|root   write into the map archive (default) or copy next to the game
@@ -129,7 +129,10 @@ def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: 
         for tex in mdx_textures(p.read_bytes()):
             t = tex.replace('/', '\\')
             if t.lower() in files or t.lower() in extra: continue
-            if w.mpq.has(t) or w.disk(t).is_file(): continue  # already reachable in the map or at the game root
+            if w.mpq.has(t): continue
+            # Models converted for the mod reference textures by their WC3DotaHQTest\A\... path.
+            # Put every such texture into the map too: the map must not depend on the folder.
+            if w.disk(t).is_file(): extra[t.lower()] = (t, w.disk(t)); continue
             cand = a_root / t.replace('\\', '/')
             if cand.is_file(): extra[t.lower()] = (t, cand); continue
             if index is None:
