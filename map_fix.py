@@ -465,6 +465,50 @@ def fix_custom_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None
     w.save_state()
     print(f'Добавлено типов {len(new_types)}, размещений {nid - first_id}, файлов {len(files)}. Откат: map_fix.py custom-doodads --undo --apply')
 
+def terrain_z(w: workshop.Workshop):
+    """Return f(x, y) -> ground height from war3map.w3e."""
+    import struct
+    b = w.mpq.read('war3map.w3e'); o = 13
+    ng = struct.unpack_from('<I', b, o)[0]; o += 4 + ng * 4
+    nc = struct.unpack_from('<I', b, o)[0]; o += 4 + nc * 4
+    width, height = struct.unpack_from('<II', b, o); o += 8
+    ox, oy = struct.unpack_from('<ff', b, o); o += 8
+    cells = b[o:]
+    def f(x, y):
+        i = min(max(int(round((x - ox) / 128)), 0), width - 1); j = min(max(int(round((y - oy) / 128)), 0), height - 1)
+        c = cells[(j * width + i) * 7:(j * width + i) * 7 + 7]
+        return (struct.unpack_from('<h', c)[0] - 8192) / 4 + ((c[6] & 0xF) - 2) * 128
+    return f
+
+def fix_move_doodads(w: workshop.Workshop, apply: bool, types: str | None = None, frm: str | None = None, to: str | None = None, rotate: float = 0.0):
+    """Move (and optionally rotate) every placement of the given doodad types: the point
+    --from is carried to --to, the rest of the group keeps its shape. Heights follow the
+    terrain at the new spot.
+
+    --types A,B     doodad type ids to move (required)
+    --from=X,Y      reference point (default: centre of the group)
+    --to=X,Y        where the reference point goes (required)
+    --rotate DEG    turn the group around the reference point (counter-clockwise)"""
+    import doo, math
+    if not types or not to: workshop.die('нужны --types и --to=X,Y')
+    kinds = set(types.split(','))
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    group = [e for e in cur['entries'] if e['type'] in kinds]
+    if not group: workshop.die('таких размещений нет')
+    tx, ty = [float(v) for v in to.split(',')]
+    if frm: fx, fy = [float(v) for v in frm.split(',')]
+    else: fx = sum(e['x'] for e in group) / len(group); fy = sum(e['y'] for e in group) / len(group)
+    tz = terrain_z(w); rad = math.radians(rotate); ca, sa = math.cos(rad), math.sin(rad)
+    print(f'Размещений: {len(group)}; опорная точка ({fx:g}, {fy:g}) -> ({tx:g}, {ty:g}), поворот {rotate:g}°')
+    for e in group:
+        dx, dy = e['x'] - fx, e['y'] - fy
+        nx = tx + dx * ca - dy * sa; ny = ty + dx * sa + dy * ca
+        nz = e['z'] - tz(e['x'], e['y']) + tz(nx, ny)
+        print(f"  {e['type']} ({e['x']:.0f}, {e['y']:.0f}, z {e['z']:.0f}, {math.degrees(e['angle']):.0f}°) -> ({nx:.0f}, {ny:.0f}, z {nz:.0f}, {(math.degrees(e['angle']) + rotate) % 360:.0f}°)")
+        if apply: e['x'], e['y'], e['z'] = nx, ny, nz; e['angle'] = (e['angle'] + rad) % (2 * math.pi)
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); print('Перемещено.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -583,7 +627,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -592,6 +636,9 @@ def main():
     ap.add_argument('--ref', help='эталонная карта для doodads')
     ap.add_argument('--types', help='список типов декораций через запятую для doodads')
     ap.add_argument('--near', help='doodads: X,Y,R — только размещения в радиусе R от точки')
+    ap.add_argument('--from', help='move-doodads: X,Y опорная точка (писать через =)')
+    ap.add_argument('--to', help='move-doodads: X,Y куда (писать через =)')
+    ap.add_argument('--rotate', type=float, default=0.0, help='move-doodads: поворот группы в градусах')
     ap.add_argument('--at', help='probe: X,Y,R — точка и радиус')
     ap.add_argument('--opaque', action='store_true', help='repack-textures: убрать альфа-канал')
     ap.add_argument('--models', action='store_true', help='hq-doodads: проверить каждую модель и её текстуры')
@@ -611,6 +658,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate)
     elif a.fix == 'custom-doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near, a.undo)
     elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match, a.undo)
     elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)

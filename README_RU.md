@@ -92,6 +92,7 @@ python3 map_fix.py shops --apply                     # модели боково
 python3 map_fix.py doodads [--ref карта] [--types A,B] [--near=X,Y,R] [--undo] --apply
 python3 map_fix.py hq-doodads [--match Fence] [--textures] [--models] --apply
 python3 map_fix.py probe [--at=-7168,-7168,2600]     # декорации вокруг точки здесь и в 6.77b
+python3 map_fix.py move-doodads --types DH01 --from=2448,-528 --to=4208,-2288 [--rotate 90] --apply  # перенести группу
 python3 map_fix.py custom-doodads [--types D001,AOob] [--near=X,Y,R] [--undo] --apply  # пользовательские типы 6.77b под новыми кодами
 python3 map_fix.py static-models [--match Fence] [--undo] --apply   # экспериментально: Stand для моделей без анимаций; --undo вернуть из папки HQ
 python3 map_fix.py repack-textures [--match Shrub] --apply  # JPEG-BLP текстуры HQ-моделей -> палитровый BLP1
