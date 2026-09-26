@@ -21,8 +21,10 @@ def fix_shops(w: workshop.Workshop, apply: bool):
     In 6.85:  u010 got the ShopKeeper model and the SecretShop sound set,
               uC74 got a shrub doodad (invisible, unselectable)."""
     plan = [
-        ('u010', 'Goblin Merchant (боковая лавка)', 'WC3DotaHQTest\\A\\Buildings\\Other\\Merchant\\Merchant', 'Merchant', 1.0, 2.5),
-        ('uC74', 'Leragas the Vile (потайная лавка)', 'units\\custom\\ShopKeeper\\ShopKeeper', 'SecretShop', 1.2, 1.0),
+        ('u010', 'Goblin Merchant (боковая лавка)', 'WC3DotaHQTest\\A\\Buildings\\Other\\Merchant\\Merchant', 'Merchant', 0.65, 2.5),
+        # HQ's ShopKeeper.mdx is a 7 KB stub: the visible keeper is part of the tent decoration,
+        # the unit itself only has to be clickable (as in 6.77b with the HQ override).
+        ('uC74', 'Leragas the Vile (потайная лавка)', 'WC3DotaHQTest\\A\\Units\\Custom\\ShopKeeper\\ShopKeeper', 'SecretShop', 1.2, 1.0),
     ]
     cells, h, rows = w.unit_ui
     for code, label, model, sound, scale, sel in plan:
