@@ -6,80 +6,102 @@ FUNCTIONS block spliced in front of `main`, and one call appended to the end of
 `main`. Coexists with the HW_COOLDOWN_* block cooldown_jass.py injects (distinct
 marker comments, distinct globals/functions, both spliced the same way).
 
-Layout (this is the second, right-docked revision -- see docs/SHOP_UI_NOTES.md
-for the earlier "tabs" and "two pages" prototypes it replaces, and why): a
-column docked to the RIGHT screen edge, between the score bar and the command
-card (PANEL_* constants below), showing ALL base shops at once as small blocks
-(ASCII text header + a 4x3 icon grid in the SAME cell positions the map's own
-shop UI uses, from each sold dummy unit's `Buttonpos`) -- no tabs, no pages, no
-scrolling: two columns of up to SHOPS_PER_COL blocks each, sized to fit the
-whole 14-shop catalog in the panel's fixed height (which is why ICON below is
-noticeably smaller than the ~0.018-0.024 first suggested -- see the note next
-to it). Every geometry knob is a module-level constant so the layout can be
-retuned without touching the JASS template strings.
+Layout (this is the third revision -- see docs/SHOP_UI_NOTES.md for v1 "tabs",
+v2 "two pages" and why both were dropped): a column docked to the right screen
+edge with a small margin (PANEL_* constants below), between the score bar and
+the command card, showing ALL base shops at once as small blocks (ASCII text
+header directly above its own 4x3 icon grid, same x, at each item's in-game
+Buttonpos cell) -- no tabs, no pages, no scrolling: three columns of up to
+SHOPS_PER_COL blocks each. Every geometry knob is a module-level constant so
+the layout can be retuned without touching the JASS template strings.
 
 * One hidden panel (BACKDROP) is built once, 1s after map start. Opening just
   flips visibility (no slide animation, per the task).
-* The clickable "Shop" toggle is an invisible BUTTON placed exactly over the
-  existing HUD "SHOP" command-card label (TOGGLE_* constants), not a new
-  visible button -- the previous prototype's own "Shop" button sat on top of
-  the command card, which the second in-game test flagged. The "-shop" chat
-  command (registered for every player slot) still works the same way.
+* The clickable "Shop" toggle sits over the existing HUD "SHOP" command-card
+  label (TOGGLE_* constants): a BACKDROP (existing chrome texture, low alpha
+  so it can actually be seen and the offset tuned -- fully-invisible buttons
+  did not register clicks reliably in the previous revision's playtest) with
+  a BUTTON child on top, same construction as every other button in this file
+  (BACKDROP + BUTTON, sometimes + TEXT). The "-shop" chat command (registered
+  for every player slot) still works the same way.
 * Both toggles flip visibility of the SAME shared panel, but only on the
   clicking player's own client (`if GetLocalPlayer() == p then ... endif`
   around BlzFrameSetVisible only -- no handle is created there, so this
   cannot desync). This gives each player their own open/closed state.
 * All shop content (icons, tooltips, the frame->item hashtable) is written
-  ONCE at build time and never rewritten afterwards -- there is no page/tab
-  state shared between players any more, since there is no page/tab.
-* Buying does not replay the map's native Sellunits/order-id purchase path
-  (unverified without a live client, see docs/SHOP_UI_PLAN.md §6) -- it uses
-  the safe fallback the task allows: check gold, GetPlayerState/SetPlayerState
-  to pay, UnitAddItemById on the player's first hero (GroupEnumUnitsOfPlayer +
-  IsUnitType UNIT_TYPE_HERO). No courier/fountain-drop fallback is implemented
-  (documented limitation, unchanged from earlier prototypes).
-* Panel/button textures: the first live-client test after the previous
-  revision showed the panel as a solid green rectangle -- IN QUEUE
-  ``human-options-menu-background.blp`` looked fine in the very first
-  prototype's playtest (docs/SHOP_UI_NOTES.md) but apparently isn't reliably
-  present as a standalone texture in this client's CASC/MPQ search order for
-  a plain BACKDROP with no TOC-declared control class. Switched to
-  ``UI\\Widgets\\ToolTips\\Human\\human-tooltip-background.blp`` for the panel
-  and block-header backdrops and ``UI\\Widgets\\Console\\Human\\human-console-
-  button-background.blp`` for the close button -- both are plain, commonly
-  reused chrome textures (tooltip frames and the escape-menu console already
-  render them in 1.31), so they are the safer bet than the EscMenu ones this
-  file used before. Not verified with a live client from this environment
-  either (no game client here) -- if it is still wrong, the fallback the task
-  names (``BlzFrameSetAlpha`` solid-color backdrop, or a
-  ``ReplaceableTextures\\CommandButtons\\...`` icon) is the next thing to try,
-  see docs/SHOP_UI_NOTES.md.
+  ONCE at build time and never rewritten afterwards.
+* PURCHASE (this revision's main functional change): clicking an icon no
+  longer fakes a purchase with UnitAddItemById/SetPlayerState. It now issues
+  the map's own real shop-sell order -- exactly what clicking the item in the
+  in-game base shop does -- so gold cost, "Item Made"/Sellunits item
+  creation and the "hero not near the shop" fallback are all the live map's
+  own native logic, not this file's:
+    - Every base shop building on this map (both the Radiant and the Dire
+      copy, for shops that have one) is owned by Player(PLAYER_NEUTRAL_
+      PASSIVE) -- confirmed by reading the decompiled war3map.j's own
+      shop-placement code (`CreateUnit(ra,'n00W',...)` etc, with
+      `ra=Player(PLAYER_NEUTRAL_PASSIVE)`; see docs/SHOP_UI_NOTES.md for the
+      exact grep). Sellunits order id == the sold unit type id (native
+      Warcraft III convention: 'h076' etc, already what HW_shopUnitId
+      stores).
+    - HW_ShopBuy therefore looks up the buyer's hero, finds the physically
+      nearest live neutral-passive unit whose type matches one of this
+      category's building codes (HW_shopBuildingCode[], collected from
+      workshop.shops()'s own unit-type codes -- 1 per shop, 2 for "Black
+      Market" whose Radiant/Dire copies are two distinct unit types) and
+      calls IssueNeutralImmediateOrderById(buyer, thatUnit, soldUnitTypeId).
+      "Nearest to the hero" stands in for "the buyer's team's copy" without
+      hardcoding a team/player-slot convention this map's obfuscated script
+      does not expose cleanly -- for a hero anywhere near their own base
+      (the normal case) it resolves to the same building the in-game shop
+      panel itself would use.
+    - What happens if the hero is NOT near any copy of the shop: this file
+      does not implement a fountain/courier drop of its own, and a careful
+      grep of the decompiled war3map.j for `GetSoldUnit()`/`EVENT_PLAYER_
+      UNIT_SELL` found no generic handler for ordinary item purchases either
+      (every hit belongs to the hero-draft/ban screen or to the courier/
+      buyback/revive special units) -- meaning the "goes to the fountain/
+      courier stash" behaviour, if this map has any, is the Warcraft III
+      engine's own default Sellunits-with-no-unit-in-range behaviour, not
+      custom script this file can call into. Documented, not invented.
+    - Secret shop (uC74) and side shop (u010) stay excluded from
+      collect_catalog exactly as before, so their items are not purchasable
+      from this panel.
+* Panel/button textures: the first live-client test showed the panel as a
+  solid green rectangle with `human-options-menu-background.blp`; switched to
+  `UI\\Widgets\\ToolTips\\Human\\human-tooltip-background.blp` for the panel
+  and block-header backdrops and `UI\\Widgets\\Console\\Human\\human-console-
+  button-background.blp` for the close/toggle buttons -- not re-verified with
+  a live client from this environment (no game client here); if still wrong,
+  a solid-alpha BACKDROP with no texture is the next thing to try.
 """
 
 import workshop
 
 # ---- tunable geometry (see the layout note in the module docstring) --------
-# Panel: a column docked to the right screen edge, between the score bar and
-# the command card.
-PANEL_RIGHT_X = 0.80     # FRAMEPOINT_TOPRIGHT anchor x
-PANEL_TOP_Y = 0.53        # FRAMEPOINT_TOPRIGHT anchor y (just below the score bar)
-PANEL_BOTTOM_Y = 0.20     # must not go lower than this (top of the command card)
-PANEL_W = 0.26
+# Panel: a column docked to the right screen edge with a small margin, between
+# the score bar and the command card.
+SCREEN_RIGHT_X = 0.80     # approximate hard right edge of the 4:3 frame area
+PANEL_MARGIN_RIGHT = 0.02
+PANEL_RIGHT_X = SCREEN_RIGHT_X - PANEL_MARGIN_RIGHT   # FRAMEPOINT_TOPRIGHT anchor x
+PANEL_TOP_Y = 0.53         # FRAMEPOINT_TOPRIGHT anchor y (just below the score bar)
+PANEL_BOTTOM_Y = 0.20      # must not go lower than this (top of the command card)
+PANEL_W = 0.28
 PANEL_H = PANEL_TOP_Y - PANEL_BOTTOM_Y
 
 CLOSE_SIZE = 0.016
 TOP_MARGIN = 0.006 + CLOSE_SIZE + 0.004   # room left at the panel's top for the close button
 
-# Two columns of shop blocks, SHOPS_PER_COL rows each -- no tabs/pages.
-BLOCK_COLS = 2
-SHOPS_PER_COL = 7
-HW_SHOP_MAX_SHOPS = BLOCK_COLS * SHOPS_PER_COL   # 14: exactly the map's base-shop count
-MARGIN_X = 0.008
-COL_W = PANEL_W / 2.0
+# Three columns of shop blocks, SHOPS_PER_COL rows each -- no tabs/pages.
+BLOCK_COLS = 3
+SHOPS_PER_COL = 5
+HW_SHOP_MAX_SHOPS = BLOCK_COLS * SHOPS_PER_COL   # 15: >= the map's 14 base shops
+MARGIN_X = 0.007
+COL_W = PANEL_W / BLOCK_COLS
 
 HEADER_H = 0.007
 HEADER_GAP = 0.0008
-BLOCK_GAP = 0.0015
+BLOCK_GAP = 0.002
 BODY_H = PANEL_H - TOP_MARGIN
 BLOCK_PITCH = BODY_H / SHOPS_PER_COL
 BLOCK_H = BLOCK_PITCH - BLOCK_GAP
@@ -87,24 +109,30 @@ GRID_H = BLOCK_H - HEADER_H - HEADER_GAP
 
 HW_SHOP_CELL_COLS = 4
 HW_SHOP_CELLS = 12          # 4x3 grid per shop block, same as the map's own shop button grid
-ICON_GAP = 0.001
+ICON_GAP = 0.0008
 ICON_PITCH = GRID_H / 3.0
-ICON = ICON_PITCH - ICON_GAP   # ~0.0104: shrunk from the ~0.018-0.024 first suggested so that
-                               # SHOPS_PER_COL=7 blocks of 3 rows actually fit in PANEL_H without
-                               # any paging/scrolling (the task's later, stricter panel bounds and
-                               # "no tabs/pages" both take priority over the icon-size hint) --
-                               # see docs/SHOP_UI_NOTES.md.
-HEADER_W = COL_W - 0.016
+ICON = ICON_PITCH - ICON_GAP   # ~0.016, in the requested ~0.017-0.02 ballpark: as big as
+                               # SHOPS_PER_COL=5 blocks of header+3 rows can be and still
+                               # fit PANEL_H with no paging/scrolling -- see docs/SHOP_UI_NOTES.md.
+HEADER_W = COL_W - 0.014
 
-# Invisible toggle button placed exactly over the HUD's own "SHOP" command-card
-# label (approximate 4:3 frame coords the task gave; retune here if it is off
-# on a live client).
+# Up to this many physical shop-building unit types per category (workshop.py
+# shops()'s own unit-type codes -- 1 for almost every base shop, 2 for "Black
+# Market" whose Radiant/Dire copies are distinct unit types).
+HW_SHOP_BUILDING_CODES = 3
+
+# Toggle button placed over the HUD's own "SHOP" command-card label
+# (approximate 4:3 frame coords the task gave; retune here if it is off on a
+# live client -- kept partially visible (TOGGLE_ALPHA) so the offset can be
+# read/reported, per the task; a fully invisible button did not register
+# clicks reliably in the previous revision).
 TOGGLE_X0 = 0.56
 TOGGLE_Y0 = 0.16
 TOGGLE_X1 = 0.62
 TOGGLE_Y1 = 0.19
 TOGGLE_W = TOGGLE_X1 - TOGGLE_X0
 TOGGLE_H = TOGGLE_Y1 - TOGGLE_Y0
+TOGGLE_ALPHA = 40   # 0-255; 0 once the offset above is confirmed correct in-game
 
 PANEL_TEXTURE = 'UI\\\\Widgets\\\\ToolTips\\\\Human\\\\human-tooltip-background.blp'
 BUTTON_TEXTURE = 'UI\\\\Widgets\\\\Console\\\\Human\\\\human-console-button-background.blp'
@@ -119,18 +147,22 @@ constant integer HW_SHOP_CELLS={HW_SHOP_CELLS}
 constant integer HW_SHOP_CELL_COLS={HW_SHOP_CELL_COLS}
 constant integer HW_SHOP_BLOCK_COLS={BLOCK_COLS}
 constant integer HW_SHOP_SHOPS_PER_COL={SHOPS_PER_COL}
+constant integer HW_SHOP_BUILDING_CODES={HW_SHOP_BUILDING_CODES}
 integer array HW_shopUnitId
 integer array HW_shopItemId
 integer array HW_shopCost
 string array HW_shopIcon
 string array HW_shopName
 string array HW_shopShopName
+integer array HW_shopBuildingCode
 integer HW_shopCount=0
 boolean HW_shopLocalOpen=false
+player HW_shopOwner=null
 framehandle HW_shopPanel=null
 framehandle HW_shopCloseBg=null
 framehandle HW_shopCloseText=null
 framehandle HW_shopCloseBtn=null
+framehandle HW_shopToggleBg=null
 framehandle HW_shopToggleBtn=null
 framehandle array HW_shopBlockHeader
 framehandle array HW_shopCellBg
@@ -163,21 +195,55 @@ function HW_ShopFindHero takes player p returns unit
     set u=null
     return found
 endfunction
+function HW_ShopBuildingMatches takes integer shopIdx, integer typeId returns boolean
+    local integer k=0
+    loop
+        exitwhen k>=HW_SHOP_BUILDING_CODES
+        if HW_shopBuildingCode[shopIdx*HW_SHOP_BUILDING_CODES+k]==typeId then
+            return true
+        endif
+        set k=k+1
+    endloop
+    return false
+endfunction
+function HW_ShopFindShopUnit takes integer shopIdx, real hx, real hy returns unit
+    local group g=CreateGroup()
+    local unit u
+    local unit best=null
+    local real bestDist=-1.0
+    local real dx
+    local real dy
+    local real dist
+    call GroupEnumUnitsOfPlayer(g,HW_shopOwner,null)
+    loop
+        set u=FirstOfGroup(g)
+        exitwhen u==null
+        call GroupRemoveUnit(g,u)
+        if HW_ShopBuildingMatches(shopIdx,GetUnitTypeId(u)) then
+            set dx=GetUnitX(u)-hx
+            set dy=GetUnitY(u)-hy
+            set dist=dx*dx+dy*dy
+            if bestDist<0 or dist<bestDist then
+                set best=u
+                set bestDist=dist
+            endif
+        endif
+    endloop
+    call DestroyGroup(g)
+    set g=null
+    set u=null
+    return best
+endfunction
 function HW_ShopBuy takes player p, integer idx returns nothing
-    local integer cost
-    local integer itemId
+    local integer shopIdx
+    local integer soldId
     local unit hero
-    local item it
+    local unit shopUnit
     if idx<0 then
         return
     endif
-    set cost=HW_shopCost[idx]
-    set itemId=HW_shopItemId[idx]
-    if itemId==0 then
-        return
-    endif
-    if GetPlayerState(p,PLAYER_STATE_RESOURCE_GOLD)<cost then
-        call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r not enough gold ("+I2S(cost)+"): "+HW_shopName[idx])
+    set soldId=HW_shopUnitId[idx]
+    if soldId==0 then
         return
     endif
     set hero=HW_ShopFindHero(p)
@@ -185,16 +251,17 @@ function HW_ShopBuy takes player p, integer idx returns nothing
         call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r no hero found, purchase cancelled")
         return
     endif
-    call SetPlayerState(p,PLAYER_STATE_RESOURCE_GOLD,GetPlayerState(p,PLAYER_STATE_RESOURCE_GOLD)-cost)
-    set it=UnitAddItemById(hero,itemId)
-    if it==null then
-        call SetPlayerState(p,PLAYER_STATE_RESOURCE_GOLD,GetPlayerState(p,PLAYER_STATE_RESOURCE_GOLD)+cost)
-        call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r inventory full, gold refunded: "+HW_shopName[idx])
-    else
-        call DisplayTextToPlayer(p,0,0,"|cff60ff60HW Shop:|r bought "+HW_shopName[idx]+" ("+I2S(cost)+"g)")
+    set shopIdx=idx/HW_SHOP_CELLS
+    set shopUnit=HW_ShopFindShopUnit(shopIdx,GetUnitX(hero),GetUnitY(hero))
+    if shopUnit==null then
+        call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r shop building not found, purchase cancelled")
+        set hero=null
+        return
     endif
+    call IssueNeutralImmediateOrderById(p,shopUnit,soldId)
+    call DisplayTextToPlayer(p,0,0,"|cff60ff60HW Shop:|r requested "+HW_shopName[idx]+" ("+I2S(HW_shopCost[idx])+"g)")
     set hero=null
-    set it=null
+    set shopUnit=null
 endfunction
 function HW_ShopToggle takes player p returns nothing
     if GetLocalPlayer()==p then
@@ -250,6 +317,7 @@ function HW_ShopBuild takes nothing returns nothing
     local real bx
     local real by
     call HW_ShopDataInit()
+    set HW_shopOwner=Player(PLAYER_NEUTRAL_PASSIVE)
     set HW_shopSlotHT=InitHashtable()
     set HW_shopPanel=BlzCreateFrameByType("BACKDROP","HWShopPanel",ui,"",0)
     call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPRIGHT,{PANEL_RIGHT_X:.6f},{PANEL_TOP_Y:.6f})
@@ -269,9 +337,13 @@ function HW_ShopBuild takes nothing returns nothing
     set HW_shopCloseTrig=CreateTrigger()
     call BlzTriggerRegisterFrameEvent(HW_shopCloseTrig,HW_shopCloseBtn,FRAMEEVENT_CONTROL_CLICK)
     call TriggerAddAction(HW_shopCloseTrig,function HW_ShopCloseClick)
-    set HW_shopToggleBtn=BlzCreateFrameByType("BUTTON","HWShopToggle",ui,"",0)
-    call BlzFrameSetAbsPoint(HW_shopToggleBtn,FRAMEPOINT_BOTTOMLEFT,{TOGGLE_X0:.6f},{TOGGLE_Y0:.6f})
-    call BlzFrameSetSize(HW_shopToggleBtn,{TOGGLE_W:.6f},{TOGGLE_H:.6f})
+    set HW_shopToggleBg=BlzCreateFrameByType("BACKDROP","HWShopToggleBg",ui,"",0)
+    call BlzFrameSetAbsPoint(HW_shopToggleBg,FRAMEPOINT_BOTTOMLEFT,{TOGGLE_X0:.6f},{TOGGLE_Y0:.6f})
+    call BlzFrameSetSize(HW_shopToggleBg,{TOGGLE_W:.6f},{TOGGLE_H:.6f})
+    call BlzFrameSetTexture(HW_shopToggleBg,"{BUTTON_TEXTURE}",0,true)
+    call BlzFrameSetAlpha(HW_shopToggleBg,{TOGGLE_ALPHA})
+    set HW_shopToggleBtn=BlzCreateFrameByType("BUTTON","HWShopToggle",HW_shopToggleBg,"",0)
+    call BlzFrameSetAllPoints(HW_shopToggleBtn,HW_shopToggleBg)
     set HW_shopToggleTrig=CreateTrigger()
     call BlzTriggerRegisterFrameEvent(HW_shopToggleTrig,HW_shopToggleBtn,FRAMEEVENT_CONTROL_CLICK)
     call TriggerAddAction(HW_shopToggleTrig,function HW_ShopToggleClick)
@@ -381,11 +453,13 @@ def collect_catalog(w) -> list[dict]:
     Buttonpos for grid placement).
 
     Secret shop (uC74) and side shop (u010) are excluded on purpose (they stay
-    clickable buildings, per docs/SHOP_UI_PLAN.md §4 step 7). Shops that share a
-    name (Radiant/Dire "Black Market") are folded into one category: the
-    catalog only needs what is shown and what it costs, not which building
-    instance sold it (buying uses UnitAddItemById, not the clicked building, so
-    which side's copy supplied the catalog does not matter)."""
+    clickable buildings, per docs/SHOP_UI_PLAN.md §4 step 7) -- so they are not
+    purchasable from this panel either. Shops that share a name (Radiant/Dire
+    "Black Market") are folded into one category, but their (possibly distinct)
+    building unit-type codes are all kept (cat['shop_codes']) -- the purchase
+    handler needs every physical building type that can sell this catalog to
+    find the correct live unit to issue the sell order on (see the module
+    docstring)."""
     excluded = {'uC74', 'u010'}
     fams = w.item_list()
     unit_to_fam = {}
@@ -447,16 +521,21 @@ def collect_catalog(w) -> list[dict]:
         # plain, always-displayable category label (docs/SHOP_UI_NOTES.md).
         if not _is_ascii(cat['name']):
             cat['name'] = f'Shop {i}'
+        if len(cat['shop_codes']) > HW_SHOP_BUILDING_CODES:
+            raise ValueError(f"shop {cat['name']!r} has {len(cat['shop_codes'])} building codes, "
+                              f'HW_SHOP_BUILDING_CODES={HW_SHOP_BUILDING_CODES} is too small')
         cat['cells'] = _place_cells(cat['items'])
     return result
 
 
 def catalog_function(categories: list[dict]) -> str:
     """JASS function filling the HW_shop* arrays from a Python-built catalog
-    (list of {'name', 'items', 'cells': [12 x ({'unit','item','cost','icon','name'} or None)]})."""
+    (list of {'name', 'shop_codes', 'items', 'cells': [12 x (item-dict or None)]})."""
     lines = ['function HW_ShopDataInit takes nothing returns nothing']
     for ci, cat in enumerate(categories):
         lines.append(f'    set HW_shopShopName[{ci}]="{_jass_string(cat["name"])}"')
+        for ki, code in enumerate(cat['shop_codes']):
+            lines.append(f"    set HW_shopBuildingCode[{ci * HW_SHOP_BUILDING_CODES + ki}]='{code}'")
         for si, it in enumerate(cat['cells']):
             if it is None:
                 continue

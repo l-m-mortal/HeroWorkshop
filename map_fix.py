@@ -1224,14 +1224,20 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
 
     Collects the base category shops (workshop.py shops()/item_list(), excluding
     the secret shop uC74 and the side shop u010), their sold units' icons, gold
-    cost (Units\\UnitBalance.slk goldcost, falling back to ItemData.slk) and grid
-    cell (Buttonpos, same 4x3 layout as the map's own shop UI), and injects a
-    panel docked to the right edge of the screen (between the score bar and the
-    command card, see shop_jass.py's PANEL_* constants) with ALL shops shown as
-    blocks at once, two columns of up to 7 -- no tabs, no pages, no scrolling.
-    Toggle in-game with the chat command "-shop" or an invisible button placed
-    over the HUD's own "SHOP" command-card label (shop_jass.py's TOGGLE_*
-    constants). Coexists with the HW_COOLDOWN_* block.
+    cost (Units\\UnitBalance.slk goldcost, falling back to ItemData.slk), grid
+    cell (Buttonpos, same 4x3 layout as the map's own shop UI) and building
+    unit-type codes, and injects a panel docked to the right edge of the screen
+    with a small margin (between the score bar and the command card, see
+    shop_jass.py's PANEL_* constants) with ALL shops shown as blocks at once,
+    three columns of up to 5 -- no tabs, no pages, no scrolling. Toggle in-game
+    with the chat command "-shop" or a (mostly-transparent, see TOGGLE_ALPHA)
+    button placed over the HUD's own "SHOP" command-card label (shop_jass.py's
+    TOGGLE_* constants). Clicking an item issues the map's own real Sellunits
+    sell order (IssueNeutralImmediateOrderById on the nearest live building of
+    the right unit type -- every base shop on this map is owned by
+    PLAYER_NEUTRAL_PASSIVE) instead of faking the purchase; see shop_jass.py's
+    module docstring and docs/SHOP_UI_NOTES.md for how that was confirmed.
+    Coexists with the HW_COOLDOWN_* block.
     --undo    remove the block again"""
     import shop_jass
     script = w.script
