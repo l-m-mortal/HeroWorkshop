@@ -1309,6 +1309,46 @@ def fix_model_events(w: workshop.Workshop, apply: bool, path: str | None = None,
     else:
         w.changes[path] = out; w.commit(); print('Записано в карту.')
 
+LABELS_BEGIN = '// HW_LABELS_BEGIN'; LABELS_END = '// HW_LABELS_END'
+def fix_part_labels(w: workshop.Workshop, apply: bool, path: str | None = None, types: str | None = None, undo: bool = False):
+    """Debug: floating text tags "DS00".."DS12" at the computed world position of every
+    part of an assembly model, so the numbering used by stairs.sh can be checked in
+    game. --undo removes the tags again."""
+    import doo, math, re
+    script = w.script
+    script = re.sub(r'// HW_LABELS_BEGIN.*?// HW_LABELS_END\r?\n', '', script, flags=re.S)
+    script = re.sub(r'^.*// HW_LABELS_CALL\r?\n', '', script, flags=re.M)
+    if not undo:
+        if not path or not types: workshop.die('нужны --path и --types ТИП:ВАРИАЦИЯ')
+        a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+        src = _hq_file(a_root, path)
+        data = src.read_bytes() if src else w.mpq.read(path)
+        t, var = types.split(':'); var = int(var)
+        cur = doo.parse(w.mpq.read('war3map.doo'))
+        pl = [e for e in cur['entries'] if e['type'] == t and e['variation'] == var]
+        if not pl: workshop.die('размещения нет')
+        e = pl[0]; ca, sa = math.cos(e['angle']), math.sin(e['angle'])
+        A = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        lines = ['function HW_LabelsInit takes nothing returns nothing', '    local texttag tt']
+        for k, b in enumerate(mdx_geoset_boxes(data)):
+            cx = (b[0] + b[3]) / 2; cy = (b[1] + b[4]) / 2
+            wx = e['x'] + (cx * ca - cy * sa) * e['sx']; wy = e['y'] + (cx * sa + cy * ca) * e['sy']
+            name = f'DS{A[k // 36]}{A[k % 36]}'
+            lines += ['    set tt=CreateTextTag()', f'    call SetTextTagText(tt,"{name}",0.03)', f'    call SetTextTagPos(tt,{wx:.1f},{wy:.1f},250.0)',
+                      '    call SetTextTagColor(tt,255,255,0,255)', '    call SetTextTagPermanent(tt,true)', '    call SetTextTagVisibility(tt,true)']
+            print(f'  {name}: ({wx:.0f}, {wy:.0f})')
+        lines += ['    set tt=null', 'endfunction']
+        block = LABELS_BEGIN + '\n' + '\n'.join(lines) + '\n' + LABELS_END + '\n'
+        eol = '\r\n' if '\r\n' in script[:2000] else '\n'
+        m = re.search(r'^function main takes nothing returns nothing\r?\n', script, re.M)
+        script = script[:m.start()] + block.replace('\n', eol) + script[m.start():]
+        m = re.search(r'^function main takes nothing returns nothing\r?\n', script, re.M)
+        e2 = re.search(r'^endfunction', script[m.end():], re.M); pos = m.end() + e2.start()
+        script = script[:pos] + 'call HW_LabelsInit() // HW_LABELS_CALL' + eol + script[pos:]
+    print('Метки ' + ('убраны' if undo else 'добавлены') + ' (план).')
+    if not apply: print('\nЗапустите с --apply.'); return
+    w.script = script; w.changes['war3map.j'] = script.encode('latin1', 'replace'); w.commit(); print('Записано.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1488,19 +1528,22 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: fl
     if undo:
         new = shop_jass.remove(script)
     else:
-        categories = shop_jass.collect_catalog(w)
-        total = sum(len(c['items']) for c in categories)
-        print(f'Категорий: {len(categories)}, товаров: {total}')
-        for c in categories:
-            print(f"  {c['name']:30s} {len(c['items']):2d} товаров, коды лавки: {','.join(c['shop_codes'])}")
-        new = shop_jass.inject(script, categories, right, top, bottom, parent)
+        catalog = shop_jass.collect_catalog(w)
+        for side_label, side_key in (('Radiant', 'radiant'), ('Dire', 'dire')):
+            cats = catalog[side_key]
+            total = sum(len(c['items']) for c in cats)
+            print(f'{side_label}: категорий {len(cats)}, товаров {total}')
+            for c in cats:
+                print(f"  {c['name']:30s} {len(c['items']):2d} товаров, коды лавки: {','.join(c['shop_codes'])}")
+        print(shop_jass.parts_report(catalog))
+        new = shop_jass.inject(script, catalog, right, top, bottom, parent)
     present = 'HW_SHOP_BEGIN' in script
     print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
     if not apply: print('План. Запустите с --apply.'); return
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1549,6 +1592,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'part-labels': FIXES[a.fix](w, a.apply, a.path, a.types, a.undo)
     elif a.fix == 'model-events': FIXES[a.fix](w, a.apply, a.path, a.source, a.events, a.undo, a.into)
     elif a.fix == 'model-lift': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset, a.drop, a.undo)
     elif a.fix == 'script-tints': FIXES[a.fix](w, a.apply, a.undo)

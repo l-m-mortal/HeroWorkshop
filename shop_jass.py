@@ -6,75 +6,72 @@ FUNCTIONS block spliced in front of `main`, and one call appended to the end of
 `main`. Coexists with the HW_COOLDOWN_* block cooldown_jass.py injects (distinct
 marker comments, distinct globals/functions, both spliced the same way).
 
-Layout (this is the third revision -- see docs/SHOP_UI_NOTES.md for v1 "tabs",
-v2 "two pages" and why both were dropped): a column docked to the right screen
-edge with a small margin (PANEL_* constants below), between the score bar and
-the command card, showing ALL base shops at once as small blocks (ASCII text
-header directly above its own 4x3 icon grid, same x, at each item's in-game
-Buttonpos cell) -- no tabs, no pages, no scrolling: three columns of up to
-SHOPS_PER_COL blocks each. Every geometry knob is a module-level constant so
-the layout can be retuned without touching the JASS template strings.
+v5 (this revision -- see docs/SHOP_UI_NOTES.md for v1-v4 and why they were
+dropped): two team-scoped catalogs instead of one flat 14-category list.
 
-* One hidden panel (BACKDROP) is built once, 1s after map start. Opening just
-  flips visibility (no slide animation, per the task).
-* The clickable "Shop" toggle sits over the existing HUD "SHOP" command-card
-  label (TOGGLE_* constants): a BACKDROP (existing chrome texture, low alpha
-  so it can actually be seen and the offset tuned -- fully-invisible buttons
-  did not register clicks reliably in the previous revision's playtest) with
-  a BUTTON child on top, same construction as every other button in this file
-  (BACKDROP + BUTTON, sometimes + TEXT). The "-shop" chat command (registered
-  for every player slot) still works the same way.
-* Both toggles flip visibility of the SAME shared panel, but only on the
-  clicking player's own client (`if GetLocalPlayer() == p then ... endif`
-  around BlzFrameSetVisible only -- no handle is created there, so this
-  cannot desync). This gives each player their own open/closed state.
-* All shop content (icons, tooltips, the frame->item hashtable) is written
-  ONCE at build time and never rewritten afterwards.
-* PURCHASE (this revision's main functional change): clicking an icon no
-  longer fakes a purchase with UnitAddItemById/SetPlayerState. It now issues
-  the map's own real shop-sell order -- exactly what clicking the item in the
-  in-game base shop does -- so gold cost, "Item Made"/Sellunits item
-  creation and the "hero not near the shop" fallback are all the live map's
-  own native logic, not this file's:
-    - Every base shop building on this map (both the Radiant and the Dire
-      copy, for shops that have one) is owned by Player(PLAYER_NEUTRAL_
-      PASSIVE) -- confirmed by reading the decompiled war3map.j's own
-      shop-placement code (`CreateUnit(ra,'n00W',...)` etc, with
-      `ra=Player(PLAYER_NEUTRAL_PASSIVE)`; see docs/SHOP_UI_NOTES.md for the
-      exact grep). Sellunits order id == the sold unit type id (native
-      Warcraft III convention: 'h076' etc, already what HW_shopUnitId
-      stores).
-    - HW_ShopBuy therefore looks up the buyer's hero, finds the physically
-      nearest live neutral-passive unit whose type matches one of this
-      category's building codes (HW_shopBuildingCode[], collected from
-      workshop.shops()'s own unit-type codes -- 1 per shop, 2 for "Black
-      Market" whose Radiant/Dire copies are two distinct unit types) and
-      calls IssueNeutralImmediateOrderById(buyer, thatUnit, soldUnitTypeId).
-      "Nearest to the hero" stands in for "the buyer's team's copy" without
-      hardcoding a team/player-slot convention this map's obfuscated script
-      does not expose cleanly -- for a hero anywhere near their own base
-      (the normal case) it resolves to the same building the in-game shop
-      panel itself would use.
-    - What happens if the hero is NOT near any copy of the shop: this file
-      does not implement a fountain/courier drop of its own, and a careful
-      grep of the decompiled war3map.j for `GetSoldUnit()`/`EVENT_PLAYER_
-      UNIT_SELL` found no generic handler for ordinary item purchases either
-      (every hit belongs to the hero-draft/ban screen or to the courier/
-      buyback/revive special units) -- meaning the "goes to the fountain/
-      courier stash" behaviour, if this map has any, is the Warcraft III
-      engine's own default Sellunits-with-no-unit-in-range behaviour, not
-      custom script this file can call into. Documented, not invented.
-    - Secret shop (uC74) and side shop (u010) stay excluded from
-      collect_catalog exactly as before, so their items are not purchasable
-      from this panel.
-* Panel/button textures: the first live-client test showed the panel as a
-  solid green rectangle with `human-options-menu-background.blp`; switched to
-  `UI\\Widgets\\ToolTips\\Human\\human-tooltip-background.blp` for the panel
-  and block-header backdrops and `UI\\Widgets\\Console\\Human\\human-console-
-  button-background.blp` for the close/toggle buttons -- not re-verified with
-  a live client from this environment (no game client here); if still wrong,
-  a solid-alpha BACKDROP with no texture is the next thing to try.
+* **Why**: v4's single catalog showed every base shop (both teams' copies AND
+  the two side-flavoured shops that only exist on one base, e.g. "Cache of the
+  Quel'Thelan" on the Radiant side vs "Demonic Artifacts" on the Dire side) to
+  every player at once -- items appeared to duplicate, and worse, a composite
+  item's recipe expansion (`_build_parts`) matched components against the
+  *whole* 14-category union regardless of which base physically has them. A
+  hero shopping at their own base could click a recipe whose components only
+  matched a shop that exists on the *other* team's base, thousands of units
+  away -- `HW_ShopFindShopUnit` still "succeeds" (it has no proximity
+  requirement, it just finds the nearest live building of that type anywhere
+  on the map) and `IssueNeutralImmediateOrderById` still runs, but the
+  Warcraft III engine's own Sellunits logic only hands the created item to an
+  ally *near that specific shop building* -- with the hero standing at the
+  other end of the map, nothing receives it. That is why a composite bought
+  "only the recipe scroll": the recipe's own shop (the one the hero actually
+  clicked from, so they were standing near it) succeeded, every component
+  resolved to a foreign-team shop and silently produced nothing.
+* **Fix**: `collect_catalog` now determines each shop building's side(s) from
+  the coordinates of its own `CreateUnit(...,'CODE',x,y)` calls in the
+  decompiled war3map.j (x<0,y<0 -> Radiant, x>0,y>0 -> Dire; a code with
+  placements on both sides, e.g. nC38/n01K, belongs to both), and builds two
+  independent catalogs (`{'radiant': [...], 'dire': [...]}`). Recipe expansion
+  (`_build_parts`) now runs once per side, matching a composite's components
+  only among items of *that side's own* catalog -- so every part a hero can
+  click is guaranteed to resolve, for a hero at their own base, to a building
+  on the same side. u00Z (Goblin Laboratory, a side shop) is now excluded
+  alongside u010/uC74 (it used to slip through collect_catalog's `excluded`
+  set, which only listed uC74/u010 -- a separate bug fixed here).
+* **Layout**: two columns instead of three -- one column per side (col 0
+  Radiant, col 1 Dire), `SHOPS_PER_COL` derived from `max(len(radiant),
+  len(dire))` at inject time (it can no longer be a fixed module constant,
+  since it depends on how many shops the map's own script places on each
+  side -- see `_geometry`). Each client shows only its own team's column
+  (`HW_ShopApplyTeamVisibility`, run once at build time): "Radiant" is simply
+  `GetPlayerId(GetLocalPlayer())<=4` (players 1-5 in DotA's own convention;
+  7-11 are Dire) -- purely a per-client `BlzFrameSetVisible` call with no
+  handle created and no state read that could differ between clients in a way
+  that reaches game state, so (like every other visibility toggle in this
+  file) it cannot desync.
+* **Debug**: `HW_ShopBuy` now prints one `DisplayTextToPlayer` line per part as
+  it is ordered ("HW Shop: order <shop> -> <item>"), one line naming the
+  reason when a part's shop building cannot be found at all, and one line if a
+  composite's parts table is somehow empty. `collect_catalog`/`fix_shop_ui`
+  also print a parts-resolution table at inject time (`parts_report`): how
+  many items resolved >=2 parts and five examples including Vladmir's
+  Offering and Battle Fury, to make the fix verifiable without a live client.
+* **Toggle**: moved off the panel-relative anchor (`HW_shopRightX`-derived, so
+  it silently followed the panel past the 0.8 client clip and became
+  unclickable) to an absolute anchor on `ORIGIN_FRAME_GAME_UI`
+  (`TOGGLE_X0/X1/Y0/Y1 = 0.62/0.68/0.132/0.158`, over the HUD's own "SHOP"
+  label) with `TOGGLE_ALPHA=60` so it can be seen while this is re-verified
+  live; the panel parent (`--parent`) no longer affects it at all.
+* Default `PANEL_TOP_Y` lowered to 0.53 (was 0.555) so the panel starts
+  strictly below the score tab; `--top/--bottom/--right/--parent` still work.
+
+See docs/SHOP_UI_NOTES.md for v1-v4: tabs, the two-page catalog, the
+composite/toggle/three-column revision, and the earlier purchase mechanism
+history (real Sellunits order instead of a UnitAddItemById fake, texture
+fixes, ASCII-only names).
 """
+
+import copy
+import re
 
 import workshop
 
@@ -82,7 +79,7 @@ import workshop
 # Panel: a column flush with the right screen edge (no margin), from directly
 # under the top score tab down to the top of the bottom command card.
 PANEL_RIGHT_X = 0.80       # FRAMEPOINT_TOPRIGHT anchor x -- flush with the screen edge
-PANEL_TOP_Y = 0.555        # FRAMEPOINT_TOPRIGHT anchor y -- just under the score tab
+PANEL_TOP_Y = 0.53         # FRAMEPOINT_TOPRIGHT anchor y -- below the score tab (task default)
 PANEL_BOTTOM_Y = 0.20      # must not go lower than this (top of the command card)
 PANEL_W = 0.28
 PANEL_H = PANEL_TOP_Y - PANEL_BOTTOM_Y
@@ -90,10 +87,13 @@ PANEL_H = PANEL_TOP_Y - PANEL_BOTTOM_Y
 CLOSE_SIZE = 0.016
 TOP_MARGIN = 0.006 + CLOSE_SIZE + 0.004   # room left at the panel's top for the close button
 
-# Three columns of shop blocks, SHOPS_PER_COL rows each -- no tabs/pages.
-BLOCK_COLS = 3
-SHOPS_PER_COL = 5
-HW_SHOP_MAX_SHOPS = BLOCK_COLS * SHOPS_PER_COL   # 15: >= the map's 14 base shops
+# Two columns -- one per team (col 0 Radiant, col 1 Dire), see the module
+# docstring. Row count (SHOPS_PER_COL) is not a fixed constant any more: it
+# depends on how many shop categories the map's own script places on each
+# side, only known once collect_catalog has parsed war3map.j -- see
+# _geometry(), called from catalog_function() at inject time.
+BLOCK_COLS = 2
+HW_SHOP_MAX_SHOPS = 40     # sanity cap on radiant+dire combined, not a layout constraint
 MARGIN_X = 0.007
 COL_W = PANEL_W / BLOCK_COLS
 
@@ -101,38 +101,26 @@ HEADER_H = 0.007
 HEADER_GAP = 0.0008
 BLOCK_GAP = 0.002
 BODY_H = PANEL_H - TOP_MARGIN
-BLOCK_PITCH = BODY_H / SHOPS_PER_COL
-BLOCK_H = BLOCK_PITCH - BLOCK_GAP
-GRID_H = BLOCK_H - HEADER_H - HEADER_GAP
 
 HW_SHOP_CELL_COLS = 4
 HW_SHOP_CELLS = 12          # 4x3 grid per shop block, same as the map's own shop button grid
 ICON_GAP = 0.0008
-# Icons as large as fit both constraints (column width and the 3-row block
-# height); the header is then drawn at exactly the resulting grid width
-# (HEADER_W), TOP-LEFT-anchored at the same block origin the grid uses.
-GRID_W_BUDGET = COL_W - 2 * MARGIN_X
-ICON_PITCH = min(GRID_H / 3.0, GRID_W_BUDGET / HW_SHOP_CELL_COLS)
-ICON = ICON_PITCH - ICON_GAP
-HEADER_W = ICON_PITCH * HW_SHOP_CELL_COLS   # == grid width, per the task
 
 # Up to this many physical shop-building unit types per category (workshop.py
 # shops()'s own unit-type codes -- 1 for almost every base shop, 2 for "Black
 # Market" whose Radiant/Dire copies are distinct unit types).
 HW_SHOP_BUILDING_CODES = 3
 
-# Toggle button placed over the HUD's own "SHOP" command-card label. The
-# previous revision's live test showed the transparent button landing a bit
-# right/below of the actual "SHOP" text; shifted left by ~0.012 and up by
-# ~0.006 here and set back to fully invisible (TOGGLE_ALPHA=0) now that the
-# offset is confirmed -- retune these four constants directly if still off.
-TOGGLE_X0 = 0.548
-TOGGLE_Y0 = 0.166
-TOGGLE_X1 = 0.608
-TOGGLE_Y1 = 0.196
+# Toggle button placed over the HUD's own "SHOP" command-card label. Anchored
+# ABSOLUTELY on ORIGIN_FRAME_GAME_UI (not relative to the panel's right edge,
+# see the module docstring for why that broke) at the HUD's "SHOP" label.
+TOGGLE_X0 = 0.62
+TOGGLE_Y0 = 0.132
+TOGGLE_X1 = 0.68
+TOGGLE_Y1 = 0.158
 TOGGLE_W = TOGGLE_X1 - TOGGLE_X0
 TOGGLE_H = TOGGLE_Y1 - TOGGLE_Y0
-TOGGLE_ALPHA = 0   # 0-255; kept at 0 (invisible) now that the offset is confirmed
+TOGGLE_ALPHA = 60   # 0-255; visible for now, to re-verify the anchor live (task)
 
 PANEL_TEXTURE = 'UI\\\\Widgets\\\\ToolTips\\\\Human\\\\human-tooltip-background.blp'
 BUTTON_TEXTURE = 'UI\\\\Widgets\\\\Console\\\\Human\\\\human-console-button-background.blp'
@@ -141,12 +129,27 @@ BUTTON_TEXTURE = 'UI\\\\Widgets\\\\Console\\\\Human\\\\human-console-button-back
 def _is_ascii(s: str) -> bool:
     return all(ord(c) < 128 for c in s)
 
+
+def _geometry(shops_per_col: int) -> dict:
+    """Block/icon sizes for a column that must fit `shops_per_col` blocks in
+    BODY_H -- computed at inject time (once both team catalogs are built and
+    the larger one's row count is known), not a fixed module constant like in
+    v1-v4 (see the module docstring)."""
+    shops_per_col = max(shops_per_col, 1)
+    block_pitch = BODY_H / shops_per_col
+    block_h = block_pitch - BLOCK_GAP
+    grid_h = block_h - HEADER_H - HEADER_GAP
+    grid_w_budget = COL_W - 2 * MARGIN_X
+    icon_pitch = min(grid_h / 3.0, grid_w_budget / HW_SHOP_CELL_COLS)
+    icon = icon_pitch - ICON_GAP
+    header_w = icon_pitch * HW_SHOP_CELL_COLS
+    return {'block_pitch': block_pitch, 'icon_pitch': icon_pitch, 'icon': icon, 'header_w': header_w}
+
+
 GLOBALS = f"""// HW_SHOP_GLOBALS_BEGIN
 constant integer HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS}
 constant integer HW_SHOP_CELLS={HW_SHOP_CELLS}
 constant integer HW_SHOP_CELL_COLS={HW_SHOP_CELL_COLS}
-constant integer HW_SHOP_BLOCK_COLS={BLOCK_COLS}
-constant integer HW_SHOP_SHOPS_PER_COL={SHOPS_PER_COL}
 constant integer HW_SHOP_BUILDING_CODES={HW_SHOP_BUILDING_CODES}
 integer array HW_shopUnitId
 integer array HW_shopItemId
@@ -155,11 +158,15 @@ string array HW_shopIcon
 string array HW_shopName
 string array HW_shopShopName
 integer array HW_shopBuildingCode
+integer array HW_shopTeamSide
+integer array HW_shopCol
+integer array HW_shopRow
 integer array HW_shopPartBase
 integer array HW_shopPartCount
 integer array HW_shopPartCatIdx
 integer array HW_shopPartUnitId
 integer array HW_shopPartCost
+string array HW_shopPartName
 integer HW_shopCount=0
 boolean HW_shopLocalOpen=false
 player HW_shopOwner=null
@@ -254,6 +261,7 @@ function HW_ShopBuy takes player p, integer idx returns nothing
     endif
     set cnt=HW_shopPartCount[idx]
     if cnt<=0 then
+        call DisplayTextToPlayer(p,0,0,"|cffff6060HW Shop:|r "+HW_shopName[idx]+" has an empty parts table, purchase cancelled")
         return
     endif
     set base=HW_shopPartBase[idx]
@@ -276,13 +284,14 @@ function HW_ShopBuy takes player p, integer idx returns nothing
         return
     endif
     // 2) verify every part's shop building is reachable before spending anything
+    // (prints the shop searched and, on failure, why the whole purchase is cancelled)
     set k=0
     loop
         exitwhen k>=cnt
         set catIdx=HW_shopPartCatIdx[base+k]
         set shopUnit=HW_ShopFindShopUnit(catIdx,GetUnitX(hero),GetUnitY(hero))
         if shopUnit==null then
-            call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r shop building not found for one of the components, purchase cancelled")
+            call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r skipped "+HW_shopPartName[base+k]+" -- no "+HW_shopShopName[catIdx]+" building found anywhere, purchase cancelled")
             set hero=null
             set shopUnit=null
             return
@@ -296,6 +305,7 @@ function HW_ShopBuy takes player p, integer idx returns nothing
         exitwhen k>=cnt
         set catIdx=HW_shopPartCatIdx[base+k]
         set shopUnit=HW_ShopFindShopUnit(catIdx,GetUnitX(hero),GetUnitY(hero))
+        call DisplayTextToPlayer(p,0,0,"HW Shop: order "+HW_shopShopName[catIdx]+" -> "+HW_shopPartName[base+k])
         call IssueNeutralImmediateOrderById(p,shopUnit,HW_shopPartUnitId[base+k])
         set k=k+1
     endloop
@@ -344,6 +354,35 @@ endfunction
 function HW_ShopChat takes nothing returns nothing
     call HW_ShopToggle(GetTriggerPlayer())
 endfunction
+function HW_ShopApplyTeamVisibility takes nothing returns nothing
+    // Local-safe: every client computes its OWN answer from its OWN
+    // GetLocalPlayer() and only ever feeds it into BlzFrameSetVisible (a pure
+    // UI/client effect, never game state), exactly like HW_shopRightX's
+    // client-width read above -- no handle is created here either, so, like
+    // every other visibility toggle in this file, this cannot desync even
+    // though each client ends up showing a different column.
+    local boolean myRadiant=GetPlayerId(GetLocalPlayer())<=4
+    local integer i=0
+    local integer cellBase
+    local integer j
+    local boolean show
+    loop
+        exitwhen i>=HW_shopCount
+        set show=(HW_shopTeamSide[i]==0)==myRadiant
+        call BlzFrameSetVisible(HW_shopBlockHeader[i],show)
+        set cellBase=i*HW_SHOP_CELLS
+        set j=0
+        loop
+            exitwhen j>=HW_SHOP_CELLS
+            if HW_shopCellBg[cellBase+j]!=null then
+                call BlzFrameSetVisible(HW_shopCellBg[cellBase+j],show)
+                call BlzFrameSetVisible(HW_shopCellBtn[cellBase+j],show)
+            endif
+            set j=j+1
+        endloop
+        set i=i+1
+    endloop
+endfunction
 function HW_ShopBuild takes nothing returns nothing
     local framehandle ui=BlzGetOriginFrame(ORIGIN_FRAME_GAME_UI,0)
     local framehandle panelParent=BlzGetOriginFrame(HW_SHOP_PARENT_ORIGIN,0)
@@ -383,14 +422,14 @@ function HW_ShopBuild takes nothing returns nothing
     set HW_shopDbg=BlzCreateFrameByType("TEXT","HWShopDbg",HW_shopPanel,"",0)
     call BlzFrameSetPoint(HW_shopDbg,FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,0.004,-0.004)
     call BlzFrameSetScale(HW_shopDbg,0.6)
-    call BlzFrameSetText(HW_shopDbg,"client "+I2S(BlzGetLocalClientWidth())+"x"+I2S(BlzGetLocalClientHeight())+" right="+R2S(HW_shopRightX))
+    call BlzFrameSetText(HW_shopDbg,"client "+I2S(BlzGetLocalClientWidth())+"x"+I2S(BlzGetLocalClientHeight())+" right="+R2S(HW_shopRightX)+" slot="+I2S(GetPlayerId(GetLocalPlayer())))
     set HW_shopCloseBtn=BlzCreateFrameByType("BUTTON","HWShopClose",HW_shopCloseBg,"",0)
     call BlzFrameSetAllPoints(HW_shopCloseBtn,HW_shopCloseBg)
     set HW_shopCloseTrig=CreateTrigger()
     call BlzTriggerRegisterFrameEvent(HW_shopCloseTrig,HW_shopCloseBtn,FRAMEEVENT_CONTROL_CLICK)
     call TriggerAddAction(HW_shopCloseTrig,function HW_ShopCloseClick)
     set HW_shopToggleBg=BlzCreateFrameByType("BACKDROP","HWShopToggleBg",ui,"",0)
-    call BlzFrameSetAbsPoint(HW_shopToggleBg,FRAMEPOINT_BOTTOMLEFT,HW_shopRightX-{(0.8-TOGGLE_X0):.6f},{TOGGLE_Y0:.6f})
+    call BlzFrameSetAbsPoint(HW_shopToggleBg,FRAMEPOINT_BOTTOMLEFT,{TOGGLE_X0:.6f},{TOGGLE_Y0:.6f})
     call BlzFrameSetSize(HW_shopToggleBg,{TOGGLE_W:.6f},{TOGGLE_H:.6f})
     call BlzFrameSetTexture(HW_shopToggleBg,"{BUTTON_TEXTURE}",0,true)
     call BlzFrameSetAlpha(HW_shopToggleBg,{TOGGLE_ALPHA})
@@ -403,15 +442,15 @@ function HW_ShopBuild takes nothing returns nothing
     set i=0
     loop
         exitwhen i>=HW_shopCount
-        set col=i/HW_SHOP_SHOPS_PER_COL
-        set row=i-col*HW_SHOP_SHOPS_PER_COL
+        set col=HW_shopCol[i]
+        set row=HW_shopRow[i]
         set bx={MARGIN_X:.6f}+I2R(col)*{COL_W:.6f}
-        set by=-{TOP_MARGIN:.6f}-I2R(row)*{BLOCK_PITCH:.6f}
+        set by=-{TOP_MARGIN:.6f}-I2R(row)*@@BLOCK_PITCH@@
         set HW_shopBlockHeader[i]=BlzCreateFrameByType("TEXT","HWShopBlockHeader",HW_shopPanel,"",0)
         // a scaled frame has its point offsets scaled as well: compensate
         call BlzFrameSetScale(HW_shopBlockHeader[i],0.55)
         call BlzFrameSetPoint(HW_shopBlockHeader[i],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,bx/0.55,by/0.55)
-        call BlzFrameSetSize(HW_shopBlockHeader[i],{HEADER_W:.6f}/0.55,{HEADER_H:.6f}/0.55)
+        call BlzFrameSetSize(HW_shopBlockHeader[i],@@HEADER_W@@/0.55,{HEADER_H:.6f}/0.55)
         call BlzFrameSetTextAlignment(HW_shopBlockHeader[i],TEXT_JUSTIFY_TOP,TEXT_JUSTIFY_LEFT)
         call BlzFrameSetText(HW_shopBlockHeader[i],HW_shopShopName[i])
         set cellBase=i*HW_SHOP_CELLS
@@ -423,12 +462,12 @@ function HW_ShopBuild takes nothing returns nothing
                 set cc=j-(j/HW_SHOP_CELL_COLS)*HW_SHOP_CELL_COLS
                 set rr=j/HW_SHOP_CELL_COLS
                 set HW_shopCellBg[cellBase+j]=BlzCreateFrameByType("BACKDROP","HWShopCellBg",HW_shopPanel,"",0)
-                call BlzFrameSetPoint(HW_shopCellBg[cellBase+j],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,bx+I2R(cc)*{ICON_PITCH:.6f},by-{HEADER_H:.6f}-{HEADER_GAP:.6f}-I2R(rr)*{ICON_PITCH:.6f})
-                call BlzFrameSetSize(HW_shopCellBg[cellBase+j],{ICON:.6f},{ICON:.6f})
+                call BlzFrameSetPoint(HW_shopCellBg[cellBase+j],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,bx+I2R(cc)*@@ICON_PITCH@@,by-{HEADER_H:.6f}-{HEADER_GAP:.6f}-I2R(rr)*@@ICON_PITCH@@)
+                call BlzFrameSetSize(HW_shopCellBg[cellBase+j],@@ICON@@,@@ICON@@)
                 call BlzFrameSetTexture(HW_shopCellBg[cellBase+j],HW_shopIcon[idx],0,true)
                 set HW_shopCellBtn[cellBase+j]=BlzCreateFrameByType("BUTTON","HWShopCellBtn",HW_shopPanel,"",0)
                 call BlzFrameSetPoint(HW_shopCellBtn[cellBase+j],FRAMEPOINT_TOPLEFT,HW_shopCellBg[cellBase+j],FRAMEPOINT_TOPLEFT,0,0)
-                call BlzFrameSetSize(HW_shopCellBtn[cellBase+j],{ICON:.6f},{ICON:.6f})
+                call BlzFrameSetSize(HW_shopCellBtn[cellBase+j],@@ICON@@,@@ICON@@)
                 set HW_shopCellTip[cellBase+j]=BlzCreateFrameByType("TEXT","HWShopCellTip",ui,"",0)
                 call BlzFrameSetSize(HW_shopCellTip[cellBase+j],0.16,0.03)
                 call BlzFrameSetText(HW_shopCellTip[cellBase+j],HW_shopName[idx]+"|n|cffffcc00"+I2S(HW_shopCost[idx])+" gold|r")
@@ -441,6 +480,7 @@ function HW_ShopBuild takes nothing returns nothing
         set i=i+1
     endloop
     call TriggerAddAction(HW_shopSlotTrig,function HW_ShopSlotClick)
+    call HW_ShopApplyTeamVisibility()
     set HW_shopChatTrig=CreateTrigger()
     set i=0
     loop
@@ -514,16 +554,75 @@ def _match_by_norm(key: str, index: dict):
     return None
 
 
+_NUM_TOKEN = re.compile(r'([+-])?\s*(\$[0-9A-Fa-f]+|\d+\.?\d*)')
+
+
+def _eval_coord(expr: str) -> float | None:
+    """Evaluate one CreateUnit coordinate argument as the decompiled war3map.j
+    writes it: a plain decimal ('-6624', '7360.'), a hex literal ('$80',
+    '$B4'), or a small constant-folded sum/difference of the two
+    ('-6940+64', '5984+$80') -- only the sign of x/y matters here (side
+    detection), so this only needs to get that right, not be a full
+    expression evaluator."""
+    expr = expr.strip()
+    if not expr:
+        return None
+    total = 0.0
+    matched = False
+    for sign, tok in _NUM_TOKEN.findall(expr):
+        matched = True
+        v = float(int(tok[1:], 16)) if tok.startswith('$') else float(tok.rstrip('.') or '0')
+        total += -v if sign == '-' else v
+    return total if matched else None
+
+
+def _shop_positions(script: str, code: str) -> list[tuple[float, float]]:
+    """Every (x, y) this shop-building unit-type code is CreateUnit'd at in the
+    decompiled war3map.j."""
+    out = []
+    for m in re.finditer(r"CreateUnit\([^,]+,\s*'" + re.escape(code) + r"'\s*,\s*([^,]+),\s*([^,]+)", script):
+        x = _eval_coord(m.group(1))
+        y = _eval_coord(m.group(2))
+        if x is not None and y is not None:
+            out.append((x, y))
+    return out
+
+
+def _shop_sides(script: str, codes: list[str]) -> set:
+    """Which team base(s) a shop's own building code(s) are physically placed
+    at, from the script's own CreateUnit coordinates (x<0,y<0 -> Radiant base,
+    x>0,y>0 -> Dire base; a code placed at both, like nC38/n01K's Radiant AND
+    Dire copies, belongs to both -- see the module docstring for why this,
+    not a hardcoded per-shop table, is what fixes the composite-purchase
+    bug)."""
+    sides = set()
+    for code in codes:
+        for x, y in _shop_positions(script, code):
+            if x < 0 and y < 0:
+                sides.add('radiant')
+            elif x > 0 and y > 0:
+                sides.add('dire')
+    return sides
+
+
 def _build_parts(w, result: list[dict]) -> None:
     """Recipe/component expansion (built once, at inject time, in Python -- not
     at JASS runtime): for every catalog item, attach it['parts'] = a flat list
-    of (cat_index, unit_code, cost) covering the item itself plus, if it is a
-    recipe/composite item (matched against data/dota2_reference.json's
-    "components"), every one of its components that is sold in ANY base shop
-    on this map, recursively. A component only sold in the secret (uC74) or
-    side (u010) shop -- or not sold at all -- is skipped, and one line naming
-    it is printed (the task's requirement); it_dict['skipped'] also collects
-    those lines for callers that want them without re-parsing stdout."""
+    of (cat_index, unit_code, cost, name) covering the item itself plus, if it
+    is a recipe/composite item (matched against data/dota2_reference.json's
+    "components"), every one of its components that is sold in a base shop of
+    THIS SIDE's own catalog (`result` -- one team's catalog, see
+    collect_catalog), recursively. A component only sold on the other team's
+    exclusive shops, or in the secret (uC74) / side (u010/u00Z) shops, or not
+    sold at all, is skipped, and one line naming it is printed (the task's
+    requirement); it_dict['skipped'] also collects those lines for callers
+    that want them without re-parsing stdout.
+
+    Restricting the match to `result` (one side's own catalog, not the old
+    flat union of both teams) is the actual fix for "composite purchase buys
+    only the recipe scroll": see the module docstring for why matching across
+    both teams let a part resolve to a shop the buying hero's team has no
+    building near."""
     from workshop import norm, Workshop
     base_name = Workshop.item_base_name
     dota_items: dict = (w.dota2 or {}).get('items') or {}
@@ -532,8 +631,8 @@ def _build_parts(w, result: list[dict]) -> None:
         n = norm(base_name(dinfo.get('name') or dkey))
         if n and n not in dota_by_norm:
             dota_by_norm[n] = dkey
-    # every item sold anywhere in this catalog (base shops only, already excludes
-    # the secret/side shops -- collect_catalog built `result` without them)
+    # every item sold anywhere in THIS side's catalog (already excludes the
+    # secret/side shops and the other team's exclusive shops)
     name_index = {}
     for ci, cat in enumerate(result):
         for it in cat['items']:
@@ -543,7 +642,7 @@ def _build_parts(w, result: list[dict]) -> None:
     # items sold ONLY in the secret/side shops, for the skip message
     secret_side_norm = set()
     for shop in w.shops():
-        if shop['code'] not in ('uC74', 'u010'):
+        if shop['code'] not in ('uC74', 'u010', 'u00Z'):
             continue
         for u in shop['units']:
             n = norm(base_name(w.name(u, 'UnitFunc')))
@@ -551,7 +650,7 @@ def _build_parts(w, result: list[dict]) -> None:
                 secret_side_norm.add(n)
 
     def expand(ci: int, it: dict, visited: set, skipped: list) -> list:
-        parts = [(ci, it['unit'], it['cost'])]
+        parts = [(ci, it['unit'], it['cost'], it['name'])]
         dkey = _match_by_norm(norm(base_name(it['name'])), dota_by_norm)
         if dkey is None or dkey in visited:
             return parts
@@ -562,7 +661,7 @@ def _build_parts(w, result: list[dict]) -> None:
             found = _match_by_norm(norm(base_name(comp_name)), name_index)
             if found is None:
                 cn = norm(base_name(comp_name))
-                where = 'secret/side shop only' if _match_by_norm(cn, {k: True for k in secret_side_norm}) else 'not sold in any shop on this map'
+                where = 'secret/side shop only' if _match_by_norm(cn, {k: True for k in secret_side_norm}) else 'not sold on this team (or this map)'
                 msg = f"    skipped component '{comp_name}' of '{it['name']}' ({where})"
                 skipped.append(msg)
                 print(msg)
@@ -576,20 +675,29 @@ def _build_parts(w, result: list[dict]) -> None:
             it['parts'] = expand(ci, it, set(), it.setdefault('skipped', []))
 
 
-def collect_catalog(w) -> list[dict]:
+def collect_catalog(w) -> dict:
     """Base shop categories -> items to sell, built from workshop.py's own reading
     of the map (shops()/item_list()/icon_info(), and ItemData/UnitBalance goldcost,
-    Buttonpos for grid placement).
+    Buttonpos for grid placement), split into two team-scoped catalogs.
 
-    Secret shop (uC74) and side shop (u010) are excluded on purpose (they stay
-    clickable buildings, per docs/SHOP_UI_PLAN.md §4 step 7) -- so they are not
-    purchasable from this panel either. Shops that share a name (Radiant/Dire
-    "Black Market") are folded into one category, but their (possibly distinct)
-    building unit-type codes are all kept (cat['shop_codes']) -- the purchase
-    handler needs every physical building type that can sell this catalog to
-    find the correct live unit to issue the sell order on (see the module
-    docstring)."""
-    excluded = {'uC74', 'u010'}
+    Returns {'radiant': [...], 'dire': [...]} -- see the module docstring for
+    why a single flat catalog (v1-v4) is wrong: it duplicated the two side-
+    flavoured shops for both teams and let composite items resolve components
+    to a shop the buying hero's team has no building near. Each side's list
+    only contains categories whose building has at least one CreateUnit
+    placement on that side (`_shop_sides`); a category placed on both sides
+    (most base shops, e.g. Weapons Dealer/n01K) appears, independently, in
+    both.
+
+    Secret shop (uC74) and side shops (u010, u00Z) are excluded on purpose
+    (they stay clickable buildings, per docs/SHOP_UI_PLAN.md §4 step 7) -- so
+    they are not purchasable from this panel either. Shops that share a name
+    (Radiant/Dire "Black Market") are folded into one category, but their
+    (possibly distinct) building unit-type codes are all kept
+    (cat['shop_codes']) -- the purchase handler needs every physical building
+    type that can sell this catalog to find the correct live unit to issue
+    the sell order on (see the module docstring)."""
+    excluded = {'uC74', 'u010', 'u00Z'}
     fams = w.item_list()
     unit_to_fam = {}
     for g in fams:
@@ -641,10 +749,6 @@ def collect_catalog(w) -> list[dict]:
             cat['items'].append({'unit': u, 'item': item_code, 'cost': cost or 0,
                                   'icon': art, 'name': name, 'buttonpos': w.xy(u, 'Buttonpos')})
     result = [c for c in categories if c['items']]
-    _build_parts(w, result)
-    if len(result) > HW_SHOP_MAX_SHOPS:
-        raise ValueError(f'{len(result)} shop categories, HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS} '
-                          f'(BLOCK_COLS={BLOCK_COLS} x SHOPS_PER_COL={SHOPS_PER_COL}) is too small')
     for i, cat in enumerate(result, 1):
         # The map's *.txt files mix latin1/cp1251 encodings; a non-ASCII shop-unit
         # name would render as "????????" in the client's font, so fall back to a
@@ -654,17 +758,82 @@ def collect_catalog(w) -> list[dict]:
         if len(cat['shop_codes']) > HW_SHOP_BUILDING_CODES:
             raise ValueError(f"shop {cat['name']!r} has {len(cat['shop_codes'])} building codes, "
                               f'HW_SHOP_BUILDING_CODES={HW_SHOP_BUILDING_CODES} is too small')
-        cat['cells'] = _place_cells(cat['items'])
-    return result
+        cat['sides'] = _shop_sides(w.script, cat['shop_codes'])
+        if not cat['sides']:
+            print(f"WARNING: shop {cat['name']!r} ({','.join(cat['shop_codes'])}) has no CreateUnit "
+                  f"placement at x<0,y<0 or x>0,y>0 in war3map.j -- showing on both teams as a fallback")
+            cat['sides'] = {'radiant', 'dire'}
+    radiant = [copy.deepcopy(c) for c in result if 'radiant' in c['sides']]
+    dire = [copy.deepcopy(c) for c in result if 'dire' in c['sides']]
+    _build_parts(w, radiant)
+    _build_parts(w, dire)
+    for side_cats in (radiant, dire):
+        for cat in side_cats:
+            cat['cells'] = _place_cells(cat['items'])
+        if len(side_cats) > HW_SHOP_MAX_SHOPS:
+            raise ValueError(f'{len(side_cats)} shop categories on one side, HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS} is too small')
+    return {'radiant': radiant, 'dire': dire}
 
 
-def catalog_function(categories: list[dict]) -> str:
-    """JASS function filling the HW_shop* arrays from a Python-built catalog
-    (list of {'name', 'shop_codes', 'items', 'cells': [12 x (item-dict or None)]})."""
+def parts_report(catalog: dict) -> str:
+    """Human-readable summary of the recipe/component expansion, for the
+    inject-time (no --apply) shop-ui command output (task requirement):
+    how many items across both catalogs resolved >=2 parts, and up to 5
+    examples (Vladmir's Offering and Battle Fury preferred if present)."""
+    multi = []
+    for side in ('radiant', 'dire'):
+        for cat in catalog.get(side, []):
+            for it in cat['items']:
+                parts = it.get('parts') or []
+                if len(parts) >= 2:
+                    multi.append((side, cat['name'], it))
+    lines = [f'Составных товаров (>=2 частей): {len(multi)}']
+    highlight = ('vladmir', 'battle fury')
+    examples = []
+    seen = set()
+    for want_highlight in (True, False):
+        for side, catname, it in multi:
+            if len(examples) >= 5:
+                break
+            if it['name'] in seen:
+                continue
+            is_hl = any(h in it['name'].lower() for h in highlight)
+            if is_hl != want_highlight:
+                continue
+            examples.append((side, catname, it))
+            seen.add(it['name'])
+    for side, catname, it in examples:
+        names = ', '.join(p[3] for p in it['parts'])
+        lines.append(f"  [{side:7s}] {it['name']:28s} ({catname}) {len(it['parts'])} частей: {names}")
+    return '\n'.join(lines)
+
+
+def catalog_function(catalog: dict) -> tuple:
+    """JASS function filling the HW_shop* arrays from the two Python-built team
+    catalogs (see collect_catalog). Returns (jass_text, geometry) -- geometry
+    is the dict from _geometry(), sized to the larger side's category count,
+    needed by inject() to size the panel's blocks/icons.
+
+    Categories are laid out flat as radiant + dire (Radiant's own indices
+    first, Dire's follow, shifted by len(radiant)); HW_shopCol/HW_shopRow are
+    precomputed here (col 0/row i for Radiant, col 1/row i for Dire) so
+    HW_ShopBuild only ever reads them, it does not compute layout arithmetic
+    from a single linear index any more (that was v1-v4's approach, dropped
+    because "how many go per column" is no longer a fixed constant -- see the
+    module docstring)."""
+    radiant = catalog['radiant']
+    dire = catalog['dire']
+    combined = radiant + dire
+    r_count = len(radiant)
     lines = ['function HW_ShopDataInit takes nothing returns nothing']
     part_idx = 0
-    for ci, cat in enumerate(categories):
+    for ci, cat in enumerate(combined):
+        side = 0 if ci < r_count else 1
+        local_row = ci if ci < r_count else ci - r_count
         lines.append(f'    set HW_shopShopName[{ci}]="{_jass_string(cat["name"])}"')
+        lines.append(f'    set HW_shopTeamSide[{ci}]={side}')
+        lines.append(f'    set HW_shopCol[{ci}]={side}')
+        lines.append(f'    set HW_shopRow[{ci}]={local_row}')
         for ki, code in enumerate(cat['shop_codes']):
             lines.append(f"    set HW_shopBuildingCode[{ci * HW_SHOP_BUILDING_CODES + ki}]='{code}'")
         for si, it in enumerate(cat['cells']):
@@ -676,35 +845,49 @@ def catalog_function(categories: list[dict]) -> str:
             lines.append(f'    set HW_shopCost[{idx}]={it["cost"]}')
             lines.append(f'    set HW_shopIcon[{idx}]="{_jass_string(it["icon"])}"')
             lines.append(f'    set HW_shopName[{idx}]="{_jass_string(it["name"])}"')
-            parts = it.get('parts') or [(ci, it['unit'], it['cost'])]
+            parts = it.get('parts') or [(ci, it['unit'], it['cost'], it['name'])]
             lines.append(f'    set HW_shopPartBase[{idx}]={part_idx}')
             lines.append(f'    set HW_shopPartCount[{idx}]={len(parts)}')
-            for pcat, punit, pcost in parts:
-                lines.append(f"    set HW_shopPartCatIdx[{part_idx}]={pcat}")
+            for pcat, punit, pcost, pname in parts:
+                # pcat is local to this item's own side's catalog (0-based); dire's
+                # need shifting into the combined flat index space (see above)
+                real_cat = pcat if ci < r_count else pcat + r_count
+                lines.append(f"    set HW_shopPartCatIdx[{part_idx}]={real_cat}")
                 lines.append(f"    set HW_shopPartUnitId[{part_idx}]='{punit}'")
                 lines.append(f'    set HW_shopPartCost[{part_idx}]={pcost}')
+                lines.append(f'    set HW_shopPartName[{part_idx}]="{_jass_string(pname)}"')
                 part_idx += 1
-    lines.append(f'    set HW_shopCount={len(categories)}')
+    lines.append(f'    set HW_shopCount={len(combined)}')
     lines.append('endfunction')
-    return '\n'.join(lines)
+    shops_per_col = max(r_count, len(dire), 1)
+    geo = _geometry(shops_per_col)
+    geo.update(shops_per_col=shops_per_col, count_radiant=r_count, count_dire=len(dire))
+    return '\n'.join(lines), geo
 
 
-def inject(script: str, categories: list[dict], right: float = 0.0, top: float = None, bottom: float = None, parent: str = 'gameui') -> str:
+def inject(script: str, catalog: dict, right: float = 0.0, top: float = None, bottom: float = None, parent: str = 'gameui') -> str:
     """Return the script with the shop-window block added (idempotent). Coexists
     with the HW_COOLDOWN_* block; both are spliced the same way (globals appended
     to the first `globals` block, functions right before `main`, one call at the
     end of `main`)."""
     import re
-    if not categories:
-        raise ValueError('empty shop catalog')
-    if len(categories) > HW_SHOP_MAX_SHOPS:
-        raise ValueError(f'{len(categories)} shop categories, HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS} is too small')
+    radiant = catalog.get('radiant') or []
+    dire = catalog.get('dire') or []
+    if not radiant and not dire:
+        raise ValueError('empty shop catalog (both teams)')
+    if len(radiant) + len(dire) > HW_SHOP_MAX_SHOPS:
+        raise ValueError(f'{len(radiant) + len(dire)} shop categories, HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS} is too small')
     script = remove(script)
-    funcs = (FUNCTIONS.replace('// HW_SHOP_BEGIN', '// HW_SHOP_BEGIN\n' + catalog_function(categories))
+    data_func, geo = catalog_function(catalog)
+    funcs = (FUNCTIONS.replace('// HW_SHOP_BEGIN', '// HW_SHOP_BEGIN\n' + data_func)
              .replace('HW_SHOP_PARENT_ORIGIN', 'ORIGIN_FRAME_WORLD_FRAME' if parent == 'world' else 'ORIGIN_FRAME_GAME_UI')
              .replace('HW_SHOP_RIGHT_OVERRIDE', f'{right:.6f}')
              .replace('HW_SHOP_TOP_Y', f'{(top if top is not None else PANEL_TOP_Y):.6f}')
-             .replace('HW_SHOP_BOTTOM_Y', f'{(bottom if bottom is not None else PANEL_BOTTOM_Y):.6f}'))
+             .replace('HW_SHOP_BOTTOM_Y', f'{(bottom if bottom is not None else PANEL_BOTTOM_Y):.6f}')
+             .replace('@@BLOCK_PITCH@@', f"{geo['block_pitch']:.6f}")
+             .replace('@@ICON_PITCH@@', f"{geo['icon_pitch']:.6f}")
+             .replace('@@ICON@@', f"{geo['icon']:.6f}")
+             .replace('@@HEADER_W@@', f"{geo['header_w']:.6f}"))
     g = re.search(r'^globals\r?\n', script, re.M)
     if not g: raise ValueError('globals block not found')
     end = script.index('endglobals', g.end())
