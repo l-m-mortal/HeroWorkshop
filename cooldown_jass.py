@@ -21,7 +21,8 @@ boolean HW_cdIsDebug=false
 // HW_COOLDOWN_GLOBALS_END"""
 
 # 1.31 has no BlzGetAbilityId, so the unit's abilities are found by probing a
-# generated list of every hero ability id of this map with BlzGetUnitAbility.
+# generated list of every hero ability id of this map with GetUnitAbilityLevel
+# (unlearned hero abilities have level 0 and are skipped; rescanned every 0.5 s).
 FUNCTIONS = """// HW_COOLDOWN_BEGIN
 function HW_cdFormat takes real r returns string
     local integer whole
@@ -41,7 +42,7 @@ function HW_cdScan takes nothing returns nothing
     endif
     loop
         exitwhen i>=HW_cdIdCount
-        if BlzGetUnitAbility(HW_cdUnit,HW_cdIds[i])!=null then
+        if GetUnitAbilityLevel(HW_cdUnit,HW_cdIds[i])>0 then
             set HW_cdUnitIds[HW_cdUnitN]=HW_cdIds[i]
             set HW_cdUnitPos[HW_cdUnitN]=HW_cdPos[i]
             set HW_cdUnitN=HW_cdUnitN+1
@@ -70,6 +71,7 @@ function HW_cdTick takes nothing returns nothing
     if HW_cdTicks>=5 then
         set HW_cdTicks=0
         call HW_cdPick()
+        call HW_cdScan()
     endif
     loop
         exitwhen i>11
