@@ -617,6 +617,21 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
                     ids.append(c)
                     xy = w.xy(c, 'Buttonpos')
                     if xy and 0 <= xy[0] <= 3 and 0 <= xy[1] <= 2: positions[c] = xy[1] * 4 + xy[0]
+    # Abilities given to heroes by triggers (Beastmaster's hawk/boar, Invoker's spells...)
+    # are not in the unit lists: add every ability of the map that has a cooldown and a
+    # command-card position.
+    data, ah, arows = w.abil_data
+    cool = [c for c in ah if re.match(r'Cool\d+$', c)]
+    for code, r in arows.items():
+        if code in ids or not re.match(r'^[0-9A-Za-z]{4}$', code): continue
+        cd = 0.0
+        for col in cool:
+            try: cd = max(cd, float(data.get((ah[col], r), '0') or 0))
+            except ValueError: pass
+        if cd <= 0: continue
+        xy = w.xy(code, 'Buttonpos')
+        if xy and 0 <= xy[0] <= 3 and 0 <= xy[1] <= 2:
+            ids.append(code); positions[code] = xy[1] * 4 + xy[0]
     new = cooldown_jass.remove(script) if undo else cooldown_jass.inject(script, ids, font, positions, parent, debug)
     if not undo:
         print(f'Способностей в списке для опроса: {len(ids)}, с известной позицией кнопки: {len(positions)}')
