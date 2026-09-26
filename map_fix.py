@@ -1230,6 +1230,63 @@ def fix_model_lift(w: workshop.Workshop, apply: bool, path: str | None = None, t
     if rec['drop']: out = mdx_drop_geosets(out, set(rec['drop']))
     w.changes[path] = out; w.commit(); w.save_state(); print('Записано.')
 
+def mdx_add_events(data: bytes, events) -> bytes:
+    """Append sound/effect event objects: events = [(name8, [frames...]), ...], e.g.
+    ('SNDxKRIF', [370]). A new node id is allocated per event; the pivot table grows."""
+    import struct
+    recs = _node_records(data)
+    next_id = max((r[4] for r in recs), default=-1) + 1
+    chunks = []; o = 4
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; chunks.append([tag, data[o + 8:o + 8 + size]]); o += 8 + size
+    tags = [c[0] for c in chunks]
+    if b'PIVT' not in tags: raise ValueError('модель без PIVT')
+    npiv = len(chunks[tags.index(b'PIVT')][1]) // 12
+    if npiv != next_id: raise ValueError(f'узлов {next_id}, опорных точек {npiv}: модель нестандартная')
+    evts = bytearray()
+    for name, frames in events:
+        node = name.encode('latin1')[:80].ljust(80, b'\0') + struct.pack('<III', next_id, 0xFFFFFFFF, 0x400)
+        node = struct.pack('<I', 96) + node
+        evts += node + b'KEVT' + struct.pack('<Ii', len(frames), -1) + b''.join(struct.pack('<I', f) for f in frames)
+        chunks[tags.index(b'PIVT')][1] += struct.pack('<3f', 0, 0, 0); next_id += 1
+    if b'EVTS' in tags: chunks[tags.index(b'EVTS')][1] += bytes(evts)
+    else:
+        pos = tags.index(b'PIVT') + 1
+        chunks.insert(pos, [b'EVTS', bytes(evts)])
+    return b'MDLX' + b''.join(t + struct.pack('<I', len(b)) + b for t, b in chunks)
+
+def fix_model_events(w: workshop.Workshop, apply: bool, path: str | None = None, source: str | None = None, events: str | None = None, undo: bool = False):
+    """Attack sounds live inside the model as event objects (SNDx....). Models from
+    other packs often lack them, so the hero attacks in silence. Add events:
+
+    --path P            model path inside the map (as in unitUI.slk 'file' + .mdx)
+    --source FILE|hq    start from this file (or the HQ/game copy); default: the map's copy
+    --events LIST       e.g. "SNDxKRIF@370,SNDxKRIF@800": event name and frame
+    --undo              restore the model from --source (or the game folder copy)"""
+    from pathlib import Path
+    if not path: workshop.die('нужен --path')
+    if source == 'hq' or (undo and not source):
+        src = _hq_file(workshop.GAME / 'WC3DotaHQTest' / 'A', path) or (workshop.GAME / path.replace('\\', '/'))
+        if not Path(src).is_file(): workshop.die(f'исходной модели {path} нет на диске')
+        data = Path(src).read_bytes()
+    elif source: data = Path(source).read_bytes()
+    else:
+        if not w.mpq.has(path): workshop.die(f'в карте нет {path}; укажите --source')
+        data = w.mpq.read(path)
+    if undo:
+        print(f'Восстановить {path} из {src}')
+        if apply: w.changes[path] = data; w.commit()
+        return
+    if not events: workshop.die('нужен --events ИМЯ@КАДР,...')
+    ev = {}
+    for tok in events.split(','):
+        name, frame = tok.split('@'); ev.setdefault(name.strip(), []).append(int(frame))
+    before = [(r[0], r[4]) for r in _node_records(data)]
+    out = mdx_add_events(data, list(ev.items()))
+    print(f'{path}: узлов было {len(before)}, событий добавлено {len(ev)}: ' + ', '.join(f'{k}@{v}' for k, v in ev.items()))
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    w.changes[path] = out; w.commit(); print('Записано.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1421,7 +1478,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: fl
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1435,6 +1492,7 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--events', help='model-events: СОБЫТИЕ@КАДР через запятую')
     ap.add_argument('--right', type=float, default=0.0, help='shop-ui: правый край панели (0 = по размеру окна)')
     ap.add_argument('--top', type=float, default=None, help='shop-ui: верх панели (0.555)')
     ap.add_argument('--bottom', type=float, default=None, help='shop-ui: низ панели (0.20)')
@@ -1469,6 +1527,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'model-events': FIXES[a.fix](w, a.apply, a.path, a.source, a.events, a.undo)
     elif a.fix == 'model-lift': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset, a.drop, a.undo)
     elif a.fix == 'script-tints': FIXES[a.fix](w, a.apply, a.undo)
     elif a.fix == 'untint': FIXES[a.fix](w, a.apply, a.types)
