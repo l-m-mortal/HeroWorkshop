@@ -511,20 +511,24 @@ def fix_move_doodads(w: workshop.Workshop, apply: bool, types: str | None = None
     if not apply: print('\nПлан. Запустите с --apply.'); return
     w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); print('Перемещено.')
 
-def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, types: str | None = None):
-    """Re-base the height of placements ported from the reference map: the Terrain Fix
-    map raised parts of the ground, and doodads keep an absolute z, so ported ones sit
-    underground there. z_new = z_old - ground_ref(x, y) + ground_here(x, y).
+def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, types: str | None = None, offset: float = 0.0):
+    """Put ported placements on this map's ground: z = ground_here(x, y) + (z_ref -
+    ground_ref) + offset, where z_ref is the same placement in the reference map (0 when
+    it has none, e.g. after move-doodads). Idempotent: run it as often as you like.
 
     --types A,B     only these types (default: every placement recorded by doodads /
-                    custom-doodads in the state file)"""
-    import doo
+                    custom-doodads in the state file)
+    --offset N      extra height in game units (sunk models: try 100..200)"""
+    import doo, math
     from mpq import MPQ
     ref_path = _ref_map(ref)
     if ref_path is None: workshop.die('эталонная карта не найдена, укажите --ref')
     class _R: pass
     r = _R(); r.mpq = MPQ(ref_path)
     tz_ref = terrain_z(r); tz_here = terrain_z(w)
+    src = doo.parse(r.mpq.read('war3map.doo'))
+    by_xy = {}
+    for e in src['entries']: by_xy.setdefault((round(e['x']), round(e['y'])), []).append(e)
     cur = doo.parse(w.mpq.read('war3map.doo'))
     if types:
         kinds = set(types.split(',')); victims = [e for e in cur['entries'] if e['type'] in kinds]
@@ -535,7 +539,10 @@ def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, typ
         victims = [e for e in cur['entries'] if e['editor_id'] in ids]
     changed = 0; by_type = {}
     for e in victims:
-        nz = e['z'] - tz_ref(e['x'], e['y']) + tz_here(e['x'], e['y'])
+        rel = 0.0
+        for s_ in by_xy.get((round(e['x']), round(e['y'])), []):
+            rel = s_['z'] - tz_ref(s_['x'], s_['y']); break
+        nz = tz_here(e['x'], e['y']) + rel + offset
         if abs(nz - e['z']) < 0.5: continue
         by_type.setdefault(e['type'], []).append((e['z'], nz))
         if apply: e['z'] = nz
@@ -546,22 +553,6 @@ def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, typ
     if not changed: return
     if not apply: print('\nПлан. Запустите с --apply.'); return
     w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); print('Высоты пересчитаны.')
-
-def fix_dump(w: workshop.Workshop, apply: bool):
-    """Write the map's structural files (placements, object types, terrain, script,
-    file list, unit/item data) into .work/<map>/dump.zip for sharing without models."""
-    import zipfile
-    names = ['war3map.doo', 'war3mapUnits.doo', 'war3map.w3d', 'war3map.w3b', 'war3map.w3u', 'war3map.w3e', 'war3map.w3i',
-             'war3map.j', 'Scripts\\war3map.j', 'war3map.w3r', 'war3map.wpm', 'war3map.shd', 'war3map.mmp', '(listfile)']
-    names += [f for f in w.mpq.list() if f.lower().startswith('units\\') and f.lower().endswith(('.slk', '.txt'))]
-    out = workshop.WORK / 'dump.zip'; out.parent.mkdir(parents=True, exist_ok=True)
-    listing = '\n'.join(f'{f}\t{len(w.mpq.read(f))}' for f in w.mpq.list())
-    with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
-        z.writestr('FILES.tsv', listing)
-        z.writestr('state.json', __import__('json').dumps(w.state, ensure_ascii=False, indent=1))
-        for n in names:
-            if w.mpq.has(n): z.writestr(n.replace('\\', '/'), w.mpq.read(n))
-    print(f'Записано: {out} ({out.stat().st_size / 1e6:.1f} МБ)')
 
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
@@ -713,6 +704,7 @@ def main():
     ap.add_argument('--near', help='doodads: X,Y,R — только размещения в радиусе R от точки')
     ap.add_argument('--from', help='move-doodads: X,Y опорная точка (писать через =)')
     ap.add_argument('--to', help='move-doodads: X,Y куда (писать через =)')
+    ap.add_argument('--offset', type=float, default=0.0, help='doodads-z: добавка к высоте')
     ap.add_argument('--rotate', type=float, default=0.0, help='move-doodads: поворот группы в градусах')
     ap.add_argument('--at', help='probe: X,Y,R — точка и радиус')
     ap.add_argument('--opaque', action='store_true', help='repack-textures: убрать альфа-канал')
@@ -733,7 +725,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
-    elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types)
+    elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types, a.offset)
     elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate)
     elif a.fix == 'custom-doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near, a.undo)
     elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match, a.undo)
