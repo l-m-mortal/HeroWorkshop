@@ -782,7 +782,8 @@ def mdx_geoset_boxes(data: bytes):
                 gs = struct.unpack_from('<I', data, q)[0]
                 n = struct.unpack_from('<I', data, q + 8)[0]
                 pts = list(struct.iter_unpack('<3f', data[q + 12:q + 12 + n * 12]))
-                out.append((min(p[0] for p in pts), min(p[1] for p in pts), min(p[2] for p in pts), max(p[0] for p in pts), max(p[1] for p in pts), max(p[2] for p in pts)))
+                low = min(pts, key=lambda p: p[2])
+                out.append((min(p[0] for p in pts), min(p[1] for p in pts), min(p[2] for p in pts), max(p[0] for p in pts), max(p[1] for p in pts), max(p[2] for p in pts), low[0], low[1]))
                 q += gs
         o = b + size
     return out
@@ -923,7 +924,8 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     --path P        model path inside the map
     --types T:V     doodad type and variation whose placements use that model (e.g. ARrk:7)
     --drop 41       geoset indices to leave out (lanterns...)
-    --gap 350       pieces closer than this (model units) stay in one cluster
+    --gap 350       pieces closer than this (model units) stay in one cluster (0 = every
+                    geoset is its own piece)
     --sink 15       how deep the lowest vertex sits below ground
     --undo          remove everything this command added and restore the original placements
     --redo          undo a previous split first (if any), then split again"""
@@ -964,9 +966,10 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     def gapxy(a, b):
         dx = max(0, max(a[0], b[0]) - min(a[3], b[3])); dy = max(0, max(a[1], b[1]) - min(a[4], b[4]))
         return math.hypot(dx, dy)
-    for i in idx:
-        for j in idx:
-            if j > i and gapxy(boxes[i], boxes[j]) <= gap: parent[find(i)] = find(j)
+    if gap > 0:
+        for i in idx:
+            for j in idx:
+                if j > i and gapxy(boxes[i], boxes[j]) <= gap: parent[find(i)] = find(j)
     clusters = {}
     for i in idx: clusters.setdefault(find(i), []).append(i)
     clusters = sorted(clusters.values(), key=lambda c: min(c))
@@ -976,8 +979,9 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     plan = []
     for k, c in enumerate(clusters):
         bx = [boxes[i] for i in c]
-        cx = (min(b[0] for b in bx) + max(b[3] for b in bx)) / 2; cy = (min(b[1] for b in bx) + max(b[4] for b in bx)) / 2
-        zmin = min(b[2] for b in bx)
+        lowest = min(bx, key=lambda b: b[2])
+        cx, cy = lowest[6], lowest[7]  # ground is sampled under the lowest point of the piece
+        zmin = lowest[2]
         code = None
         for n in range(36 * 36):
             cand = 'DS' + '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[n // 36] + '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[n % 36]

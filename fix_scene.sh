@@ -32,7 +32,7 @@ python3 map_fix.py doodads-z --types ARrk --offset $ARRK --apply || true
 python3 map_fix.py doodads-z --types D000 --offset $D000 --apply || true
 
 step "6b. Модель-сборка лестниц/стен AshenRock7 (ARrk вариация 7): разрезать на куски по земле"
-python3 map_fix.py split-model --path 'Doodads\Ashenvale\Rocks\AshenRock\AshenRock7.mdx' --types ARrk:7 --drop 39,40,41 --redo --apply || true
+python3 map_fix.py split-model --path 'Doodads\Ashenvale\Rocks\AshenRock\AshenRock7.mdx' --types ARrk:7 --drop 39,40,41 --gap 0 --redo --apply || true
 python3 map_fix.py doodads-z --types 'DS*' --offset $DS --apply || true
 
 step "7. Яма Рошана: скалы OOob убрать совсем"
