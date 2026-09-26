@@ -112,6 +112,7 @@ def serialize_obj_file(parsed) -> bytes:
         out.extend(struct.pack('<II', four(r['old']), four(r['new']) if r['new'] else 0))
         out.extend(struct.pack('<I', len(r['mods'])))
         raw = r.get('raw') or [(0, 0, four(r['new']) if r['new'] else four(r['old']))] * len(r['mods'])
+        if len(raw) != len(r['mods']): raw = [(0, 0, four(r['new']) if r['new'] else four(r['old']))] * len(r['mods'])
         for (field, typ, val), (level, pointer, end) in zip(r['mods'], raw):
             out.extend(struct.pack('<II', four(field), typ))
             if has_level: out.extend(struct.pack('<II', level, pointer))

@@ -531,8 +531,8 @@ def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, typ
     ground_ref) + offset, where z_ref is the same placement in the reference map (0 when
     it has none, e.g. after move-doodads). Idempotent: run it as often as you like.
 
-    --types A,B     only these types (default: every placement recorded by doodads /
-                    custom-doodads in the state file)
+    --types A,B     only these types ('DS*' = every type starting with DS; default: every
+                    placement recorded by doodads / custom-doodads / split-model)
     --offset N      extra height in game units (sunk models: try 100..200)"""
     import doo, math
     from mpq import MPQ
@@ -546,10 +546,11 @@ def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, typ
     for e in src['entries']: by_xy.setdefault((round(e['x']), round(e['y'])), []).append(e)
     cur = doo.parse(w.mpq.read('war3map.doo'))
     if types:
-        kinds = set(types.split(',')); victims = [e for e in cur['entries'] if e['type'] in kinds]
+        kinds = set(types.split(',')); prefixes = tuple(k[:-1] for k in kinds if k.endswith('*'))
+        victims = [e for e in cur['entries'] if e['type'] in kinds or (prefixes and e['type'].startswith(prefixes))]
     else:
         ids = set()
-        for rec in w.state.get('doodads_added', []) + w.state.get('custom_doodads_added', []):
+        for rec in w.state.get('doodads_added', []) + w.state.get('custom_doodads_added', []) + w.state.get('split_models', []):
             ids.update(range(rec['editor_ids'][0], rec['editor_ids'][1] + 1))
         victims = [e for e in cur['entries'] if e['editor_id'] in ids]
     changed = 0; by_type = {}
@@ -763,6 +764,161 @@ def fix_model_bounds(w: workshop.Workshop, apply: bool, match: str | None = None
     for lo, hi, name in sorted(rows):
         print(f'  z {lo:7.0f} .. {hi:6.0f}   {name}' + ('   <- утоплена, offset ~%d' % -lo if lo < -40 else ''))
 
+def mdx_geoset_boxes(data: bytes):
+    """[(minx,miny,minz,maxx,maxy,maxz), ...] per geoset."""
+    import struct
+    out = []; o = 4
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; b = o + 8
+        if tag == b'GEOS':
+            q = b
+            while q < b + size:
+                gs = struct.unpack_from('<I', data, q)[0]
+                n = struct.unpack_from('<I', data, q + 8)[0]
+                pts = list(struct.iter_unpack('<3f', data[q + 12:q + 12 + n * 12]))
+                out.append((min(p[0] for p in pts), min(p[1] for p in pts), min(p[2] for p in pts), max(p[0] for p in pts), max(p[1] for p in pts), max(p[2] for p in pts)))
+                q += gs
+        o = b + size
+    return out
+
+def mdx_translate(data: bytes, dx: float, dy: float, dz: float, drop_chunks=(b'ATCH', b'CAMS', b'EVTS', b'CLID', b'PRE2', b'PREM', b'RIBB', b'LITE')) -> bytes:
+    """Move every vertex by (dx,dy,dz), recompute geoset/model/sequence extents, drop
+    positional extras (attachments, cameras, emitters...)."""
+    import struct
+    out = bytearray(b'MDLX'); o = 4
+    # pass 1: translated geosets
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; body = data[o + 8:o + 8 + size]
+        if tag in drop_chunks: o += 8 + size; continue
+        if tag == b'GEOS':
+            q = 0; parts = []
+            while q < len(body):
+                gs = struct.unpack_from('<I', body, q)[0]; g = bytearray(body[q:q + gs])
+                n = struct.unpack_from('<I', g, 8)[0]
+                pts = [(x + dx, y + dy, z + dz) for x, y, z in struct.iter_unpack('<3f', g[12:12 + n * 12])]
+                g[12:12 + n * 12] = b''.join(struct.pack('<3f', *p) for p in pts)
+                # walk to MATS to rewrite extents
+                r = 4
+                while r < len(g):
+                    t = bytes(g[r:r + 4]); c = struct.unpack_from('<I', g, r + 4)[0]
+                    sz = {b'VRTX': 12, b'NRMS': 12, b'PTYP': 4, b'PCNT': 4, b'PVTX': 2, b'GNDX': 1, b'MTGC': 4, b'MATS': 4, b'UVAS': 0, b'UVBS': 8}[t]
+                    r += 8 + c * sz
+                    if t == b'MATS':
+                        r += 12
+                        mn = [min(p[i] for p in pts) for i in range(3)]; mx = [max(p[i] for p in pts) for i in range(3)]
+                        rad = max((x * x + y * y + z * z) ** 0.5 for x, y, z in pts)
+                        struct.pack_into('<f3f3f', g, r, rad, *mn, *mx); r += 28
+                        nex = struct.unpack_from('<I', g, r)[0]; r += 4
+                        for _ in range(nex): struct.pack_into('<f3f3f', g, r, rad, *mn, *mx); r += 28
+                        break
+                parts.append(bytes(g)); q += gs
+            body = b''.join(parts)
+        out += tag + struct.pack('<I', len(body)) + body
+        o += 8 + size
+    res = bytes(out)
+    b = mdx_bounds(res)
+    if b:
+        rad, mn, mx = b; o = 4; res = bytearray(res)
+        while o + 8 <= len(res):
+            tag = res[o:o + 4]; size = struct.unpack_from('<I', res, o + 4)[0]
+            if tag == b'MODL' and size >= 372: struct.pack_into('<f3f3f', res, o + 8 + 340, rad, *mn, *mx)
+            if tag == b'SEQS':
+                for k in range(size // 132): struct.pack_into('<f3f3f', res, o + 8 + k * 132 + 104, rad, *mn, *mx)
+            o += 8 + size
+        res = bytes(res)
+    return res
+
+def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, types: str | None = None, drop: str | None = None, gap: float = 350.0, sink: float = 15.0, undo: bool = False):
+    """A model that holds many pieces spread over the whole map (the HQ stairs model
+    AshenRock7 covers both bases from one placement) cannot follow the terrain. Split it:
+    each cluster of geosets becomes its own model (war3mapImported\HW_*.mdx) and its
+    own doodad type, placed at the piece's real position on the ground.
+
+    --path P        model path inside the map
+    --types T:V     doodad type and variation whose placements use that model (e.g. ARrk:7)
+    --drop 41       geoset indices to leave out (lanterns...)
+    --gap 350       pieces closer than this (model units) stay in one cluster
+    --sink 15       how deep the lowest vertex sits below ground
+    --undo          remove everything this command added and restore the original placements"""
+    import doo, math, map_audit
+    rec_key = 'split_models'
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    w3d = map_audit.parse_obj_file(w.mpq.read('war3map.w3d'))
+    if undo:
+        recs = w.state.get(rec_key, [])
+        if not recs: workshop.die('нечего откатывать')
+        tids = set(); ids = set(); restore = []
+        for r in recs: tids.update(r['types']); ids.update(range(r['editor_ids'][0], r['editor_ids'][1] + 1)); restore.extend(r['original'])
+        cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in ids and e['type'] not in tids]
+        have = {e['editor_id'] for e in cur['entries']}
+        cur['entries'].extend(e for e in restore if e['editor_id'] not in have)
+        w3d['custom'] = [r for r in w3d['custom'] if r['new'] not in tids]
+        print(f'Убрать типов {len(tids)}, вернуть исходных размещений {len(restore)}.')
+        if not apply: print('\nПлан. Запустите с --apply.'); return
+        w.changes['war3map.doo'] = doo.serialize(cur); w.changes['war3map.w3d'] = map_audit.serialize_obj_file(w3d)
+        w.commit(); w.state[rec_key] = []; w.save_state(); print('Готово.'); return
+    if not path or not types: workshop.die('нужны --path и --types ТИП:ВАРИАЦИЯ')
+    if not w.mpq.has(path): workshop.die(f'в карте нет {path}')
+    t, var = types.split(':'); var = int(var)
+    placements = [e for e in cur['entries'] if e['type'] == t and e['variation'] == var]
+    if not placements: workshop.die(f'размещений {t} вариации {var} нет')
+    data = w.mpq.read(path)
+    dropset = {int(v) for v in drop.split(',')} if drop else set()
+    boxes = mdx_geoset_boxes(data)
+    idx = [i for i in range(len(boxes)) if i not in dropset]
+    # clusters: union-find on bbox gaps
+    parent = {i: i for i in idx}
+    def find(i):
+        while parent[i] != i: parent[i] = parent[parent[i]]; i = parent[i]
+        return i
+    def gapxy(a, b):
+        dx = max(0, max(a[0], b[0]) - min(a[3], b[3])); dy = max(0, max(a[1], b[1]) - min(a[4], b[4]))
+        return math.hypot(dx, dy)
+    for i in idx:
+        for j in idx:
+            if j > i and gapxy(boxes[i], boxes[j]) <= gap: parent[find(i)] = find(j)
+    clusters = {}
+    for i in idx: clusters.setdefault(find(i), []).append(i)
+    clusters = sorted(clusters.values(), key=lambda c: min(c))
+    print(f'Модель {path}: геосетов {len(boxes)}, без {sorted(dropset) or "—"}, кластеров {len(clusters)}; размещений {t}:{var}: {len(placements)}')
+    tz = terrain_z(w)
+    used = {e['type'] for e in cur['entries']} | {r['new'] for r in w3d['custom'] if r['new']}
+    plan = []
+    for k, c in enumerate(clusters):
+        bx = [boxes[i] for i in c]
+        cx = (min(b[0] for b in bx) + max(b[3] for b in bx)) / 2; cy = (min(b[1] for b in bx) + max(b[4] for b in bx)) / 2
+        zmin = min(b[2] for b in bx)
+        code = None
+        for n in range(36 * 36):
+            cand = 'DS' + '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[n // 36] + '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[n % 36]
+            if cand not in used: used.add(cand); code = cand; break
+        mpath = f'war3mapImported\\HW_{t}{var}_{k:02d}.mdx'
+        plan.append((k, c, cx, cy, zmin, code, mpath))
+        print(f'  кластер {k:2d} -> {code} {mpath}: геосеты {c}, центр ({cx:.0f}, {cy:.0f}), низ z {zmin:.0f}')
+    new_entries = []
+    for e in placements:
+        ca, sa = math.cos(e['angle']), math.sin(e['angle'])
+        for k, c, cx, cy, zmin, code, mpath in plan:
+            wx = e['x'] + (cx * ca - cy * sa) * e['sx']; wy = e['y'] + (cx * sa + cy * ca) * e['sy']
+            new_entries.append({'type': code, 'variation': 0, 'x': wx, 'y': wy, 'z': tz(wx, wy), 'angle': e['angle'], 'sx': e['sx'], 'sy': e['sy'], 'sz': e['sz'], 'flags': e['flags'], 'life': e['life'], 'item_table': -1, 'item_sets': [], 'editor_id': 0})
+    print(f'Новых размещений: {len(new_entries)}; исходные {len(placements)} будут убраны.')
+    if not apply: print('\nПлан. Запустите с --apply. Откат: split-model --undo --apply'); return
+    keep_all = set(idx)
+    for k, c, cx, cy, zmin, code, mpath in plan:
+        part = mdx_drop_geosets(data, keep_all.difference(c) | dropset)
+        part = mdx_translate(part, -cx, -cy, -zmin - sink)
+        w.changes[mpath] = part
+        w3d['custom'].append({'old': t, 'new': code, 'mods': [('dfil', 3, mpath), ('dvar', 0, 1), ('dptx', 3, ''), ('dnam', 3, f'HW {t}{var} part {k}')], 'raw': None})
+    first_id = max((e['editor_id'] for e in cur['entries']), default=0) + 1
+    nid = first_id
+    for e in new_entries: e['editor_id'] = nid; nid += 1
+    kill = {e['editor_id'] for e in placements}
+    cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in kill] + new_entries
+    w.changes['war3map.doo'] = doo.serialize(cur); w.changes['war3map.w3d'] = map_audit.serialize_obj_file(w3d); w.commit()
+    w.state.setdefault(rec_key, []).append({'path': path, 'types': [p[5] for p in plan], 'editor_ids': [first_id, nid - 1], 'original': placements, 'applied': __import__('time').strftime('%Y-%m-%d %H:%M:%S')})
+    w.save_state()
+    print(f'Записано: типов {len(plan)}, размещений {len(new_entries)}. Высота потом: doodads-z --types {",".join(p[5] for p in plan)} --offset N')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -902,7 +1058,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -916,6 +1072,8 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--gap', type=float, default=350.0, help='split-model: расстояние объединения кусков')
+    ap.add_argument('--sink', type=float, default=15.0, help='split-model: заглубление низа')
     ap.add_argument('--path', help='model-cut: путь модели в карте')
     ap.add_argument('--drop', help='model-cut: номера геосетов через запятую')
     ap.add_argument('--source', help='model-cut: взять модель из файла')
@@ -943,6 +1101,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'split-model': FIXES[a.fix](w, a.apply, a.path, a.types, a.drop, a.gap, a.sink, a.undo)
     elif a.fix == 'model-bounds': FIXES[a.fix](w, a.apply, a.match)
     elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius, a.pairs, a.prefer)
     elif a.fix == 'model-cut': FIXES[a.fix](w, a.apply, a.path, a.drop, a.source)

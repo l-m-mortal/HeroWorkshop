@@ -94,6 +94,7 @@ python3 map_fix.py hq-doodads [--match Fence] [--textures] [--models] --apply
 python3 map_fix.py probe [--at=-7168,-7168,2600]     # декорации вокруг точки здесь и в 6.77b
 python3 map_fix.py doodads-z [--types A,B] [--offset 150] --apply   # высота перенесённых декораций по рельефу (идемпотентно)
 python3 map_fix.py overlaps [--radius 64] --apply          # перенесённые копии поверх родных объектов
+python3 map_fix.py split-model --path "Doodads\\...\\AshenRock7.mdx" --types ARrk:7 --drop 39,40,41 [--undo] --apply  # разрезать сборку на куски
 python3 map_fix.py model-cut --path "Doodads\\...\\X.mdx" --drop 17,18,19 --apply   # вырезать части модели
 python3 map_fix.py remove --ids 5254,5244 [--undo] --apply   # убрать отдельные размещения по номерам
 python3 map_fix.py move-doodads --types DH01 --from=2448,-528 --to=4208,-2288 [--rotate 90] --apply  # перенести группу
@@ -120,7 +121,7 @@ python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0
 
 * `zsh fix_scene.sh` — вся сцена разом (заборы, фонари, высоты, яма Рошана), повторяемо.
 * `zsh roshan.sh 180 [X,Y]` — угол и точка скал ямы Рошана.
-* `zsh stairs.sh 400` — высота лестниц `ARrk` над землёй.
+* `zsh stairs.sh 0 [DS03]` — высота кусков лестниц/стен (типы `DS*`, из разрезанной сборки `AshenRock7`) над землёй.
 * `zsh walls.sh 400 [тип]` — высота круговой стены `AOnt` (или другого типа) над землёй.
 
 ## Модули
