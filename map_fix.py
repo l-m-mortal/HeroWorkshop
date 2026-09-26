@@ -1004,6 +1004,25 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     w.save_state()
     print(f'Записано: типов {len(plan)}, размещений {len(new_entries)}. Высота потом: doodads-z --types {",".join(p[5] for p in plan)} --offset N')
 
+def fix_compact(w: workshop.Workshop, apply: bool):
+    """Rewrite the map archive with only its live files: every save leaves the old copy
+    of a replaced file inside the archive, so the map grows with each change."""
+    import os
+    size = workshop.MAP.stat().st_size
+    live = sum(len(w.mpq.read(n)) for n in w.mpq.list())
+    print(f'Файл карты {size / 1e6:.1f} МБ, живых данных примерно {live / 1e6:.1f} МБ (несжатых), файлов {len(w.mpq.list())}')
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    w.backup_map()
+    tmp = workshop.MAP.with_suffix('.w3x.tmp')
+    w.mpq.rebuild(tmp)
+    from mpq import MPQ
+    check = MPQ(tmp)
+    assert sorted(n.lower() for n in check.list()) == sorted(n.lower() for n in w.mpq.list() if n.lower() != '(attributes)'), 'список файлов не совпал'
+    for n in ('war3map.j', 'war3map.doo', 'war3map.w3d', 'war3map.w3e'):
+        if w.mpq.has(n): assert check.read(n) == w.mpq.read(n), n
+    os.replace(tmp, workshop.MAP); w.mpq = check
+    print(f'Готово: {workshop.MAP.stat().st_size / 1e6:.1f} МБ.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1143,7 +1162,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

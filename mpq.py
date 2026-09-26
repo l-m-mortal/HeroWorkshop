@@ -232,6 +232,31 @@ class MPQ:
         offs = [(n + 1) * 4]
         for s in sectors: offs.append(offs[-1] + len(s))
         return struct.pack('<%dI' % (n + 1), *offs) + b''.join(sectors)
+    def rebuild(self, target):
+        """Write a fresh archive holding only the live files (drops dead space left by
+        earlier saves). Same hash table size, files stored the same way as save()."""
+        names = [n for n in self.names.values() if n.lower() not in ('(listfile)', '(attributes)')]
+        hashes = [[0xFFFFFFFF, 0xFFFFFFFF, 0xFFFF, 0xFFFF, self.HASH_EMPTY] for _ in range(self.ht_size)]
+        blocks = []
+        out = bytearray(self.data[:self.base + self.header_size])
+        listing = ('\r\n'.join(sorted(names)) + '\r\n').encode('latin1')
+        for name in names + ['(listfile)']:
+            data = listing if name == '(listfile)' else self.read(name)
+            encoded = self._encode(data)
+            offset = len(out) - self.base
+            out.extend(encoded)
+            blocks.append([offset, len(encoded), len(data), 0x80000200])
+            idx = hash_string(name, 0) & (self.ht_size - 1)
+            while hashes[idx][4] != self.HASH_EMPTY: idx = (idx + 1) & (self.ht_size - 1)
+            hashes[idx] = [hash_string(name, 1), hash_string(name, 2), 0, 0, len(blocks) - 1]
+        htpos = len(out) - self.base
+        out.extend(encrypt(b''.join(struct.pack('<IIHHI', *h) for h in hashes), hash_string('(hash table)', 3)))
+        btpos = len(out) - self.base
+        out.extend(encrypt(b''.join(struct.pack('<IIII', *b) for b in blocks), hash_string('(block table)', 3)))
+        asize = len(out) - self.base
+        struct.pack_into('<4sIIHHIIII', out, self.base, b'MPQ\x1a', 32, asize, 0, (self.sector_size // 512).bit_length() - 1, htpos, btpos, self.ht_size, len(blocks))
+        Path(target).write_bytes(bytes(out))
+
     def save(self, target, changes: dict, update_listfile: bool = True):
         """Write a new archive with `changes` ({name: bytes to add/replace, or None to delete})."""
         changes = dict(changes)
