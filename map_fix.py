@@ -1269,10 +1269,17 @@ def fix_model_events(w: workshop.Workshop, apply: bool, path: str | None = None,
         src = _hq_file(workshop.GAME / 'WC3DotaHQTest' / 'A', path) or (workshop.GAME / path.replace('\\', '/'))
         if not Path(src).is_file(): workshop.die(f'исходной модели {path} нет на диске')
         data = Path(src).read_bytes()
-    elif source: data = Path(source).read_bytes()
+    elif source:
+        cand = Path(source)
+        if not cand.is_absolute() and not cand.is_file(): cand = workshop.GAME / source
+        if not cand.is_file(): workshop.die(f'файла {source} нет (путь от папки Warcraft III или абсолютный)')
+        data = cand.read_bytes()
     else:
-        if not w.mpq.has(path): workshop.die(f'в карте нет {path}; укажите --source')
-        data = w.mpq.read(path)
+        if w.mpq.has(path): data = w.mpq.read(path)
+        else:
+            cand = workshop.GAME / path.replace('\\', '/')
+            if not cand.is_file(): workshop.die(f'в карте нет {path} и на диске тоже; укажите --source')
+            data = cand.read_bytes()
     if undo:
         print(f'Восстановить {path} из {src}')
         if apply: w.changes[path] = data; w.commit()
