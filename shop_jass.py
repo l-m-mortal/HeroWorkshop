@@ -170,6 +170,7 @@ framehandle HW_shopCloseBtn=null
 framehandle HW_shopToggleBg=null
 framehandle HW_shopToggleBtn=null
 framehandle array HW_shopBlockHeader
+real HW_shopRightX=0.8
 framehandle array HW_shopCellBg
 framehandle array HW_shopCellBtn
 framehandle array HW_shopCellTip
@@ -358,7 +359,9 @@ function HW_ShopBuild takes nothing returns nothing
     set HW_shopOwner=Player(PLAYER_NEUTRAL_PASSIVE)
     set HW_shopSlotHT=InitHashtable()
     set HW_shopPanel=BlzCreateFrameByType("BACKDROP","HWShopPanel",ui,"",0)
-    call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPRIGHT,{PANEL_RIGHT_X:.6f},{PANEL_TOP_Y:.6f})
+    // right screen edge in 4:3 frame coordinates depends on the client aspect ratio
+    set HW_shopRightX=0.4+0.3*I2R(BlzGetLocalClientWidth())/I2R(BlzGetLocalClientHeight())
+    call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPRIGHT,HW_shopRightX,{PANEL_TOP_Y:.6f})
     call BlzFrameSetSize(HW_shopPanel,{PANEL_W:.6f},{PANEL_H:.6f})
     call BlzFrameSetTexture(HW_shopPanel,"{PANEL_TEXTURE}",0,true)
     call BlzFrameSetVisible(HW_shopPanel,false)
@@ -376,7 +379,7 @@ function HW_ShopBuild takes nothing returns nothing
     call BlzTriggerRegisterFrameEvent(HW_shopCloseTrig,HW_shopCloseBtn,FRAMEEVENT_CONTROL_CLICK)
     call TriggerAddAction(HW_shopCloseTrig,function HW_ShopCloseClick)
     set HW_shopToggleBg=BlzCreateFrameByType("BACKDROP","HWShopToggleBg",ui,"",0)
-    call BlzFrameSetAbsPoint(HW_shopToggleBg,FRAMEPOINT_BOTTOMLEFT,{TOGGLE_X0:.6f},{TOGGLE_Y0:.6f})
+    call BlzFrameSetAbsPoint(HW_shopToggleBg,FRAMEPOINT_BOTTOMLEFT,HW_shopRightX-{(0.8-TOGGLE_X0):.6f},{TOGGLE_Y0:.6f})
     call BlzFrameSetSize(HW_shopToggleBg,{TOGGLE_W:.6f},{TOGGLE_H:.6f})
     call BlzFrameSetTexture(HW_shopToggleBg,"{BUTTON_TEXTURE}",0,true)
     call BlzFrameSetAlpha(HW_shopToggleBg,{TOGGLE_ALPHA})
@@ -394,9 +397,10 @@ function HW_ShopBuild takes nothing returns nothing
         set bx={MARGIN_X:.6f}+I2R(col)*{COL_W:.6f}
         set by=-{TOP_MARGIN:.6f}-I2R(row)*{BLOCK_PITCH:.6f}
         set HW_shopBlockHeader[i]=BlzCreateFrameByType("TEXT","HWShopBlockHeader",HW_shopPanel,"",0)
-        call BlzFrameSetPoint(HW_shopBlockHeader[i],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,bx,by)
-        call BlzFrameSetSize(HW_shopBlockHeader[i],{HEADER_W:.6f},{HEADER_H:.6f})
+        // a scaled frame has its point offsets scaled as well: compensate
         call BlzFrameSetScale(HW_shopBlockHeader[i],0.55)
+        call BlzFrameSetPoint(HW_shopBlockHeader[i],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,bx/0.55,by/0.55)
+        call BlzFrameSetSize(HW_shopBlockHeader[i],{HEADER_W:.6f}/0.55,{HEADER_H:.6f}/0.55)
         call BlzFrameSetTextAlignment(HW_shopBlockHeader[i],TEXT_JUSTIFY_TOP,TEXT_JUSTIFY_LEFT)
         call BlzFrameSetText(HW_shopBlockHeader[i],HW_shopShopName[i])
         set cellBase=i*HW_SHOP_CELLS
