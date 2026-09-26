@@ -1389,6 +1389,42 @@ def fix_model_shift(w: workshop.Workshop, apply: bool, match: str | None = None,
     if not apply: w.changes.clear(); print('\nПлан. Запустите с --apply.'); return
     w.commit(); w.save_state(); print('Записано.')
 
+def fix_trees(w: workshop.Workshop, apply: bool, undo: bool = False, which: str = 'ashenvale'):
+    """Radiant forest = standard Ashenvale trees (ATtr). Put the HQ tree models
+    (WC3DotaHQTest\\A\\Doodads\\Terrain\\AshenTree\\AshenTree0-4[,D,S].mdx) and the tree textures
+    (ReplaceableTextures\\AshenvaleTree\\AshenTree*.blp) into the map at their standard paths.
+    --which ashenvale|northrend|all   which forest (Dire = Northrend trees)
+    --undo   remove those files from the map again"""
+    a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+    sets = {'ashenvale': ('Doodads/Terrain/AshenTree', 'ReplaceableTextures/AshenvaleTree'),
+            'northrend': ('Doodads/Terrain/NorthrendTree', 'ReplaceableTextures/NorthrendTree'),
+            'lordaeron': ('Doodads/Terrain/LordaeronTree', 'ReplaceableTextures/LordaeronTree')}
+    names = list(sets) if which == 'all' else [which]
+    files = {}
+    for n in names:
+        for sub in sets[n]:
+            d = a_root / sub
+            if not d.is_dir(): print(f'WARN: нет {d}'); continue
+            for p in sorted(d.iterdir()):
+                if p.is_file() and p.suffix.lower() in ('.mdx', '.mdl', '.blp', '.tga') and not p.name.startswith('._'):
+                    rel = str(p.relative_to(a_root)).replace('/', '\\'); files[rel] = p
+            # textures referenced by the models that live elsewhere under A
+            for rel, p in list(files.items()):
+                if p.suffix.lower() != '.mdx': continue
+                for tex in mdx_textures(p.read_bytes()):
+                    t = tex.replace('/', '\\')
+                    if t in files or w.mpq.has(t): continue
+                    q = _hq_file(a_root, t) or (a_root / t.replace('\\', '/'))
+                    if Path(q).is_file(): files[t] = Path(q)
+    inmap = [r for r in files if w.mpq.has(r)]
+    print(f'Файлов: {len(files)} (моделей {sum(1 for r in files if r.lower().endswith(".mdx"))}, из них уже в карте {len(inmap)})')
+    for r in sorted(files)[:12]: print('  ', r)
+    if len(files) > 12: print('   …')
+    if not files: return
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    for r, p in files.items(): w.changes[r] = None if undo else p.read_bytes()
+    w.commit(); print('Удалено из карты.' if undo else 'Записано в карту. Деревья видны после нового запуска матча.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1583,7 +1619,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: fl
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels, 'part-probe': fix_part_probe, 'model-shift': fix_model_shift}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels, 'part-probe': fix_part_probe, 'model-shift': fix_model_shift, 'trees': fix_trees}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1597,6 +1633,7 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--which', default='ashenvale', help='trees: ashenvale|northrend|lordaeron|all')
     ap.add_argument('--dz', type=float, default=0.0, help='model-shift: сдвиг по вертикали')
     ap.add_argument('--events', help='model-events: СОБЫТИЕ@КАДР через запятую')
     ap.add_argument('--right', type=float, default=0.0, help='shop-ui: правый край панели (0 = 0.8, -1 = по размеру окна, число = вручную)')
@@ -1633,6 +1670,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'trees': FIXES[a.fix](w, a.apply, a.undo, a.which)
     elif a.fix == 'model-shift': FIXES[a.fix](w, a.apply, a.match, a.dz, a.undo)
     elif a.fix == 'part-probe': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset or 800.0)
     elif a.fix == 'part-labels': FIXES[a.fix](w, a.apply, a.path, a.types, a.undo)
