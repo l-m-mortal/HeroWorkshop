@@ -6,11 +6,18 @@ local player selected last. Frames are client-side only, so this cannot desync.
 """
 GLOBALS = """// HW_COOLDOWN_GLOBALS_BEGIN
 framehandle array HW_cdText
+integer array HW_cdIds
+integer HW_cdIdCount=0
+integer array HW_cdUnitIds
+integer HW_cdUnitN=0
+integer HW_cdTicks=0
 unit HW_cdUnit=null
 trigger HW_cdSel=null
 timer HW_cdTimer=null
 // HW_COOLDOWN_GLOBALS_END"""
 
+# 1.31 has no BlzGetAbilityId, so the unit's abilities are found by probing a
+# generated list of every hero ability id of this map with BlzGetUnitAbility.
 FUNCTIONS = """// HW_COOLDOWN_BEGIN
 function HW_cdFormat takes real r returns string
     local integer whole
@@ -22,9 +29,25 @@ function HW_cdFormat takes real r returns string
     set tenth=R2I(r*10.0)-whole*10
     return I2S(whole)+"."+I2S(tenth)
 endfunction
+function HW_cdScan takes nothing returns nothing
+    local integer i=0
+    set HW_cdUnitN=0
+    if HW_cdUnit==null then
+        return
+    endif
+    loop
+        exitwhen i>=HW_cdIdCount
+        if BlzGetUnitAbility(HW_cdUnit,HW_cdIds[i])!=null then
+            set HW_cdUnitIds[HW_cdUnitN]=HW_cdIds[i]
+            set HW_cdUnitN=HW_cdUnitN+1
+        endif
+        set i=i+1
+    endloop
+endfunction
 function HW_cdSelect takes nothing returns boolean
     if GetTriggerPlayer()==GetLocalPlayer() then
         set HW_cdUnit=GetTriggerUnit()
+        call HW_cdScan()
     endif
     return false
 endfunction
@@ -45,16 +68,23 @@ function HW_cdTick takes nothing returns nothing
         set HW_cdUnit=null
         return
     endif
+    set HW_cdTicks=HW_cdTicks+1
+    if HW_cdTicks>=10 then
+        set HW_cdTicks=0
+        call HW_cdScan()
+    endif
     set i=0
     loop
-        set a=BlzGetUnitAbilityByIndex(HW_cdUnit,i)
-        exitwhen a==null
-        set r=BlzGetUnitAbilityCooldownRemaining(HW_cdUnit,BlzGetAbilityId(a))
+        exitwhen i>=HW_cdUnitN
+        set r=BlzGetUnitAbilityCooldownRemaining(HW_cdUnit,HW_cdUnitIds[i])
         if r>0.05 then
-            set idx=BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_Y)*4+BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_X)
-            if idx>=0 and idx<=11 then
-                call BlzFrameSetText(HW_cdText[idx],HW_cdFormat(r))
-                call BlzFrameSetVisible(HW_cdText[idx],true)
+            set a=BlzGetUnitAbility(HW_cdUnit,HW_cdUnitIds[i])
+            if a!=null then
+                set idx=BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_Y)*4+BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_X)
+                if idx>=0 and idx<=11 then
+                    call BlzFrameSetText(HW_cdText[idx],HW_cdFormat(r))
+                    call BlzFrameSetVisible(HW_cdText[idx],true)
+                endif
             endif
         endif
         set i=i+1
@@ -64,6 +94,7 @@ endfunction
 function HW_cdInit takes nothing returns nothing
     local integer i=0
     local framehandle btn
+    call HW_cdIdsInit()
     loop
         exitwhen i>11
         set btn=BlzGetOriginFrame(ORIGIN_FRAME_COMMAND_BUTTON,i)
@@ -94,13 +125,24 @@ function HW_cdStart takes nothing returns nothing
 endfunction
 // HW_COOLDOWN_END"""
 
+def ids_function(ids) -> str:
+    """JASS function filling HW_cdIds with the map's hero ability rawcodes."""
+    lines = ['function HW_cdIdsInit takes nothing returns nothing']
+    for i, code in enumerate(ids):
+        lines.append(f"    set HW_cdIds[{i}]='{code}'")
+    lines.append(f'    set HW_cdIdCount={len(ids)}')
+    lines.append('endfunction')
+    return '\n'.join(lines)
+
 MAIN_CALL = "call TimerStart(CreateTimer(),0.0,false,function HW_cdStart) // HW_COOLDOWN_CALL"
 
-def inject(script: str, font_height: float = 0.016) -> str:
+def inject(script: str, ids, font_height: float = 0.016) -> str:
     """Return the script with the cooldown block added (idempotent)."""
     import re
+    ids = [c for c in ids if re.match(r'^[0-9A-Za-z]{4}$', c)]
+    if not ids: raise ValueError('no ability ids')
     script = remove(script)
-    funcs = FUNCTIONS.replace('HW_CD_FONT', f'{font_height:.4f}')
+    funcs = FUNCTIONS.replace('HW_CD_FONT', f'{font_height:.4f}').replace('// HW_COOLDOWN_BEGIN', '// HW_COOLDOWN_BEGIN\n' + ids_function(ids))
     # globals: append to the first globals block
     g = re.search(r'^globals\r?\n', script, re.M)
     if not g: raise ValueError('globals block not found')

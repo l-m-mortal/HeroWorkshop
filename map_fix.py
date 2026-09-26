@@ -104,7 +104,7 @@ def mdx_textures(data: bytes) -> list[str]:
         o += size
     return out
 
-def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads'):
+def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
 
@@ -144,6 +144,14 @@ def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: 
             q = index.get(t.split('\\')[-1].lower())
             if q: extra[t.lower()] = (t, q)
             else: print(f'WARN: текстура {tex} для {rel} не найдена')
+    if textures:
+        print('Текстуры моделей:')
+        for rel, p in sorted(files.values()):
+            if p.suffix.lower() != '.mdx': continue
+            for tex in mdx_textures(p.read_bytes()):
+                t = tex.replace('/', '\\')
+                st = 'в карте' if w.mpq.has(t) else 'на диске' if w.disk(t).is_file() else 'будет добавлена' if t.lower() in extra or t.lower() in files else 'НЕТ НИГДЕ'
+                print(f'  {rel}  ->  {tex}  [{st}]')
     files.update(extra)
     total = sum(p.stat().st_size for _, p in files.values())
     kinds = {}
@@ -171,7 +179,15 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     --font 0.016  text height (fraction of screen height)"""
     import cooldown_jass
     script = w.script
-    new = cooldown_jass.remove(script) if undo else cooldown_jass.inject(script, font)
+    ids = []
+    uab, uh, urows = w.unit_abils
+    for hc in w.hero_like():
+        for f in ('heroAbilList', 'abilList'):
+            for c in uab.get((uh[f], urows[hc]), '').split(','):
+                c = c.strip()
+                if c and c not in ids and c not in ('AInv', 'A0NR'): ids.append(c)
+    new = cooldown_jass.remove(script) if undo else cooldown_jass.inject(script, ids, font)
+    if not undo: print(f'Способностей в списке для опроса: {len(ids)}')
     present = 'HW_COOLDOWN_BEGIN' in script
     print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
     if not apply: print('План. Запустите с --apply.'); return
@@ -189,6 +205,7 @@ def main():
     ap.add_argument('--undo', action='store_true', help='doodads: удалить ранее добавленные размещения')
     ap.add_argument('--into', choices=['map', 'root'], default='map', help='hq-doodads: куда класть файлы')
     ap.add_argument('--font', type=float, default=0.016, help='cooldown-numbers: высота шрифта')
+    ap.add_argument('--textures', action='store_true', help='hq-doodads: показать текстуры каждой модели и их статус')
     ap.add_argument('--match', help='hq-doodads: только пути, содержащие текст')
     ap.add_argument('--folders', default='Doodads', help='hq-doodads: папки под WC3DotaHQTest\\A через запятую')
     a = ap.parse_args()
@@ -198,7 +215,7 @@ def main():
     w = workshop.Workshop()
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types)
-    elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders)
+    elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures)
     elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font)
     else: FIXES[a.fix](w, a.apply)
 
