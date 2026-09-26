@@ -684,11 +684,17 @@ def fix_model_cut(w: workshop.Workshop, apply: bool, path: str | None = None, dr
 
     --path "Doodads\\Outland\\Props\\Obstacle\\Obstacle2.mdx"   model path inside the map
     --drop 17,18,19       geoset indices to remove
-    --source FILE         take the model from this file instead of the map (original copy)"""
+    --source FILE|hq      take the model from this file (or 'hq' = the WC3DotaHQTest\\A copy)
+                          instead of the map, i.e. start from the original"""
     import struct
     from pathlib import Path
     if not path: workshop.die('нужен --path')
-    data = Path(source).read_bytes() if source else (w.mpq.read(path) if w.mpq.has(path) else None)
+    if source == 'hq':
+        src = _hq_file(workshop.GAME / 'WC3DotaHQTest' / 'A', path)
+        if src is None: workshop.die(f'в папке HQ нет {path}')
+        data = src.read_bytes()
+    else:
+        data = Path(source).read_bytes() if source else (w.mpq.read(path) if w.mpq.has(path) else None)
     if data is None: workshop.die(f'в карте нет {path}')
     info = mdx_info(data)
     # geoset table

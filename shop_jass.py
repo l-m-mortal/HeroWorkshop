@@ -79,12 +79,10 @@ the layout can be retuned without touching the JASS template strings.
 import workshop
 
 # ---- tunable geometry (see the layout note in the module docstring) --------
-# Panel: a column docked to the right screen edge with a small margin, between
-# the score bar and the command card.
-SCREEN_RIGHT_X = 0.80     # approximate hard right edge of the 4:3 frame area
-PANEL_MARGIN_RIGHT = 0.02
-PANEL_RIGHT_X = SCREEN_RIGHT_X - PANEL_MARGIN_RIGHT   # FRAMEPOINT_TOPRIGHT anchor x
-PANEL_TOP_Y = 0.53         # FRAMEPOINT_TOPRIGHT anchor y (just below the score bar)
+# Panel: a column flush with the right screen edge (no margin), from directly
+# under the top score tab down to the top of the bottom command card.
+PANEL_RIGHT_X = 0.80       # FRAMEPOINT_TOPRIGHT anchor x -- flush with the screen edge
+PANEL_TOP_Y = 0.555        # FRAMEPOINT_TOPRIGHT anchor y -- just under the score tab
 PANEL_BOTTOM_Y = 0.20      # must not go lower than this (top of the command card)
 PANEL_W = 0.28
 PANEL_H = PANEL_TOP_Y - PANEL_BOTTOM_Y
@@ -110,29 +108,31 @@ GRID_H = BLOCK_H - HEADER_H - HEADER_GAP
 HW_SHOP_CELL_COLS = 4
 HW_SHOP_CELLS = 12          # 4x3 grid per shop block, same as the map's own shop button grid
 ICON_GAP = 0.0008
-ICON_PITCH = GRID_H / 3.0
-ICON = ICON_PITCH - ICON_GAP   # ~0.016, in the requested ~0.017-0.02 ballpark: as big as
-                               # SHOPS_PER_COL=5 blocks of header+3 rows can be and still
-                               # fit PANEL_H with no paging/scrolling -- see docs/SHOP_UI_NOTES.md.
-HEADER_W = COL_W - 0.014
+# Icons as large as fit both constraints (column width and the 3-row block
+# height); the header is then drawn at exactly the resulting grid width
+# (HEADER_W), TOP-LEFT-anchored at the same block origin the grid uses.
+GRID_W_BUDGET = COL_W - 2 * MARGIN_X
+ICON_PITCH = min(GRID_H / 3.0, GRID_W_BUDGET / HW_SHOP_CELL_COLS)
+ICON = ICON_PITCH - ICON_GAP
+HEADER_W = ICON_PITCH * HW_SHOP_CELL_COLS   # == grid width, per the task
 
 # Up to this many physical shop-building unit types per category (workshop.py
 # shops()'s own unit-type codes -- 1 for almost every base shop, 2 for "Black
 # Market" whose Radiant/Dire copies are distinct unit types).
 HW_SHOP_BUILDING_CODES = 3
 
-# Toggle button placed over the HUD's own "SHOP" command-card label
-# (approximate 4:3 frame coords the task gave; retune here if it is off on a
-# live client -- kept partially visible (TOGGLE_ALPHA) so the offset can be
-# read/reported, per the task; a fully invisible button did not register
-# clicks reliably in the previous revision).
-TOGGLE_X0 = 0.56
-TOGGLE_Y0 = 0.16
-TOGGLE_X1 = 0.62
-TOGGLE_Y1 = 0.19
+# Toggle button placed over the HUD's own "SHOP" command-card label. The
+# previous revision's live test showed the transparent button landing a bit
+# right/below of the actual "SHOP" text; shifted left by ~0.012 and up by
+# ~0.006 here and set back to fully invisible (TOGGLE_ALPHA=0) now that the
+# offset is confirmed -- retune these four constants directly if still off.
+TOGGLE_X0 = 0.548
+TOGGLE_Y0 = 0.166
+TOGGLE_X1 = 0.608
+TOGGLE_Y1 = 0.196
 TOGGLE_W = TOGGLE_X1 - TOGGLE_X0
 TOGGLE_H = TOGGLE_Y1 - TOGGLE_Y0
-TOGGLE_ALPHA = 40   # 0-255; 0 once the offset above is confirmed correct in-game
+TOGGLE_ALPHA = 0   # 0-255; kept at 0 (invisible) now that the offset is confirmed
 
 PANEL_TEXTURE = 'UI\\\\Widgets\\\\ToolTips\\\\Human\\\\human-tooltip-background.blp'
 BUTTON_TEXTURE = 'UI\\\\Widgets\\\\Console\\\\Human\\\\human-console-button-background.blp'
@@ -155,6 +155,11 @@ string array HW_shopIcon
 string array HW_shopName
 string array HW_shopShopName
 integer array HW_shopBuildingCode
+integer array HW_shopPartBase
+integer array HW_shopPartCount
+integer array HW_shopPartCatIdx
+integer array HW_shopPartUnitId
+integer array HW_shopPartCost
 integer HW_shopCount=0
 boolean HW_shopLocalOpen=false
 player HW_shopOwner=null
@@ -235,31 +240,64 @@ function HW_ShopFindShopUnit takes integer shopIdx, real hx, real hy returns uni
     return best
 endfunction
 function HW_ShopBuy takes player p, integer idx returns nothing
-    local integer shopIdx
-    local integer soldId
+    local integer base
+    local integer cnt
+    local integer k
+    local integer total=0
+    local integer catIdx
     local unit hero
     local unit shopUnit
     if idx<0 then
         return
     endif
-    set soldId=HW_shopUnitId[idx]
-    if soldId==0 then
+    set cnt=HW_shopPartCount[idx]
+    if cnt<=0 then
         return
     endif
+    set base=HW_shopPartBase[idx]
     set hero=HW_ShopFindHero(p)
     if hero==null then
         call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r no hero found, purchase cancelled")
         return
     endif
-    set shopIdx=idx/HW_SHOP_CELLS
-    set shopUnit=HW_ShopFindShopUnit(shopIdx,GetUnitX(hero),GetUnitY(hero))
-    if shopUnit==null then
-        call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r shop building not found, purchase cancelled")
+    // 1) total cost of every orderable part (the clicked item plus its
+    // recipe/component expansion, built at inject time -- see collect_catalog)
+    set k=0
+    loop
+        exitwhen k>=cnt
+        set total=total+HW_shopPartCost[base+k]
+        set k=k+1
+    endloop
+    if GetPlayerState(p,PLAYER_STATE_RESOURCE_GOLD)<total then
+        call DisplayTextToPlayer(p,0,0,"|cffff6060HW Shop:|r not enough gold for "+HW_shopName[idx]+" and its components ("+I2S(total)+"g needed), purchase cancelled")
         set hero=null
         return
     endif
-    call IssueNeutralImmediateOrderById(p,shopUnit,soldId)
-    call DisplayTextToPlayer(p,0,0,"|cff60ff60HW Shop:|r requested "+HW_shopName[idx]+" ("+I2S(HW_shopCost[idx])+"g)")
+    // 2) verify every part's shop building is reachable before spending anything
+    set k=0
+    loop
+        exitwhen k>=cnt
+        set catIdx=HW_shopPartCatIdx[base+k]
+        set shopUnit=HW_ShopFindShopUnit(catIdx,GetUnitX(hero),GetUnitY(hero))
+        if shopUnit==null then
+            call DisplayTextToPlayer(p,0,0,"|cffffcc00HW Shop:|r shop building not found for one of the components, purchase cancelled")
+            set hero=null
+            set shopUnit=null
+            return
+        endif
+        set shopUnit=null
+        set k=k+1
+    endloop
+    // 3) issue one real Sellunits order per part (recipe scroll + every component)
+    set k=0
+    loop
+        exitwhen k>=cnt
+        set catIdx=HW_shopPartCatIdx[base+k]
+        set shopUnit=HW_ShopFindShopUnit(catIdx,GetUnitX(hero),GetUnitY(hero))
+        call IssueNeutralImmediateOrderById(p,shopUnit,HW_shopPartUnitId[base+k])
+        set k=k+1
+    endloop
+    call DisplayTextToPlayer(p,0,0,"|cff60ff60HW Shop:|r requested "+HW_shopName[idx]+" ("+I2S(total)+"g, "+I2S(cnt)+" part(s))")
     set hero=null
     set shopUnit=null
 endfunction
@@ -447,6 +485,82 @@ def _place_cells(items: list[dict]) -> list[dict | None]:
     return cells
 
 
+def _match_by_norm(key: str, index: dict):
+    """Exact-or-fuzzy lookup into a {normalized_name: value} index, same fuzzy
+    rule as workshop.item_list (prefix match, only for keys of length >= 5, to
+    avoid matching unrelated short names)."""
+    if not key:
+        return None
+    if key in index:
+        return index[key]
+    for nk, v in index.items():
+        if len(key) >= 5 and (nk.startswith(key) or key.startswith(nk)):
+            return v
+    return None
+
+
+def _build_parts(w, result: list[dict]) -> None:
+    """Recipe/component expansion (built once, at inject time, in Python -- not
+    at JASS runtime): for every catalog item, attach it['parts'] = a flat list
+    of (cat_index, unit_code, cost) covering the item itself plus, if it is a
+    recipe/composite item (matched against data/dota2_reference.json's
+    "components"), every one of its components that is sold in ANY base shop
+    on this map, recursively. A component only sold in the secret (uC74) or
+    side (u010) shop -- or not sold at all -- is skipped, and one line naming
+    it is printed (the task's requirement); it_dict['skipped'] also collects
+    those lines for callers that want them without re-parsing stdout."""
+    from workshop import norm, Workshop
+    base_name = Workshop.item_base_name
+    dota_items: dict = (w.dota2 or {}).get('items') or {}
+    dota_by_norm = {}
+    for dkey, dinfo in dota_items.items():
+        n = norm(base_name(dinfo.get('name') or dkey))
+        if n and n not in dota_by_norm:
+            dota_by_norm[n] = dkey
+    # every item sold anywhere in this catalog (base shops only, already excludes
+    # the secret/side shops -- collect_catalog built `result` without them)
+    name_index = {}
+    for ci, cat in enumerate(result):
+        for it in cat['items']:
+            n = norm(base_name(it['name']))
+            if n and n not in name_index:
+                name_index[n] = (ci, it)
+    # items sold ONLY in the secret/side shops, for the skip message
+    secret_side_norm = set()
+    for shop in w.shops():
+        if shop['code'] not in ('uC74', 'u010'):
+            continue
+        for u in shop['units']:
+            n = norm(base_name(w.name(u, 'UnitFunc')))
+            if n:
+                secret_side_norm.add(n)
+
+    def expand(ci: int, it: dict, visited: set, skipped: list) -> list:
+        parts = [(ci, it['unit'], it['cost'])]
+        dkey = _match_by_norm(norm(base_name(it['name'])), dota_by_norm)
+        if dkey is None or dkey in visited:
+            return parts
+        visited.add(dkey)
+        for comp_key in dota_items.get(dkey, {}).get('components') or []:
+            comp_info = dota_items.get(comp_key) or {}
+            comp_name = comp_info.get('name') or comp_key
+            found = _match_by_norm(norm(base_name(comp_name)), name_index)
+            if found is None:
+                cn = norm(base_name(comp_name))
+                where = 'secret/side shop only' if _match_by_norm(cn, {k: True for k in secret_side_norm}) else 'not sold in any shop on this map'
+                msg = f"    skipped component '{comp_name}' of '{it['name']}' ({where})"
+                skipped.append(msg)
+                print(msg)
+                continue
+            fci, fit = found
+            parts.extend(expand(fci, fit, visited, skipped))
+        return parts
+
+    for ci, cat in enumerate(result):
+        for it in cat['items']:
+            it['parts'] = expand(ci, it, set(), it.setdefault('skipped', []))
+
+
 def collect_catalog(w) -> list[dict]:
     """Base shop categories -> items to sell, built from workshop.py's own reading
     of the map (shops()/item_list()/icon_info(), and ItemData/UnitBalance goldcost,
@@ -512,6 +626,7 @@ def collect_catalog(w) -> list[dict]:
             cat['items'].append({'unit': u, 'item': item_code, 'cost': cost or 0,
                                   'icon': art, 'name': name, 'buttonpos': w.xy(u, 'Buttonpos')})
     result = [c for c in categories if c['items']]
+    _build_parts(w, result)
     if len(result) > HW_SHOP_MAX_SHOPS:
         raise ValueError(f'{len(result)} shop categories, HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS} '
                           f'(BLOCK_COLS={BLOCK_COLS} x SHOPS_PER_COL={SHOPS_PER_COL}) is too small')
@@ -532,6 +647,7 @@ def catalog_function(categories: list[dict]) -> str:
     """JASS function filling the HW_shop* arrays from a Python-built catalog
     (list of {'name', 'shop_codes', 'items', 'cells': [12 x (item-dict or None)]})."""
     lines = ['function HW_ShopDataInit takes nothing returns nothing']
+    part_idx = 0
     for ci, cat in enumerate(categories):
         lines.append(f'    set HW_shopShopName[{ci}]="{_jass_string(cat["name"])}"')
         for ki, code in enumerate(cat['shop_codes']):
@@ -545,6 +661,14 @@ def catalog_function(categories: list[dict]) -> str:
             lines.append(f'    set HW_shopCost[{idx}]={it["cost"]}')
             lines.append(f'    set HW_shopIcon[{idx}]="{_jass_string(it["icon"])}"')
             lines.append(f'    set HW_shopName[{idx}]="{_jass_string(it["name"])}"')
+            parts = it.get('parts') or [(ci, it['unit'], it['cost'])]
+            lines.append(f'    set HW_shopPartBase[{idx}]={part_idx}')
+            lines.append(f'    set HW_shopPartCount[{idx}]={len(parts)}')
+            for pcat, punit, pcost in parts:
+                lines.append(f"    set HW_shopPartCatIdx[{part_idx}]={pcat}")
+                lines.append(f"    set HW_shopPartUnitId[{part_idx}]='{punit}'")
+                lines.append(f'    set HW_shopPartCost[{part_idx}]={pcost}')
+                part_idx += 1
     lines.append(f'    set HW_shopCount={len(categories)}')
     lines.append('endfunction')
     return '\n'.join(lines)
