@@ -36,8 +36,33 @@ def decode(data: bytes) -> Image.Image:
                     v = (bits[i // 2] >> (4 * (i % 2))) & 15; a[i] = v * 17
             im.putalpha(Image.frombytes('L', (w, h), bytes(a)))
         return im
+    if data[:4] == b'BLP1' and struct.unpack_from('<I', data, 4)[0] == 0:
+        return decode_jpeg(data)
     with Image.open(io.BytesIO(data)) as im:
         return im.convert('RGBA')
+
+def decode_jpeg(data: bytes) -> Image.Image:
+    """JPEG BLP1: a shared JPEG header plus per-mipmap JPEG bodies, stored as a
+    4-channel (CMYK-tagged) JPEG holding B, G, R, A. Pillow's own BLP plugin drops
+    the alpha plane; this keeps it."""
+    from PIL.JpegImagePlugin import JpegImageFile
+    alpha_bits, w, h = struct.unpack_from('<III', data, 8)
+    offsets = struct.unpack_from('<16I', data, 28)
+    sizes = struct.unpack_from('<16I', data, 92)
+    hsize = struct.unpack_from('<I', data, 156)[0]
+    jpeg = data[160:160 + hsize] + data[offsets[0]:offsets[0] + sizes[0]]
+    im = JpegImageFile(io.BytesIO(jpeg))
+    if im.mode == 'CMYK':
+        name, extents, offset, args = im.tile[0]
+        im.tile = [(name, extents, offset, (args[0], 'CMYK'))]  # raw channels
+        from PIL import ImageChops
+        b, g, r, a = (ImageChops.invert(ch) for ch in im.split())  # stored inverted (Adobe CMYK style)
+    else:
+        r, g, b = im.convert('RGB').split(); a = Image.new('L', im.size, 255)
+    if alpha_bits == 0: a = Image.new('L', im.size, 255)
+    out = Image.merge('RGBA', (r, g, b, a))
+    if out.size != (w, h): out = out.resize((w, h))
+    return out
 
 def load_image(path) -> Image.Image:
     """Open PNG/BMP/TGA/JPG/BLP as RGBA."""
