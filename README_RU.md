@@ -82,11 +82,36 @@ python3 workshop.py candidates ability:A136    # варианты иконок �
 
 Ключи: `unit:<rawcode>`, `ability:<rawcode>`, `item:<rawcode>`.
 
+## Исправления карты (`map_fix.py`)
+
+Все команды сначала показывают план; записывают только с `--apply`.
+
+```zsh
+python3 map_fix.py list
+python3 map_fix.py shops --apply                     # модели боковой/секретной лавки
+python3 map_fix.py doodads [--ref карта] [--types A,B] [--near=X,Y,R] [--undo] --apply
+python3 map_fix.py hq-doodads [--match Fence] [--textures] [--models] --apply
+python3 map_fix.py probe [--at=-7168,-7168,2600]     # декорации вокруг точки здесь и в 6.77b
+python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0.016] [--undo] --apply
+```
+
+* `probe` сравнивает размещения декораций вокруг точки (по умолчанию фонтан Radiant)
+  в текущей карте и в 6.77b, показывает модели пользовательских типов.
+* `doodads --near=X,Y,R` переносит из 6.77b только размещения в радиусе R, пропуская
+  уже стоящие на том же месте. Знак `=` обязателен из-за минусов в координатах.
+* `hq-doodads --models` проверяет каждую HQ-модель (версия MDX, число геосетов) и
+  формат каждой текстуры так, как их найдёт игра: BLP2 или отсутствующая текстура
+  означает белую модель.
+* `cooldown-numbers --debug` показывает на всех кнопках их номера 0..11 и строку
+  состояния вверху экрана (выбранный юнит, число найденных способностей, кулдауны).
+
 ## Модули
 
 * `mpq.py` — чтение и запись MPQ на чистом Python (без внешних утилит).
 * `blp.py` — декодирование BLP1 (палитра и JPEG), кодирование BLP1 с альфой, серые иконки.
 * `workshop.py` — ядро: состояние карты, применение иконок и масштабов.
+* `map_fix.py`, `doo.py`, `cooldown_jass.py`, `map_audit.py` — исправления карты:
+  лавки, декорации из 6.77b, HQ-модели, счётчики кулдаунов.
 * `library_scan.py`, `inventory_build.py`, `HeroWorkshop_inventory/` — инвентарь
   папки игры для работы без доступа к диску.
 * `tools/` — старые MPQ-утилиты, больше не используются.

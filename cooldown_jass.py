@@ -7,13 +7,17 @@ local player selected last. Frames are client-side only, so this cannot desync.
 GLOBALS = """// HW_COOLDOWN_GLOBALS_BEGIN
 framehandle array HW_cdText
 integer array HW_cdIds
+integer array HW_cdPos
 integer HW_cdIdCount=0
 integer array HW_cdUnitIds
+integer array HW_cdUnitPos
 integer HW_cdUnitN=0
 integer HW_cdTicks=0
 unit HW_cdUnit=null
-trigger HW_cdSel=null
+group HW_cdGroup=null
 timer HW_cdTimer=null
+framehandle HW_cdDebug=null
+boolean HW_cdIsDebug=false
 // HW_COOLDOWN_GLOBALS_END"""
 
 # 1.31 has no BlzGetAbilityId, so the unit's abilities are found by probing a
@@ -39,71 +43,88 @@ function HW_cdScan takes nothing returns nothing
         exitwhen i>=HW_cdIdCount
         if BlzGetUnitAbility(HW_cdUnit,HW_cdIds[i])!=null then
             set HW_cdUnitIds[HW_cdUnitN]=HW_cdIds[i]
+            set HW_cdUnitPos[HW_cdUnitN]=HW_cdPos[i]
             set HW_cdUnitN=HW_cdUnitN+1
         endif
         set i=i+1
     endloop
 endfunction
-function HW_cdSelect takes nothing returns boolean
-    if GetTriggerPlayer()==GetLocalPlayer() then
-        set HW_cdUnit=GetTriggerUnit()
+function HW_cdPick takes nothing returns nothing
+    // The local player's current selection (client side only; frames are local too).
+    local unit u
+    call GroupClear(HW_cdGroup)
+    call GroupEnumUnitsSelected(HW_cdGroup,GetLocalPlayer(),null)
+    set u=FirstOfGroup(HW_cdGroup)
+    if u!=HW_cdUnit then
+        set HW_cdUnit=u
         call HW_cdScan()
     endif
-    return false
+    set u=null
 endfunction
 function HW_cdTick takes nothing returns nothing
     local integer i=0
     local integer idx
     local real r
-    local ability a
+    local string dbg
+    set HW_cdTicks=HW_cdTicks+1
+    if HW_cdTicks>=5 then
+        set HW_cdTicks=0
+        call HW_cdPick()
+    endif
     loop
         exitwhen i>11
         if HW_cdText[i]!=null then
-            call BlzFrameSetVisible(HW_cdText[i],false)
+            if HW_cdIsDebug then
+                call BlzFrameSetText(HW_cdText[i],I2S(i))
+                call BlzFrameSetVisible(HW_cdText[i],true)
+            else
+                call BlzFrameSetVisible(HW_cdText[i],false)
+            endif
         endif
         set i=i+1
     endloop
     if HW_cdUnit==null then
+        if HW_cdDebug!=null then
+            call BlzFrameSetText(HW_cdDebug,"HW cd: nothing selected")
+        endif
         return
     endif
     if GetUnitTypeId(HW_cdUnit)==0 then
         set HW_cdUnit=null
         return
     endif
-    set HW_cdTicks=HW_cdTicks+1
-    if HW_cdTicks>=10 then
-        set HW_cdTicks=0
-        call HW_cdScan()
-    endif
+    set dbg="HW cd: "+GetUnitName(HW_cdUnit)+" abils="+I2S(HW_cdUnitN)
     set i=0
     loop
         exitwhen i>=HW_cdUnitN
         set r=BlzGetUnitAbilityCooldownRemaining(HW_cdUnit,HW_cdUnitIds[i])
         if r>0.05 then
-            set a=BlzGetUnitAbility(HW_cdUnit,HW_cdUnitIds[i])
-            if a!=null then
-                set idx=BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_Y)*4+BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_X)
-                if idx>=0 and idx<=11 then
-                    if HW_cdText[idx]!=null then
-                        call BlzFrameSetText(HW_cdText[idx],HW_cdFormat(r))
-                        call BlzFrameSetVisible(HW_cdText[idx],true)
-                    endif
+            set idx=HW_cdUnitPos[i]
+            set dbg=dbg+" ["+I2S(idx)+"]="+HW_cdFormat(r)
+            if idx>=0 and idx<=11 then
+                if HW_cdText[idx]!=null then
+                    call BlzFrameSetText(HW_cdText[idx],HW_cdFormat(r))
+                    call BlzFrameSetVisible(HW_cdText[idx],true)
                 endif
             endif
         endif
         set i=i+1
     endloop
-    set a=null
+    if HW_cdDebug!=null then
+        call BlzFrameSetText(HW_cdDebug,dbg)
+    endif
 endfunction
 function HW_cdInit takes nothing returns nothing
     local integer i=0
     local framehandle btn
+    local framehandle ui=BlzGetOriginFrame(ORIGIN_FRAME_GAME_UI,0)
     call HW_cdIdsInit()
+    set HW_cdGroup=CreateGroup()
     loop
         exitwhen i>11
         set btn=BlzGetOriginFrame(ORIGIN_FRAME_COMMAND_BUTTON,i)
         if btn!=null then
-            set HW_cdText[i]=BlzCreateFrameByType("TEXT","HWcd",btn,"",0)
+            set HW_cdText[i]=BlzCreateFrameByType("TEXT","HWcd",HW_CD_PARENT,"",0)
             call BlzFrameSetPoint(HW_cdText[i],FRAMEPOINT_CENTER,btn,FRAMEPOINT_CENTER,0.0,0.0)
             call BlzFrameSetTextAlignment(HW_cdText[i],TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
             call BlzFrameSetScale(HW_cdText[i],HW_CD_SCALE)
@@ -111,17 +132,15 @@ function HW_cdInit takes nothing returns nothing
         endif
         set i=i+1
     endloop
-    set HW_cdSel=CreateTrigger()
-    set i=0
-    loop
-        exitwhen i>=bj_MAX_PLAYER_SLOTS
-        call TriggerRegisterPlayerUnitEvent(HW_cdSel,Player(i),EVENT_PLAYER_UNIT_SELECTED,null)
-        set i=i+1
-    endloop
-    call TriggerAddCondition(HW_cdSel,Condition(function HW_cdSelect))
+    if HW_cdIsDebug then
+        set HW_cdDebug=BlzCreateFrameByType("TEXT","HWcdDebug",ui,"",0)
+        call BlzFrameSetAbsPoint(HW_cdDebug,FRAMEPOINT_TOP,0.4,0.56)
+        call BlzFrameSetText(HW_cdDebug,"HW cd: init ok")
+    endif
     set HW_cdTimer=CreateTimer()
     call TimerStart(HW_cdTimer,0.1,true,function HW_cdTick)
     set btn=null
+    set ui=null
 endfunction
 function HW_cdStart takes nothing returns nothing
     call DestroyTimer(GetExpiredTimer())
@@ -129,30 +148,40 @@ function HW_cdStart takes nothing returns nothing
 endfunction
 // HW_COOLDOWN_END"""
 
-def ids_function(ids) -> str:
-    """JASS function filling HW_cdIds with the map's hero ability rawcodes."""
+def ids_function(ids, positions=None) -> str:
+    """JASS function filling HW_cdIds with the map's hero ability rawcodes and
+    HW_cdPos with each ability's command-card slot (y*4+x, -1 = unknown)."""
+    positions = positions or {}
     lines = ['function HW_cdIdsInit takes nothing returns nothing']
     for i, code in enumerate(ids):
         lines.append(f"    set HW_cdIds[{i}]='{code}'")
+        lines.append(f"    set HW_cdPos[{i}]={positions.get(code, -1)}")
     lines.append(f'    set HW_cdIdCount={len(ids)}')
     lines.append('endfunction')
     return '\n'.join(lines)
 
 MAIN_CALL = "call TimerStart(CreateTimer(),1.0,false,function HW_cdStart) // HW_COOLDOWN_CALL"
 
-def inject(script: str, ids, font_height: float = 0.016) -> str:
-    """Return the script with the cooldown block added (idempotent)."""
+def inject(script: str, ids, font_height: float = 0.016, positions=None, parent: str = 'gameui', debug: bool = False) -> str:
+    """Return the script with the cooldown block added (idempotent).
+
+    parent: 'gameui' anchors the text frames to the game UI (positioned over the
+    command buttons); 'button' makes them children of the command buttons.
+    debug: show slot numbers on every button and a status line at the top."""
     import re
     ids = [c for c in ids if re.match(r'^[0-9A-Za-z]{4}$', c)]
     if not ids: raise ValueError('no ability ids')
     script = remove(script)
-    funcs = FUNCTIONS.replace('HW_CD_SCALE', f'{max(0.5, font_height / 0.01):.2f}').replace('// HW_COOLDOWN_BEGIN', '// HW_COOLDOWN_BEGIN\n' + ids_function(ids))
+    funcs = (FUNCTIONS.replace('HW_CD_SCALE', f'{max(0.5, font_height / 0.01):.2f}')
+             .replace('HW_CD_PARENT', 'ui' if parent == 'gameui' else 'btn')
+             .replace('// HW_COOLDOWN_BEGIN', '// HW_COOLDOWN_BEGIN\n' + ids_function(ids, positions)))
+    globals_block = GLOBALS.replace('boolean HW_cdIsDebug=false', f'boolean HW_cdIsDebug={"true" if debug else "false"}')
     # globals: append to the first globals block
     g = re.search(r'^globals\r?\n', script, re.M)
     if not g: raise ValueError('globals block not found')
     end = script.index('endglobals', g.end())
     eol = '\r\n' if '\r\n' in script[:2000] else '\n'
-    script = script[:end] + GLOBALS.replace('\n', eol) + eol + script[end:]
+    script = script[:end] + globals_block.replace('\n', eol) + eol + script[end:]
     # functions: right before main
     m = re.search(r'^function main takes nothing returns nothing\r?\n', script, re.M)
     if not m: raise ValueError('function main not found')
