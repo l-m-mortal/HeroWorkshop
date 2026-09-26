@@ -602,6 +602,135 @@ def fix_remove(w: workshop.Workshop, apply: bool, ids: str | None = None, undo: 
     w.state.setdefault('removed_placements', []).extend(victims); w.save_state()
     print(f'Удалено {len(victims)}. Вернуть: map_fix.py remove --undo --apply')
 
+def mdx_drop_geosets(data: bytes, drop: set) -> bytes:
+    """Remove geosets by index (0-based). Bones pointing at removed geosets are detached,
+    higher geoset ids are renumbered. GEOA (geoset animation) entries are dropped too."""
+    import struct
+    out = bytearray(b'MDLX'); o = 4
+    keep_map = {}
+    # first pass: count geosets to build the renumbering
+    n_geo = 0; q0 = None
+    oo = 4
+    while oo + 8 <= len(data):
+        tag = data[oo:oo + 4]; size = struct.unpack_from('<I', data, oo + 4)[0]
+        if tag == b'GEOS':
+            q = oo + 8
+            while q < oo + 8 + size:
+                gs = struct.unpack_from('<I', data, q)[0]; n_geo += 1; q += gs
+        oo += 8 + size
+    j = 0
+    for i in range(n_geo):
+        if i in drop: continue
+        keep_map[i] = j; j += 1
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; body = data[o + 8:o + 8 + size]
+        if tag == b'GEOS':
+            q = 0; parts = []; i = 0
+            while q < len(body):
+                gs = struct.unpack_from('<I', body, q)[0]
+                if i not in drop: parts.append(body[q:q + gs])
+                q += gs; i += 1
+            body = b''.join(parts)
+        elif tag == b'GEOA':
+            q = 0; parts = []
+            while q < len(body):
+                gs = struct.unpack_from('<I', body, q)[0]; gid = struct.unpack_from('<I', body, q + 24)[0]
+                if gid in keep_map:
+                    chunk = bytearray(body[q:q + gs]); struct.pack_into('<I', chunk, 24, keep_map[gid]); parts.append(bytes(chunk))
+                q += gs
+            body = b''.join(parts)
+        elif tag == b'BONE':
+            chunk = bytearray(body); q = 0
+            while q < len(chunk):
+                ns = struct.unpack_from('<I', chunk, q)[0]
+                gid = struct.unpack_from('<I', chunk, q + ns)[0]
+                if gid != 0xFFFFFFFF: struct.pack_into('<I', chunk, q + ns, keep_map.get(gid, 0xFFFFFFFF))
+                q += ns + 8
+            body = bytes(chunk)
+        out += tag + struct.pack('<I', len(body)) + body
+        o += 8 + size
+    return bytes(out)
+
+def fix_model_cut(w: workshop.Workshop, apply: bool, path: str | None = None, drop: str | None = None, source: str | None = None):
+    """Remove geosets (parts) from a model inside the map, e.g. the long plain-stone part
+    of the Roshan pit. Lists the geosets with their extents and material when --drop is
+    not given.
+
+    --path "Doodads\\Outland\\Props\\Obstacle\\Obstacle2.mdx"   model path inside the map
+    --drop 17,18,19       geoset indices to remove
+    --source FILE         take the model from this file instead of the map (original copy)"""
+    import struct
+    from pathlib import Path
+    if not path: workshop.die('нужен --path')
+    data = Path(source).read_bytes() if source else (w.mpq.read(path) if w.mpq.has(path) else None)
+    if data is None: workshop.die(f'в карте нет {path}')
+    info = mdx_info(data)
+    # geoset table
+    o = 4; g = 0
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; b = o + 8
+        if tag == b'GEOS':
+            q = b
+            while q < b + size:
+                gs = struct.unpack_from('<I', data, q)[0]; r = q + 4; desc = ''
+                while r < q + gs:
+                    t = data[r:r + 4]; c = struct.unpack_from('<I', data, r + 4)[0]
+                    sz = {b'VRTX': 12, b'NRMS': 12, b'PTYP': 4, b'PCNT': 4, b'PVTX': 2, b'GNDX': 1, b'MTGC': 4, b'MATS': 4, b'UVBS': 8, b'UVAS': 0}.get(t)
+                    if sz is None: break
+                    if t == b'VRTX':
+                        pts = list(struct.iter_unpack('<3f', data[r + 8:r + 8 + c * 12]))
+                        desc = f'вершин {c}, x {min(p[0] for p in pts):.0f}..{max(p[0] for p in pts):.0f}, y {min(p[1] for p in pts):.0f}..{max(p[1] for p in pts):.0f}, z {min(p[2] for p in pts):.0f}..{max(p[2] for p in pts):.0f}'
+                    r += 8 + c * sz
+                    if t == b'MATS':
+                        desc += f', материал {struct.unpack_from("<I", data, r)[0]}'; r += 12 + 28; nex = struct.unpack_from('<I', data, r)[0]; r += 4 + nex * 28
+                print(f'  геосет {g}: {desc}'); q += gs; g += 1
+        o = b + size
+    print(f'Модель {path}: геосетов {info["geosets"]}, текстуры: ' + ', '.join(t.split(chr(92))[-1] for _, t in info['textures']))
+    if not drop: return
+    want = {int(v) for v in drop.split(',')}
+    cut = mdx_drop_geosets(data, want)
+    ci = mdx_info(cut)
+    print(f'После вырезания {sorted(want)}: геосетов {ci["geosets"]}, {len(cut)} байт (было {len(data)})')
+    if not apply: print('\nПлан. Запустите с --apply. Вернуть оригинал: hq-doodads --apply.'); return
+    w.changes[path] = cut; w.commit(); print('Записано в карту.')
+
+def fix_overlaps(w: workshop.Workshop, apply: bool, radius: float = 64.0):
+    """Ported placements standing on top of a native one of another type (the map's own
+    lamp next to the ported lamp, etc.). Lists the pairs; --apply removes the ported
+    copies (undo: remove --undo --apply).
+
+    --radius 64   how close counts as the same spot"""
+    import doo, math
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    ids = set()
+    for rec in w.state.get('doodads_added', []) + w.state.get('custom_doodads_added', []):
+        ids.update(range(rec['editor_ids'][0], rec['editor_ids'][1] + 1))
+    skip = {'ATtr', 'ZPsh', 'ZPfw', 'YTpb', 'YTlb', 'YTpc', 'NTtw', 'NTtc', 'D00B', 'D009', 'ATtc', 'LTlt'}
+    native = [e for e in cur['entries'] if e['editor_id'] not in ids and e['type'] not in skip]
+    grid = {}
+    for e in native: grid.setdefault((int(e['x'] // 256), int(e['y'] // 256)), []).append(e)
+    pairs = []
+    for e in cur['entries']:
+        if e['editor_id'] not in ids or e['type'] in skip: continue
+        gx, gy = int(e['x'] // 256), int(e['y'] // 256)
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for n in grid.get((gx + dx, gy + dy), []):
+                    if n['type'] != e['type'] and math.hypot(n['x'] - e['x'], n['y'] - e['y']) <= radius:
+                        pairs.append((e, n))
+    seen = set(); victims = []
+    for e, n in pairs:
+        print(f"  перенесённый {e['type']} #{e['editor_id']} ({e['x']:.0f}, {e['y']:.0f})  рядом с родным {n['type']} #{n['editor_id']} ({n['x']:.0f}, {n['y']:.0f})")
+        if e['editor_id'] not in seen: seen.add(e['editor_id']); victims.append(e)
+    print(f'Наложений: {len(victims)}')
+    if not victims: return
+    if not apply: print('\nПлан: удалить перенесённые копии. Запустите с --apply.'); return
+    kill = {e['editor_id'] for e in victims}
+    cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in kill]
+    w.changes['war3map.doo'] = doo.serialize(cur); w.commit()
+    w.state.setdefault('removed_placements', []).extend(victims); w.save_state()
+    print(f'Удалено {len(victims)}. Вернуть: map_fix.py remove --undo --apply')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -741,7 +870,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -752,6 +881,10 @@ def main():
     ap.add_argument('--near', help='doodads: X,Y,R — только размещения в радиусе R от точки')
     ap.add_argument('--from', help='move-doodads: X,Y опорная точка (писать через =)')
     ap.add_argument('--to', help='move-doodads: X,Y куда (писать через =)')
+    ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
+    ap.add_argument('--path', help='model-cut: путь модели в карте')
+    ap.add_argument('--drop', help='model-cut: номера геосетов через запятую')
+    ap.add_argument('--source', help='model-cut: взять модель из файла')
     ap.add_argument('--ids', help='remove: номера размещений через запятую')
     ap.add_argument('--offset', type=float, default=0.0, help='doodads-z: добавка к высоте')
     ap.add_argument('--rotate', type=float, default=0.0, help='move-doodads: поворот группы в градусах')
@@ -774,6 +907,8 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius)
+    elif a.fix == 'model-cut': FIXES[a.fix](w, a.apply, a.path, a.drop, a.source)
     elif a.fix == 'remove': FIXES[a.fix](w, a.apply, a.ids, a.undo)
     elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types, a.offset)
     elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate)

@@ -93,6 +93,8 @@ python3 map_fix.py doodads [--ref карта] [--types A,B] [--near=X,Y,R] [--un
 python3 map_fix.py hq-doodads [--match Fence] [--textures] [--models] --apply
 python3 map_fix.py probe [--at=-7168,-7168,2600]     # декорации вокруг точки здесь и в 6.77b
 python3 map_fix.py doodads-z [--types A,B] [--offset 150] --apply   # высота перенесённых декораций по рельефу (идемпотентно)
+python3 map_fix.py overlaps [--radius 64] --apply          # перенесённые копии поверх родных объектов
+python3 map_fix.py model-cut --path "Doodads\\...\\X.mdx" --drop 17,18,19 --apply   # вырезать части модели
 python3 map_fix.py remove --ids 5254,5244 [--undo] --apply   # убрать отдельные размещения по номерам
 python3 map_fix.py move-doodads --types DH01 --from=2448,-528 --to=4208,-2288 [--rotate 90] --apply  # перенести группу
 python3 map_fix.py custom-doodads [--types D001,AOob] [--near=X,Y,R] [--undo] --apply  # пользовательские типы 6.77b под новыми кодами
