@@ -833,6 +833,21 @@ def mdx_drop_nodes(data: bytes, drop_tags=(b'LITE', b'ATCH', b'PRE2', b'PREM', b
                 node_off = q - (o + 8) + (4 if t in (b'LITE', b'ATCH', b'PRE2', b'PREM', b'RIBB', b'CORN') else 0)
                 struct.pack_into('<I', body, node_off + 84, remap[oid])
                 if pid != 0xFFFFFFFF: struct.pack_into('<I', body, node_off + 88, remap.get(pid, 0xFFFFFFFF))
+        if tag == b'GEOS':
+            # geosets reference bones by node id in MATS: renumber those too
+            q = 0
+            while q < len(body):
+                gs = struct.unpack_from('<I', body, q)[0]; r = q + 4
+                while r < q + gs:
+                    t = bytes(body[r:r + 4]); c = struct.unpack_from('<I', body, r + 4)[0]
+                    sz = {b'VRTX': 12, b'NRMS': 12, b'PTYP': 4, b'PCNT': 4, b'PVTX': 2, b'GNDX': 1, b'MTGC': 4, b'MATS': 4, b'UVAS': 0, b'UVBS': 8}[t]
+                    if t == b'MATS':
+                        for k in range(c):
+                            v = struct.unpack_from('<I', body, r + 8 + k * 4)[0]
+                            struct.pack_into('<I', body, r + 8 + k * 4, remap.get(v, 0))
+                        break
+                    r += 8 + c * sz
+                q += gs
         out += tag + struct.pack('<I', len(body)) + bytes(body)
         if tag == b'BONE' and pivots is not None:
             pass
