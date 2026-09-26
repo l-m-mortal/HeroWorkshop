@@ -694,41 +694,46 @@ def fix_model_cut(w: workshop.Workshop, apply: bool, path: str | None = None, dr
     if not apply: print('\nПлан. Запустите с --apply. Вернуть оригинал: hq-doodads --apply.'); return
     w.changes[path] = cut; w.commit(); print('Записано в карту.')
 
-def fix_overlaps(w: workshop.Workshop, apply: bool, radius: float = 64.0):
+def fix_overlaps(w: workshop.Workshop, apply: bool, radius: float = 64.0, pairs: str | None = None, prefer: str = 'native'):
     """Ported placements standing on top of a native one of another type (the map's own
-    lamp next to the ported lamp, etc.). Lists the pairs; --apply removes the ported
-    copies (undo: remove --undo --apply).
+    lamp next to the ported lamp, a native rock where 6.77b had the stairs...).
+    Lists the pairs; --apply removes one of each pair (undo: remove --undo --apply).
 
-    --radius 64   how close counts as the same spot"""
+    --radius 64              how close counts as the same spot
+    --pairs AOsr:LOfl,ARrk:ZRrk   only these ported:native type pairs (default: any types)
+    --prefer native|ported   which copy to keep (default native: the ported one is removed)"""
     import doo, math
     cur = doo.parse(w.mpq.read('war3map.doo'))
     ids = set()
     for rec in w.state.get('doodads_added', []) + w.state.get('custom_doodads_added', []):
         ids.update(range(rec['editor_ids'][0], rec['editor_ids'][1] + 1))
     skip = {'ATtr', 'ZPsh', 'ZPfw', 'YTpb', 'YTlb', 'YTpc', 'NTtw', 'NTtc', 'D00B', 'D009', 'ATtc', 'LTlt'}
+    allowed = None
+    if pairs: allowed = {tuple(p.split(':')) for p in pairs.split(',')}
     native = [e for e in cur['entries'] if e['editor_id'] not in ids and e['type'] not in skip]
     grid = {}
     for e in native: grid.setdefault((int(e['x'] // 256), int(e['y'] // 256)), []).append(e)
-    pairs = []
+    found = []
     for e in cur['entries']:
         if e['editor_id'] not in ids or e['type'] in skip: continue
         gx, gy = int(e['x'] // 256), int(e['y'] // 256)
         for dx in (-1, 0, 1):
             for dy in (-1, 0, 1):
                 for n in grid.get((gx + dx, gy + dy), []):
-                    if n['type'] != e['type'] and math.hypot(n['x'] - e['x'], n['y'] - e['y']) <= radius:
-                        pairs.append((e, n))
-    seen = set(); victims = []
-    for e, n in pairs:
+                    if n['type'] == e['type']: continue
+                    if allowed is not None and (e['type'], n['type']) not in allowed: continue
+                    if math.hypot(n['x'] - e['x'], n['y'] - e['y']) <= radius: found.append((e, n))
+    victims = {}
+    for e, n in found:
         print(f"  перенесённый {e['type']} #{e['editor_id']} ({e['x']:.0f}, {e['y']:.0f})  рядом с родным {n['type']} #{n['editor_id']} ({n['x']:.0f}, {n['y']:.0f})")
-        if e['editor_id'] not in seen: seen.add(e['editor_id']); victims.append(e)
-    print(f'Наложений: {len(victims)}')
+        v = n if prefer == 'ported' else e
+        victims[v['editor_id']] = v
+    print(f'Пар: {len(found)}; удалить {"родных" if prefer == "ported" else "перенесённых"}: {len(victims)}')
     if not victims: return
-    if not apply: print('\nПлан: удалить перенесённые копии. Запустите с --apply.'); return
-    kill = {e['editor_id'] for e in victims}
-    cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in kill]
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in victims]
     w.changes['war3map.doo'] = doo.serialize(cur); w.commit()
-    w.state.setdefault('removed_placements', []).extend(victims); w.save_state()
+    w.state.setdefault('removed_placements', []).extend(victims.values()); w.save_state()
     print(f'Удалено {len(victims)}. Вернуть: map_fix.py remove --undo --apply')
 
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
@@ -882,6 +887,8 @@ def main():
     ap.add_argument('--from', help='move-doodads: X,Y опорная точка (писать через =)')
     ap.add_argument('--to', help='move-doodads: X,Y куда (писать через =)')
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
+    ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
+    ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
     ap.add_argument('--path', help='model-cut: путь модели в карте')
     ap.add_argument('--drop', help='model-cut: номера геосетов через запятую')
     ap.add_argument('--source', help='model-cut: взять модель из файла')
@@ -907,7 +914,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
-    elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius)
+    elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius, a.pairs, a.prefer)
     elif a.fix == 'model-cut': FIXES[a.fix](w, a.apply, a.path, a.drop, a.source)
     elif a.fix == 'remove': FIXES[a.fix](w, a.apply, a.ids, a.undo)
     elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types, a.offset)
