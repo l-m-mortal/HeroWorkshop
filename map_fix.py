@@ -511,6 +511,42 @@ def fix_move_doodads(w: workshop.Workshop, apply: bool, types: str | None = None
     if not apply: print('\nПлан. Запустите с --apply.'); return
     w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); print('Перемещено.')
 
+def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, types: str | None = None):
+    """Re-base the height of placements ported from the reference map: the Terrain Fix
+    map raised parts of the ground, and doodads keep an absolute z, so ported ones sit
+    underground there. z_new = z_old - ground_ref(x, y) + ground_here(x, y).
+
+    --types A,B     only these types (default: every placement recorded by doodads /
+                    custom-doodads in the state file)"""
+    import doo
+    from mpq import MPQ
+    ref_path = _ref_map(ref)
+    if ref_path is None: workshop.die('эталонная карта не найдена, укажите --ref')
+    class _R: pass
+    r = _R(); r.mpq = MPQ(ref_path)
+    tz_ref = terrain_z(r); tz_here = terrain_z(w)
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    if types:
+        kinds = set(types.split(',')); victims = [e for e in cur['entries'] if e['type'] in kinds]
+    else:
+        ids = set()
+        for rec in w.state.get('doodads_added', []) + w.state.get('custom_doodads_added', []):
+            ids.update(range(rec['editor_ids'][0], rec['editor_ids'][1] + 1))
+        victims = [e for e in cur['entries'] if e['editor_id'] in ids]
+    changed = 0; by_type = {}
+    for e in victims:
+        nz = e['z'] - tz_ref(e['x'], e['y']) + tz_here(e['x'], e['y'])
+        if abs(nz - e['z']) < 0.5: continue
+        by_type.setdefault(e['type'], []).append((e['z'], nz))
+        if apply: e['z'] = nz
+        changed += 1
+    for t, v in sorted(by_type.items(), key=lambda kv: -len(kv[1])):
+        print(f'  {t}: {len(v)} шт., сдвиг по z ' + ', '.join(sorted({f"{b - a:+.0f}" for a, b in v})))
+    print(f'Размещений проверено {len(victims)}, требуют поправки {changed}.')
+    if not changed: return
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); print('Высоты пересчитаны.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -650,7 +686,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -681,6 +717,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types)
     elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate)
     elif a.fix == 'custom-doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near, a.undo)
     elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match, a.undo)
