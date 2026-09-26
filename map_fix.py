@@ -40,8 +40,8 @@ def fix_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types
     --ref <map.w3x>   reference map (relative to the game root or absolute)
     --types A,B,C     only these doodad type ids (default: every type absent here)
     --near=X,Y,R      only placements within R of (X,Y) (write it with '=' because of the
-                      minus signs); placements already present
-                      at the same spot (same type, < 8 units away) are skipped"""
+                      minus signs). Placements already standing on the same spot
+                      (same type, < 8 units away) are always skipped"""
     import doo
     from mpq import MPQ
     from pathlib import Path
@@ -56,12 +56,15 @@ def fix_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types
     wanted = set(types.split(',')) if types else {e['type'] for e in src['entries']} - here - {t for t in {e['type'] for e in src['entries']} if re.match(r'^[DB][0-9A-Z]{3}$', t) and not t[1].isalpha()}
     wanted = {t for t in wanted if types or not re.match(r'^[DB]\d', t)}
     picked = [e for e in src['entries'] if e['type'] in wanted]
+    import math
     if near:
-        import math
         cx, cy, r = [float(v) for v in near.split(',')]
         picked = [e for e in picked if math.hypot(e['x'] - cx, e['y'] - cy) <= r]
-        have = [(e['type'], e['x'], e['y']) for e in cur['entries'] if e['type'] in wanted]
-        picked = [e for e in picked if not any(t == e['type'] and math.hypot(x - e['x'], y - e['y']) < 8 for t, x, y in have)]
+    # never duplicate a placement that already stands on the same spot
+    have = {}
+    for e in cur['entries']:
+        if e['type'] in wanted: have.setdefault(e['type'], []).append((e['x'], e['y']))
+    picked = [e for e in picked if not any(math.hypot(x - e['x'], y - e['y']) < 8 for x, y in have.get(e['type'], []))]
     by_type = {}
     for e in picked: by_type[e['type']] = by_type.get(e['type'], 0) + 1
     print(f'Эталон: {ref_path.name}, версия doo {src["version"]}; здесь версия {cur["version"]}, размещений {len(cur["entries"])}')
