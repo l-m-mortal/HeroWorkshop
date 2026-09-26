@@ -92,6 +92,8 @@ python3 map_fix.py shops --apply                     # модели боково
 python3 map_fix.py doodads [--ref карта] [--types A,B] [--near=X,Y,R] [--undo] --apply
 python3 map_fix.py hq-doodads [--match Fence] [--textures] [--models] --apply
 python3 map_fix.py probe [--at=-7168,-7168,2600]     # декорации вокруг точки здесь и в 6.77b
+python3 map_fix.py static-models [--match Fence] --apply   # модели без анимаций -> добавить Stand
+python3 map_fix.py repack-textures [--match Shrub] --apply  # JPEG-BLP текстуры HQ-моделей -> палитровый BLP1
 python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0.016] [--undo] --apply
 ```
 

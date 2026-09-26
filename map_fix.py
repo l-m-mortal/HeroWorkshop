@@ -200,6 +200,92 @@ def _ref_map(ref):
     candidates = [p if p.is_absolute() else workshop.GAME / p for p in candidates]
     return next((p for p in candidates if p.is_file()), None)
 
+def mdx_add_stand(data: bytes) -> bytes | None:
+    """Give a sequence-less MDX one 'Stand' sequence (0..1000 ms) so the game renders it.
+    Returns None when the model already has sequences or is not an MDX."""
+    import struct
+    if data[:4] != b'MDLX': return None
+    o = 4; chunks = []
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]
+        chunks.append((tag, o, size)); o += 8 + size
+    if any(t == b'SEQS' and sz for t, _, sz in chunks): return None
+    # extents from MODL (bounds radius + min/max), fall back to zeros
+    radius, mn, mx = 0.0, (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
+    for t, off, sz in chunks:
+        if t == b'MODL' and sz >= 372:
+            radius = struct.unpack_from('<f', data, off + 8 + 80 + 260)[0]
+            mn = struct.unpack_from('<3f', data, off + 8 + 80 + 264); mx = struct.unpack_from('<3f', data, off + 8 + 80 + 276)
+    seq = b'Stand'.ljust(80, b'\0') + struct.pack('<IIfIfI', 0, 1000, 0.0, 0, 0.0, 0) + struct.pack('<f3f3f', radius, *mn, *mx)
+    seqs = b'SEQS' + struct.pack('<I', len(seq)) + seq
+    out = bytearray(data)
+    # drop an empty SEQS chunk if present, then insert after MODL (or after VERS)
+    for t, off, sz in reversed(chunks):
+        if t == b'SEQS': del out[off:off + 8 + sz]
+    o = 4; ins = None
+    while o + 8 <= len(out):
+        tag = out[o:o + 4]; size = struct.unpack_from('<I', out, o + 4)[0]
+        if tag == b'MODL': ins = o + 8 + size; break
+        if tag == b'VERS': ins = o + 8 + size
+        o += 8 + size
+    if ins is None: return None
+    out[ins:ins] = seqs
+    return bytes(out)
+
+def fix_static_models(w: workshop.Workshop, apply: bool, match: str | None = None):
+    """Models inside the map that have no animation sequence are invisible in game
+    (the HQ Village fences, for example). Add an empty 'Stand' sequence to each.
+
+    --match text   only paths containing text"""
+    plan = []
+    for name in w.mpq.list():
+        if not name.lower().endswith('.mdx'): continue
+        if match and match.lower() not in name.lower(): continue
+        data = w.mpq.read(name)
+        mi = mdx_info(data)
+        if not mi['ok'] or mi['sequences']: continue
+        fixed = mdx_add_stand(data)
+        if fixed: plan.append((name, mi['geosets'], fixed))
+        else: print(f'  {name}: не удалось исправить')
+    for name, g, _ in plan: print(f'  {name}: 0 анимаций, геосетов {g} -> добавить Stand')
+    if not plan: print('Моделей без анимаций в карте нет.'); return
+    if not apply: print(f'\nПлан: исправить {len(plan)} моделей. Запустите с --apply.'); return
+    for name, _, fixed in plan: w.changes[name] = fixed
+    w.commit(); print(f'Исправлено {len(plan)} моделей.')
+
+def fix_repack_textures(w: workshop.Workshop, apply: bool, match: str | None = None, folders: str = 'Doodads'):
+    """Re-encode JPEG BLP textures used by the HQ doodad models in the map as paletted
+    BLP1 with mipmaps (JPEG BLPs converted from other games can show up white in
+    1.31). Only textures referenced by MDX files under the given folders are touched.
+
+    --match text   only models whose path contains text
+    --folders A,B  model folders inside the map (default Doodads)"""
+    import blp, struct
+    tops = tuple(f.strip().lower() + '\\' for f in folders.split(','))
+    seen = {}
+    for name in w.mpq.list():
+        if not name.lower().endswith('.mdx') or not name.lower().startswith(tops): continue
+        if match and match.lower() not in name.lower(): continue
+        for rid, tex in mdx_info(w.mpq.read(name))['textures']:
+            if rid: continue
+            t = tex.replace('/', '\\')
+            if t.lower() in seen or not w.mpq.has(t): continue
+            data = w.mpq.read(t)
+            if data[:4] != b'BLP1' or struct.unpack_from('<I', data, 4)[0] != 0: continue  # not JPEG
+            seen[t.lower()] = (t, data, name)
+    if not seen: print('JPEG-текстур у этих моделей в карте нет.'); return
+    out = {}
+    for t, data, model in seen.values():
+        try:
+            im = blp.decode(data)
+            out[t] = blp.encode(im)
+            print(f'  {t}: JPEG {im.size[0]}x{im.size[1]} -> палитра, {len(data)} -> {len(out[t])} байт   ({model.split(chr(92))[-1]})')
+        except Exception as e:
+            print(f'  {t}: не удалось декодировать ({e})')
+    if not apply: print(f'\nПлан: перепаковать {len(out)} текстур. Запустите с --apply. Вернуть исходные: hq-doodads --apply.'); return
+    for t, b in out.items(): w.changes[t] = b
+    w.commit(); print(f'Перепаковано {len(out)} текстур.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -318,7 +404,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -345,6 +431,8 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match)
+    elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures, a.models)
     elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font, a.parent, a.debug)
     else: FIXES[a.fix](w, a.apply)
