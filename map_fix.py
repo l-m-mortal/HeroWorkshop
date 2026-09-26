@@ -1498,7 +1498,7 @@ def fix_cliffs(w: workshop.Workshop, apply: bool, undo: bool = False, split: boo
                 if not p.is_file() or p.name.startswith('._'): continue
                 s = str(p.relative_to(workshop.GAME)).lower()
                 if ('cliff' in s or 'terrainart' in s or p.name in ('CliffTypes.slk', 'Terrain.slk') or s.endswith('.mpq')) and not s.endswith(('.w3x', '.w3m')):
-                    print(f'{_blp_size(p) or "":>12}  {p.stat().st_size:>8}  {p.relative_to(workshop.GAME)}'); n += 1
+                    sz = _blp_size(p); print(f'{(f"{sz[0]}x{sz[1]}" if sz else ""):>12}  {p.stat().st_size:>8}  {p.relative_to(workshop.GAME)}'); n += 1
         print(f'Найдено: {n}'); return
     t = _w3e_parse(w.mpq.read('war3map.w3e'))
     cl = t['cliffs']; cells = t['cells']; W, H, ox, oy = t['w'], t['h'], t['ox'], t['oy']
