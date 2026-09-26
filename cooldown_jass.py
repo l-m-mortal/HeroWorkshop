@@ -58,7 +58,9 @@ function HW_cdTick takes nothing returns nothing
     local ability a
     loop
         exitwhen i>11
-        call BlzFrameSetVisible(HW_cdText[i],false)
+        if HW_cdText[i]!=null then
+            call BlzFrameSetVisible(HW_cdText[i],false)
+        endif
         set i=i+1
     endloop
     if HW_cdUnit==null then
@@ -82,8 +84,10 @@ function HW_cdTick takes nothing returns nothing
             if a!=null then
                 set idx=BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_Y)*4+BlzGetAbilityIntegerField(a,ABILITY_IF_BUTTON_POSITION_NORMAL_X)
                 if idx>=0 and idx<=11 then
-                    call BlzFrameSetText(HW_cdText[idx],HW_cdFormat(r))
-                    call BlzFrameSetVisible(HW_cdText[idx],true)
+                    if HW_cdText[idx]!=null then
+                        call BlzFrameSetText(HW_cdText[idx],HW_cdFormat(r))
+                        call BlzFrameSetVisible(HW_cdText[idx],true)
+                    endif
                 endif
             endif
         endif
@@ -98,13 +102,13 @@ function HW_cdInit takes nothing returns nothing
     loop
         exitwhen i>11
         set btn=BlzGetOriginFrame(ORIGIN_FRAME_COMMAND_BUTTON,i)
-        set HW_cdText[i]=BlzCreateFrameByType("TEXT","HWcd",btn,"",0)
-        call BlzFrameSetPoint(HW_cdText[i],FRAMEPOINT_CENTER,btn,FRAMEPOINT_CENTER,0.0,0.0)
-        call BlzFrameSetTextAlignment(HW_cdText[i],TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
-        call BlzFrameSetFont(HW_cdText[i],"Fonts\\\\FRIZQT__.TTF",HW_CD_FONT,0)
-        call BlzFrameSetTextColor(HW_cdText[i],BlzConvertColor(255,255,255,255))
-        call BlzFrameSetLevel(HW_cdText[i],5)
-        call BlzFrameSetVisible(HW_cdText[i],false)
+        if btn!=null then
+            set HW_cdText[i]=BlzCreateFrameByType("TEXT","HWcd",btn,"",0)
+            call BlzFrameSetPoint(HW_cdText[i],FRAMEPOINT_CENTER,btn,FRAMEPOINT_CENTER,0.0,0.0)
+            call BlzFrameSetTextAlignment(HW_cdText[i],TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
+            call BlzFrameSetScale(HW_cdText[i],HW_CD_SCALE)
+            call BlzFrameSetVisible(HW_cdText[i],false)
+        endif
         set i=i+1
     endloop
     set HW_cdSel=CreateTrigger()
@@ -134,7 +138,7 @@ def ids_function(ids) -> str:
     lines.append('endfunction')
     return '\n'.join(lines)
 
-MAIN_CALL = "call TimerStart(CreateTimer(),0.0,false,function HW_cdStart) // HW_COOLDOWN_CALL"
+MAIN_CALL = "call TimerStart(CreateTimer(),1.0,false,function HW_cdStart) // HW_COOLDOWN_CALL"
 
 def inject(script: str, ids, font_height: float = 0.016) -> str:
     """Return the script with the cooldown block added (idempotent)."""
@@ -142,7 +146,7 @@ def inject(script: str, ids, font_height: float = 0.016) -> str:
     ids = [c for c in ids if re.match(r'^[0-9A-Za-z]{4}$', c)]
     if not ids: raise ValueError('no ability ids')
     script = remove(script)
-    funcs = FUNCTIONS.replace('HW_CD_FONT', f'{font_height:.4f}').replace('// HW_COOLDOWN_BEGIN', '// HW_COOLDOWN_BEGIN\n' + ids_function(ids))
+    funcs = FUNCTIONS.replace('HW_CD_SCALE', f'{max(0.5, font_height / 0.01):.2f}').replace('// HW_COOLDOWN_BEGIN', '// HW_COOLDOWN_BEGIN\n' + ids_function(ids))
     # globals: append to the first globals block
     g = re.search(r'^globals\r?\n', script, re.M)
     if not g: raise ValueError('globals block not found')
