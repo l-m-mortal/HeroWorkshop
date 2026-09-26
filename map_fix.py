@@ -1349,6 +1349,13 @@ def fix_part_labels(w: workshop.Workshop, apply: bool, path: str | None = None, 
     if not apply: print('\nЗапустите с --apply.'); return
     w.script = script; w.changes['war3map.j'] = script.encode('latin1', 'replace'); w.commit(); print('Записано.')
 
+def fix_part_probe(w: workshop.Workshop, apply: bool, path: str | None = None, types: str | None = None, parts: str | None = None, offset: float = 800.0):
+    """Which part of an assembly model is which: lift ONE part very high (--offset)
+    so it can be spotted in game, run once per part. Prints the part list; the caller
+    writes the map for each part in turn (see parts_probe.sh)."""
+    fix_model_lift(w, apply, path, types, 'all', 0.0, None, False)
+    if parts: fix_model_lift(w, apply, path, types, parts, offset, None, False)
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1543,7 +1550,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: fl
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels, 'part-probe': fix_part_probe}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1592,6 +1599,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'part-probe': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset or 800.0)
     elif a.fix == 'part-labels': FIXES[a.fix](w, a.apply, a.path, a.types, a.undo)
     elif a.fix == 'model-events': FIXES[a.fix](w, a.apply, a.path, a.source, a.events, a.undo, a.into)
     elif a.fix == 'model-lift': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset, a.drop, a.undo)
