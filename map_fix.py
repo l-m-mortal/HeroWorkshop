@@ -1172,13 +1172,18 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
 def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
-    """Dota 2-style shop window prototype (JASS block in war3map.j, pure JASS/frames).
+    """Dota 2-style shop window (JASS block in war3map.j, pure JASS/frames).
 
-    Collects the 15 base category shops (workshop.py shops()/item_list(), excluding
-    the secret shop uC74 and the side shop u010), their sold units' icons and gold
-    cost (Units\\UnitBalance.slk goldcost, falling back to ItemData.slk), builds one
-    grid window with category tabs, and injects it (see shop_jass.py). Toggle
-    in-game with the chat command "-shop". Coexists with the HW_COOLDOWN_* block.
+    Collects the base category shops (workshop.py shops()/item_list(), excluding
+    the secret shop uC74 and the side shop u010), their sold units' icons, gold
+    cost (Units\\UnitBalance.slk goldcost, falling back to ItemData.slk) and grid
+    cell (Buttonpos, same 4x3 layout as the map's own shop UI), and injects a
+    panel docked to the right edge of the screen (between the score bar and the
+    command card, see shop_jass.py's PANEL_* constants) with ALL shops shown as
+    blocks at once, two columns of up to 7 -- no tabs, no pages, no scrolling.
+    Toggle in-game with the chat command "-shop" or an invisible button placed
+    over the HUD's own "SHOP" command-card label (shop_jass.py's TOGGLE_*
+    constants). Coexists with the HW_COOLDOWN_* block.
     --undo    remove the block again"""
     import shop_jass
     script = w.script
