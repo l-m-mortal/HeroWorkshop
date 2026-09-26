@@ -34,6 +34,14 @@ import workshop
 
 HW_SHOP_SLOTS = 24
 HW_SHOP_COLS = 6
+HW_SHOP_TAB_COLS = 7
+# Standard 1.31 textures used for the panel/button chrome below (no custom BLPs
+# needed): "UI\Widgets\EscMenu\Human\human-options-menu-background.blp" for the
+# panel, "...human-options-button-background.blp" for tab/close/toggle buttons.
+
+
+def _is_ascii(s: str) -> bool:
+    return all(ord(c) < 128 for c in s)
 
 GLOBALS = """// HW_SHOP_GLOBALS_BEGIN
 constant integer HW_SHOP_SLOTS=24
@@ -50,8 +58,14 @@ integer HW_shopCurCat=0
 boolean HW_shopLocalOpen=false
 framehandle HW_shopPanel=null
 framehandle HW_shopTitle=null
+framehandle HW_shopToggleBg=null
+framehandle HW_shopToggleText=null
 framehandle HW_shopToggleBtn=null
+framehandle HW_shopCloseBg=null
+framehandle HW_shopCloseText=null
 framehandle HW_shopCloseBtn=null
+framehandle array HW_shopTabBg
+framehandle array HW_shopTabText
 framehandle array HW_shopTabBtn
 framehandle array HW_shopSlotBtn
 framehandle array HW_shopSlotIcon
@@ -127,6 +141,16 @@ function HW_ShopShowCat takes integer cat returns nothing
         return
     endif
     set HW_shopCurCat=cat
+    loop
+        exitwhen i>=HW_shopCatCount
+        if i==cat then
+            call BlzFrameSetText(HW_shopTabText[i],"[" + HW_shopCatName[i] + "]")
+        else
+            call BlzFrameSetText(HW_shopTabText[i],HW_shopCatName[i])
+        endif
+        set i=i+1
+    endloop
+    set i=0
     set n=HW_shopCatSize[cat]
     loop
         exitwhen i>=HW_SHOP_SLOTS
@@ -207,41 +231,62 @@ function HW_ShopBuild takes nothing returns nothing
     set HW_shopSlotHT=InitHashtable()
     set HW_shopTabHT=InitHashtable()
     set HW_shopPanel=BlzCreateFrameByType("BACKDROP","HWShopPanel",ui,"",0)
-    call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPLEFT,0.15,0.56)
-    call BlzFrameSetSize(HW_shopPanel,0.50,0.42)
+    call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPLEFT,0.15,0.58)
+    call BlzFrameSetSize(HW_shopPanel,0.50,0.44)
+    call BlzFrameSetTexture(HW_shopPanel,"UI\\\\Widgets\\\\EscMenu\\\\Human\\\\human-options-menu-background.blp",0,true)
     call BlzFrameSetVisible(HW_shopPanel,false)
     set HW_shopTitle=BlzCreateFrameByType("TEXT","HWShopTitle",HW_shopPanel,"",0)
     call BlzFrameSetPoint(HW_shopTitle,FRAMEPOINT_TOP,HW_shopPanel,FRAMEPOINT_TOP,0,-0.012)
     call BlzFrameSetSize(HW_shopTitle,0.46,0.02)
     call BlzFrameSetTextAlignment(HW_shopTitle,TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
-    call BlzFrameSetText(HW_shopTitle,"HW Shop (прототип)")
-    set HW_shopCloseBtn=BlzCreateFrameByType("GLUEBUTTON","HWShopClose",HW_shopPanel,"",0)
-    call BlzFrameSetPoint(HW_shopCloseBtn,FRAMEPOINT_TOPRIGHT,HW_shopPanel,FRAMEPOINT_TOPRIGHT,-0.008,-0.008)
-    call BlzFrameSetSize(HW_shopCloseBtn,0.022,0.022)
-    call BlzFrameSetText(HW_shopCloseBtn,"X")
+    call BlzFrameSetText(HW_shopTitle,"HW Shop")
+    set HW_shopCloseBg=BlzCreateFrameByType("BACKDROP","HWShopCloseBg",HW_shopPanel,"",0)
+    call BlzFrameSetPoint(HW_shopCloseBg,FRAMEPOINT_TOPRIGHT,HW_shopPanel,FRAMEPOINT_TOPRIGHT,-0.008,-0.008)
+    call BlzFrameSetSize(HW_shopCloseBg,0.022,0.022)
+    call BlzFrameSetTexture(HW_shopCloseBg,"UI\\\\Widgets\\\\EscMenu\\\\Human\\\\human-options-button-background.blp",0,true)
+    set HW_shopCloseText=BlzCreateFrameByType("TEXT","HWShopCloseText",HW_shopCloseBg,"",0)
+    call BlzFrameSetAllPoints(HW_shopCloseText,HW_shopCloseBg)
+    call BlzFrameSetTextAlignment(HW_shopCloseText,TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
+    call BlzFrameSetText(HW_shopCloseText,"X")
+    set HW_shopCloseBtn=BlzCreateFrameByType("BUTTON","HWShopClose",HW_shopCloseBg,"",0)
+    call BlzFrameSetAllPoints(HW_shopCloseBtn,HW_shopCloseBg)
     set HW_shopCloseTrig=CreateTrigger()
     call BlzTriggerRegisterFrameEvent(HW_shopCloseTrig,HW_shopCloseBtn,FRAMEEVENT_CONTROL_CLICK)
     call TriggerAddAction(HW_shopCloseTrig,function HW_ShopCloseClick)
-    set HW_shopToggleBtn=BlzCreateFrameByType("GLUEBUTTON","HWShopToggle",ui,"",0)
-    call BlzFrameSetAbsPoint(HW_shopToggleBtn,FRAMEPOINT_BOTTOMRIGHT,0.79,0.030)
-    call BlzFrameSetSize(HW_shopToggleBtn,0.05,0.026)
-    call BlzFrameSetText(HW_shopToggleBtn,"Shop")
+    set HW_shopToggleBg=BlzCreateFrameByType("BACKDROP","HWShopToggleBg",ui,"",0)
+    call BlzFrameSetAbsPoint(HW_shopToggleBg,FRAMEPOINT_BOTTOMRIGHT,0.79,0.030)
+    call BlzFrameSetSize(HW_shopToggleBg,0.05,0.026)
+    call BlzFrameSetTexture(HW_shopToggleBg,"UI\\\\Widgets\\\\EscMenu\\\\Human\\\\human-options-button-background.blp",0,true)
+    set HW_shopToggleText=BlzCreateFrameByType("TEXT","HWShopToggleText",HW_shopToggleBg,"",0)
+    call BlzFrameSetAllPoints(HW_shopToggleText,HW_shopToggleBg)
+    call BlzFrameSetTextAlignment(HW_shopToggleText,TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
+    call BlzFrameSetText(HW_shopToggleText,"Shop")
+    set HW_shopToggleBtn=BlzCreateFrameByType("BUTTON","HWShopToggle",HW_shopToggleBg,"",0)
+    call BlzFrameSetAllPoints(HW_shopToggleBtn,HW_shopToggleBg)
     set HW_shopToggleTrig=CreateTrigger()
     call BlzTriggerRegisterFrameEvent(HW_shopToggleTrig,HW_shopToggleBtn,FRAMEEVENT_CONTROL_CLICK)
     call TriggerAddAction(HW_shopToggleTrig,function HW_ShopToggleClick)
     set HW_shopTabTrig=CreateTrigger()
     if HW_shopCatCount>0 then
-        set tabw=0.48/I2R(HW_shopCatCount)
+        set tabw=0.48/7.0
     else
         set tabw=0.48
     endif
     loop
         exitwhen i>=HW_shopCatCount
-        set HW_shopTabBtn[i]=BlzCreateFrameByType("GLUEBUTTON","HWShopTab",HW_shopPanel,"",0)
-        call BlzFrameSetPoint(HW_shopTabBtn[i],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,0.01+I2R(i)*tabw,-0.045)
-        call BlzFrameSetSize(HW_shopTabBtn[i],tabw-0.002,0.026)
-        call BlzFrameSetScale(HW_shopTabBtn[i],0.75)
-        call BlzFrameSetText(HW_shopTabBtn[i],HW_shopCatName[i])
+        set col=i-(i/7)*7
+        set row=i/7
+        set HW_shopTabBg[i]=BlzCreateFrameByType("BACKDROP","HWShopTabBg",HW_shopPanel,"",0)
+        call BlzFrameSetPoint(HW_shopTabBg[i],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,0.01+I2R(col)*tabw,-0.040-I2R(row)*0.027)
+        call BlzFrameSetSize(HW_shopTabBg[i],tabw-0.003,0.024)
+        call BlzFrameSetTexture(HW_shopTabBg[i],"UI\\\\Widgets\\\\EscMenu\\\\Human\\\\human-options-button-background.blp",0,true)
+        set HW_shopTabText[i]=BlzCreateFrameByType("TEXT","HWShopTabText",HW_shopTabBg[i],"",0)
+        call BlzFrameSetAllPoints(HW_shopTabText[i],HW_shopTabBg[i])
+        call BlzFrameSetScale(HW_shopTabText[i],0.70)
+        call BlzFrameSetTextAlignment(HW_shopTabText[i],TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
+        call BlzFrameSetText(HW_shopTabText[i],HW_shopCatName[i])
+        set HW_shopTabBtn[i]=BlzCreateFrameByType("BUTTON","HWShopTab",HW_shopTabBg[i],"",0)
+        call BlzFrameSetAllPoints(HW_shopTabBtn[i],HW_shopTabBg[i])
         call BlzTriggerRegisterFrameEvent(HW_shopTabTrig,HW_shopTabBtn[i],FRAMEEVENT_CONTROL_CLICK)
         call SaveInteger(HW_shopTabHT,GetHandleId(HW_shopTabBtn[i]),0,i)
         set i=i+1
@@ -254,7 +299,7 @@ function HW_ShopBuild takes nothing returns nothing
         set col=i-(i/HW_SHOP_COLS)*HW_SHOP_COLS
         set row=i/HW_SHOP_COLS
         set HW_shopSlotIcon[i]=BlzCreateFrameByType("BACKDROP","HWShopIcon",HW_shopPanel,"",0)
-        call BlzFrameSetPoint(HW_shopSlotIcon[i],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,0.02+I2R(col)*0.076,-0.085-I2R(row)*0.086)
+        call BlzFrameSetPoint(HW_shopSlotIcon[i],FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,0.02+I2R(col)*0.076,-0.103-I2R(row)*0.086)
         call BlzFrameSetSize(HW_shopSlotIcon[i],0.058,0.058)
         set HW_shopSlotBtn[i]=BlzCreateFrameByType("BUTTON","HWShopSlot",HW_shopPanel,"",0)
         call BlzFrameSetPoint(HW_shopSlotBtn[i],FRAMEPOINT_TOPLEFT,HW_shopSlotIcon[i],FRAMEPOINT_TOPLEFT,0,0)
@@ -355,9 +400,19 @@ def collect_catalog(w) -> list[dict]:
                             try:
                                 cost = int(float(v)); break
                             except ValueError: pass
+            name = w.name(u, 'UnitFunc')
+            if not _is_ascii(name):
+                name = f'Item {item_code}'
             cat['items'].append({'unit': u, 'item': item_code, 'cost': cost or 0,
-                                  'icon': art, 'name': w.name(u, 'UnitFunc')})
-    return [c for c in categories if c['items']]
+                                  'icon': art, 'name': name})
+    result = [c for c in categories if c['items']]
+    for i, cat in enumerate(result, 1):
+        # The map's *.txt files mix latin1/cp1251 encodings; a non-ASCII shop-unit
+        # name would render as "????????" in the client's font, so fall back to a
+        # plain, always-displayable category label (docs/SHOP_UI_NOTES.md).
+        if not _is_ascii(cat['name']):
+            cat['name'] = f'Shop {i}'
+    return result
 
 
 def catalog_function(categories: list[dict], max_slots: int = HW_SHOP_SLOTS) -> str:
