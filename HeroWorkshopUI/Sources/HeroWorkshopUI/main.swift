@@ -1,6 +1,8 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+let iconFileTypes: [UTType] = [.png, .bmp, .jpeg, UTType(filenameExtension: "blp") ?? .data, UTType(filenameExtension: "tga") ?? .data]
+
 // MARK: - State produced by `python3 workshop.py state`
 
 struct Resolved: Codable, Hashable {
@@ -317,6 +319,12 @@ struct IconSlot: View {
         default: return "нет иконки"
         }
     }
+    private func addToLibrary(_ result: Result<[URL], Error>) {
+        if case let .success(urls) = result { for url in urls { store.addIcon(key: key, file: url) } }
+    }
+    private func importIcon(_ result: Result<URL, Error>) {
+        if case let .success(url) = result { store.setIcon(key: key, file: url) }
+    }
     var body: some View {
         VStack(spacing: 3) {
             ZStack {
@@ -360,12 +368,8 @@ struct IconSlot: View {
                 }
             }
             .help("\(title)\n\(subtitle)\nПуть: \(icon.art ?? "—")\nИсточник: \(originText)" + (icon.override.map { "\nЗаменена: \($0.applied ?? "")" } ?? ""))
-            .fileImporter(isPresented: $addingToLibrary, allowedContentTypes: [.png, .bmp, .jpeg, UTType(filenameExtension: "blp") ?? .data, UTType(filenameExtension: "tga") ?? .data], allowsMultipleSelection: true) { result in
-                if case let .success(urls) = result { for url in urls { store.addIcon(key: key, file: url) } }
-            }
-            .fileImporter(isPresented: $importing, allowedContentTypes: [.png, .bmp, .jpeg, UTType(filenameExtension: "blp") ?? .data, UTType(filenameExtension: "tga") ?? .data]) { result in
-                if case let .success(url) = result { store.setIcon(key: key, file: url) }
-            }
+            .fileImporter(isPresented: $addingToLibrary, allowedContentTypes: iconFileTypes, allowsMultipleSelection: true, onCompletion: addToLibrary)
+            .fileImporter(isPresented: $importing, allowedContentTypes: iconFileTypes, onCompletion: importIcon)
             .popover(isPresented: $pickerOpen) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Выбор иконки: \(title)").font(.headline)

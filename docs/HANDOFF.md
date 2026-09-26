@@ -93,6 +93,13 @@
    `--names CCdi=...,CCgr=...`. Откат: `cliffs --undo --apply`.
 9. Столбы с цепями у фонтана Dire родные, не трогать.
 
+## Hero Workshop UI
+
+Сборка падала на `main.swift` («unable to type-check this expression»): два `.fileImporter`
+с длинным списком типов. Список вынесен в глобальную `iconFileTypes`, обработчики в методы
+`addToLibrary`/`importIcon`. Проверить сборку `Open Hero Workshop.command`; если снова
+тормозит type-check, дробить `.help(...)`-строку и `body` карточки иконки на под-вью.
+
 ## Команды
 
 ```zsh
