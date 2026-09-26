@@ -554,6 +554,22 @@ def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, typ
     if not apply: print('\nПлан. Запустите с --apply.'); return
     w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); print('Высоты пересчитаны.')
 
+def fix_dump(w: workshop.Workshop, apply: bool):
+    """Write the map's structural files (placements, object types, terrain, script,
+    file list, unit/item data) into .work/<map>/dump.zip for sharing without models."""
+    import zipfile
+    names = ['war3map.doo', 'war3mapUnits.doo', 'war3map.w3d', 'war3map.w3b', 'war3map.w3u', 'war3map.w3e', 'war3map.w3i',
+             'war3map.j', 'Scripts\\war3map.j', 'war3map.w3r', 'war3map.wpm', 'war3map.shd', 'war3map.mmp', '(listfile)']
+    names += [f for f in w.mpq.list() if f.lower().startswith('units\\') and f.lower().endswith(('.slk', '.txt'))]
+    out = workshop.WORK / 'dump.zip'; out.parent.mkdir(parents=True, exist_ok=True)
+    listing = '\n'.join(f'{f}\t{len(w.mpq.read(f))}' for f in w.mpq.list())
+    with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
+        z.writestr('FILES.tsv', listing)
+        z.writestr('state.json', __import__('json').dumps(w.state, ensure_ascii=False, indent=1))
+        for n in names:
+            if w.mpq.has(n): z.writestr(n.replace('\\', '/'), w.mpq.read(n))
+    print(f'Записано: {out} ({out.stat().st_size / 1e6:.1f} МБ)')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
