@@ -92,7 +92,7 @@ TOP_MARGIN = 0.006 + CLOSE_SIZE + 0.004   # room left at the panel's top for the
 # depends on how many shop categories the map's own script places on each
 # side, only known once collect_catalog has parsed war3map.j -- see
 # _geometry(), called from catalog_function() at inject time.
-BLOCK_COLS = 2
+BLOCK_COLS = 3
 HW_SHOP_MAX_SHOPS = 40     # sanity cap on radiant+dire combined, not a layout constraint
 MARGIN_X = 0.007
 COL_W = PANEL_W / BLOCK_COLS
@@ -114,13 +114,13 @@ HW_SHOP_BUILDING_CODES = 3
 # Toggle button placed over the HUD's own "SHOP" command-card label. Anchored
 # ABSOLUTELY on ORIGIN_FRAME_GAME_UI (not relative to the panel's right edge,
 # see the module docstring for why that broke) at the HUD's "SHOP" label.
-TOGGLE_X0 = 0.62
-TOGGLE_Y0 = 0.132
-TOGGLE_X1 = 0.68
-TOGGLE_Y1 = 0.158
+TOGGLE_X0 = 0.60
+TOGGLE_Y0 = 0.215
+TOGGLE_X1 = 0.66
+TOGGLE_Y1 = 0.235
 TOGGLE_W = TOGGLE_X1 - TOGGLE_X0
 TOGGLE_H = TOGGLE_Y1 - TOGGLE_Y0
-TOGGLE_ALPHA = 60   # 0-255; visible for now, to re-verify the anchor live (task)
+TOGGLE_ALPHA = 255   # 0-255; visible for now, to re-verify the anchor live (task)
 
 PANEL_TEXTURE = 'UI\\\\Widgets\\\\ToolTips\\\\Human\\\\human-tooltip-background.blp'
 BUTTON_TEXTURE = 'UI\\\\Widgets\\\\Console\\\\Human\\\\human-console-button-background.blp'
@@ -178,6 +178,7 @@ framehandle HW_shopToggleBg=null
 framehandle HW_shopToggleBtn=null
 framehandle array HW_shopBlockHeader
 framehandle HW_shopDbg=null
+framehandle HW_shopToggleText=null
 real HW_shopRightX=0.8
 framehandle array HW_shopCellBg
 framehandle array HW_shopCellBtn
@@ -433,6 +434,10 @@ function HW_ShopBuild takes nothing returns nothing
     call BlzFrameSetSize(HW_shopToggleBg,{TOGGLE_W:.6f},{TOGGLE_H:.6f})
     call BlzFrameSetTexture(HW_shopToggleBg,"{BUTTON_TEXTURE}",0,true)
     call BlzFrameSetAlpha(HW_shopToggleBg,{TOGGLE_ALPHA})
+    set HW_shopToggleText=BlzCreateFrameByType("TEXT","HWShopToggleText",HW_shopToggleBg,"",0)
+    call BlzFrameSetAllPoints(HW_shopToggleText,HW_shopToggleBg)
+    call BlzFrameSetTextAlignment(HW_shopToggleText,TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
+    call BlzFrameSetText(HW_shopToggleText,"SHOP")
     set HW_shopToggleBtn=BlzCreateFrameByType("BUTTON","HWShopToggle",HW_shopToggleBg,"",0)
     call BlzFrameSetAllPoints(HW_shopToggleBtn,HW_shopToggleBg)
     set HW_shopToggleTrig=CreateTrigger()
@@ -829,11 +834,14 @@ def catalog_function(catalog: dict) -> tuple:
     part_idx = 0
     for ci, cat in enumerate(combined):
         side = 0 if ci < r_count else 1
-        local_row = ci if ci < r_count else ci - r_count
+        local_i = ci if ci < r_count else ci - r_count
+        # only one team's blocks are visible on a client, so both teams share the
+        # same grid: BLOCK_COLS columns, blocks filled column by column
+        per_col = max(1, -(-max(r_count, len(dire)) // BLOCK_COLS))
         lines.append(f'    set HW_shopShopName[{ci}]="{_jass_string(cat["name"])}"')
         lines.append(f'    set HW_shopTeamSide[{ci}]={side}')
-        lines.append(f'    set HW_shopCol[{ci}]={side}')
-        lines.append(f'    set HW_shopRow[{ci}]={local_row}')
+        lines.append(f'    set HW_shopCol[{ci}]={local_i // per_col}')
+        lines.append(f'    set HW_shopRow[{ci}]={local_i % per_col}')
         for ki, code in enumerate(cat['shop_codes']):
             lines.append(f"    set HW_shopBuildingCode[{ci * HW_SHOP_BUILDING_CODES + ki}]='{code}'")
         for si, it in enumerate(cat['cells']):
@@ -859,7 +867,7 @@ def catalog_function(catalog: dict) -> tuple:
                 part_idx += 1
     lines.append(f'    set HW_shopCount={len(combined)}')
     lines.append('endfunction')
-    shops_per_col = max(r_count, len(dire), 1)
+    shops_per_col = max(1, -(-max(r_count, len(dire)) // BLOCK_COLS))
     geo = _geometry(shops_per_col)
     geo.update(shops_per_col=shops_per_col, count_radiant=r_count, count_dire=len(dire))
     return '\n'.join(lines), geo

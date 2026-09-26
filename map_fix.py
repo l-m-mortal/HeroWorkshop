@@ -1344,7 +1344,7 @@ def fix_part_labels(w: workshop.Workshop, apply: bool, path: str | None = None, 
         script = script[:m.start()] + block.replace('\n', eol) + script[m.start():]
         m = re.search(r'^function main takes nothing returns nothing\r?\n', script, re.M)
         e2 = re.search(r'^endfunction', script[m.end():], re.M); pos = m.end() + e2.start()
-        script = script[:pos] + 'call HW_LabelsInit() // HW_LABELS_CALL' + eol + script[pos:]
+        script = script[:pos] + 'call TimerStart(CreateTimer(),2.0,false,function HW_LabelsInit) // HW_LABELS_CALL' + eol + script[pos:]
     print('Метки ' + ('убраны' if undo else 'добавлены') + ' (план).')
     if not apply: print('\nЗапустите с --apply.'); return
     w.script = script; w.changes['war3map.j'] = script.encode('latin1', 'replace'); w.commit(); print('Записано.')
