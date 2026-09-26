@@ -6,7 +6,7 @@ set -e
 AONT=400      # круговая стена базы Radiant (AOnt): больше = выше
 ARRK=0        # прочие камни ARrk (сама лестница теперь в кусках DS)
 D000=226      # тёмные стены Dire (D000), точное значение по геометрии модели
-DS=0          # куски лестниц/стен из сборки AshenRock7 (DS00..): 0 = низ на земле
+DS_RADWALL=100  # плиты стены Radiant (rad-wall) над землёй; остальные части на земле
 
 step() { echo; echo "=== $1"; }
 
@@ -34,9 +34,10 @@ python3 map_fix.py doodads-z --types AOnt --offset $AONT --apply || true
 python3 map_fix.py doodads-z --types ARrk --offset $ARRK --apply || true
 python3 map_fix.py doodads-z --types D000 --offset $D000 --apply || true
 
-step "6b. Модель-сборка лестниц/стен AshenRock7 (ARrk вариация 7): разрезать на куски по земле"
-python3 map_fix.py split-model --path 'Doodads\Ashenvale\Rocks\AshenRock\AshenRock7.mdx' --types ARrk:7 --drop 39,40,41 --gap 0 --redo --apply || true
-python3 map_fix.py doodads-z --types 'DS*' --offset $DS --apply || true
+step "6b. Сборка AshenRock7: части ставятся на землю внутри одной модели (без нарезки)"
+python3 map_fix.py split-model --undo --apply 2>/dev/null || true
+zsh stairs.sh 0 all || true
+zsh stairs.sh $DS_RADWALL rad-wall || true
 
 step "7. Яма Рошана: скалы OOob убрать совсем"
 python3 map_fix.py doodads --undo --types OOob --apply || true

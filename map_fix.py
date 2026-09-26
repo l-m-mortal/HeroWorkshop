@@ -1123,6 +1123,105 @@ def fix_script_tints(w: workshop.Workshop, apply: bool, undo: bool = False):
     if not apply: print('\nПлан. Запустите с --apply.'); return
     w.script = script; w.changes['war3map.j'] = script.encode('latin1', 'replace'); w.commit(); print('Записано.')
 
+def mdx_translate_geosets(data: bytes, dz: dict) -> bytes:
+    """Move selected geosets (index -> dz) vertically inside one model; extents updated."""
+    import struct
+    out = bytearray(b'MDLX'); o = 4
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; body = bytearray(data[o + 8:o + 8 + size])
+        if tag == b'GEOS':
+            q = 0; gi = 0
+            while q < len(body):
+                gs = struct.unpack_from('<I', body, q)[0]
+                d = dz.get(gi, 0.0)
+                if d:
+                    n = struct.unpack_from('<I', body, q + 8)[0]
+                    pts = [(x, y, z + d) for x, y, z in struct.iter_unpack('<3f', body[q + 12:q + 12 + n * 12])]
+                    body[q + 12:q + 12 + n * 12] = b''.join(struct.pack('<3f', *p) for p in pts)
+                    r = q + 4
+                    while r < q + gs:
+                        t = bytes(body[r:r + 4]); c = struct.unpack_from('<I', body, r + 4)[0]
+                        sz = {b'VRTX': 12, b'NRMS': 12, b'PTYP': 4, b'PCNT': 4, b'PVTX': 2, b'GNDX': 1, b'MTGC': 4, b'MATS': 4, b'UVAS': 0, b'UVBS': 8}[t]
+                        r += 8 + c * sz
+                        if t == b'MATS':
+                            r += 12
+                            mn = [min(p[i] for p in pts) for i in range(3)]; mx = [max(p[i] for p in pts) for i in range(3)]
+                            rad = max((x * x + y * y + z * z) ** 0.5 for x, y, z in pts)
+                            struct.pack_into('<f3f3f', body, r, rad, *mn, *mx); r += 28
+                            nex = struct.unpack_from('<I', body, r)[0]; r += 4
+                            for _ in range(nex): struct.pack_into('<f3f3f', body, r, rad, *mn, *mx); r += 28
+                            break
+                q += gs; gi += 1
+        out += tag + struct.pack('<I', len(body)) + bytes(body)
+        o += 8 + size
+    res = bytes(out); b = mdx_bounds(res)
+    if b:
+        rad, mn, mx = b; res = bytearray(res); o = 4
+        while o + 8 <= len(res):
+            tag = res[o:o + 4]; size = struct.unpack_from('<I', res, o + 4)[0]
+            if tag == b'MODL' and size >= 372: struct.pack_into('<f3f3f', res, o + 8 + 340, rad, *mn, *mx)
+            if tag == b'SEQS':
+                for k in range(size // 132): struct.pack_into('<f3f3f', res, o + 8 + k * 132 + 104, rad, *mn, *mx)
+            o += 8 + size
+        res = bytes(res)
+    return res
+
+def _part_index(name: str) -> int:
+    """'DS0B' -> 11, '7' -> 7."""
+    name = name.strip().upper()
+    if name.startswith('DS') and len(name) == 4:
+        A = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'; return A.index(name[2]) * 36 + A.index(name[3])
+    return int(name)
+
+def fix_model_lift(w: workshop.Workshop, apply: bool, path: str | None = None, types: str | None = None, parts: str | None = None, offset: float = 0.0, drop: str | None = None, undo: bool = False):
+    """Lift parts of a map-wide assembly model (AshenRock7: walls and stairs of both
+    bases) INSIDE the model: each part's lowest point lands on the ground under it plus
+    --offset. No splitting, no extra doodad types. Offsets are remembered per part in
+    the state file and re-applied from the original file every time (absolute values).
+
+    --path P         model path inside the map
+    --types T:V      doodad type:variation placed with that model (ARrk:7)
+    --parts A,B      part numbers (geoset index or DS00-style names); 'all' = every part
+    --offset N       height of the part bottom above the ground under it
+    --drop 39,40,41  geosets to remove for good (lanterns etc.)
+    --undo           restore the original model from WC3DotaHQTest\\A and forget offsets"""
+    import doo, math
+    a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+    if not path or not types: workshop.die('нужны --path и --types ТИП:ВАРИАЦИЯ')
+    src = _hq_file(a_root, path)
+    if src is None: workshop.die(f'исходной модели {path} нет в папке HQ')
+    data = src.read_bytes()
+    rec = w.state.setdefault('model_lift', {}).setdefault(path, {'offsets': {}, 'drop': []})
+    if undo:
+        w.state['model_lift'].pop(path, None); w.changes[path] = data
+        print('Модель восстановлена из папки HQ, сдвиги забыты.')
+        if apply: w.commit(); w.save_state()
+        else: print('\nПлан. Запустите с --apply.')
+        return
+    if drop: rec['drop'] = sorted({int(v) for v in drop.split(',')})
+    t, var = types.split(':'); var = int(var)
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    pl = [e for e in cur['entries'] if e['type'] == t and e['variation'] == var]
+    if not pl: workshop.die(f'размещений {t}:{var} нет (после split-model сначала split-model --undo --apply)')
+    e = pl[0]; ca, sa = math.cos(e['angle']), math.sin(e['angle'])
+    boxes = mdx_geoset_boxes(data); tz = terrain_z(w); z0 = tz(e['x'], e['y'])
+    if parts:
+        idx = list(range(len(boxes))) if parts == 'all' else [_part_index(v) for v in parts.split(',')]
+        for i in idx: rec['offsets'][str(i)] = offset
+    dz = {}
+    for k, off in rec['offsets'].items():
+        k = int(k)
+        if k >= len(boxes) or k in rec['drop']: continue
+        b = boxes[k]; lx, ly, zmin = b[6], b[7], b[2]
+        wx = e['x'] + (lx * ca - ly * sa) * e['sx']; wy = e['y'] + (lx * sa + ly * ca) * e['sy']
+        dz[k] = (tz(wx, wy) + off - z0) / (e['sz'] or 1.0) - zmin
+        print(f'  часть {k:2d} (DS{"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[k // 36]}{"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[k % 36]}) в ({wx:.0f}, {wy:.0f}): низ на {off:+.0f} над землёй -> сдвиг геометрии {dz[k]:+.0f}')
+    print(f'Частей с заданной высотой: {len(dz)}; удаляемых геосетов: {rec["drop"]}')
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    out = mdx_translate_geosets(data, dz)
+    if rec['drop']: out = mdx_drop_geosets(out, set(rec['drop']))
+    w.changes[path] = out; w.commit(); w.save_state(); print('Записано.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1314,7 +1413,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1328,6 +1427,7 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--parts', help='model-lift: номера частей через запятую или all')
     ap.add_argument('--redo', action='store_true', help='split-model: откатить прежнее разрезание и сделать заново')
     ap.add_argument('--gap', type=float, default=350.0, help='split-model: расстояние объединения кусков')
     ap.add_argument('--sink', type=float, default=15.0, help='split-model: заглубление низа')
@@ -1358,6 +1458,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'model-lift': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset, a.drop, a.undo)
     elif a.fix == 'script-tints': FIXES[a.fix](w, a.apply, a.undo)
     elif a.fix == 'untint': FIXES[a.fix](w, a.apply, a.types)
     elif a.fix == 'piece-lift': FIXES[a.fix](w, a.apply, a.offset, a.types)
