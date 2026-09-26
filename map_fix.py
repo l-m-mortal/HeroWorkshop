@@ -1162,7 +1162,33 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact}
+def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
+    """Dota 2-style shop window prototype (JASS block in war3map.j, pure JASS/frames).
+
+    Collects the 15 base category shops (workshop.py shops()/item_list(), excluding
+    the secret shop uC74 and the side shop u010), their sold units' icons and gold
+    cost (Units\\UnitBalance.slk goldcost, falling back to ItemData.slk), builds one
+    grid window with category tabs, and injects it (see shop_jass.py). Toggle
+    in-game with the chat command "-shop". Coexists with the HW_COOLDOWN_* block.
+    --undo    remove the block again"""
+    import shop_jass
+    script = w.script
+    if undo:
+        new = shop_jass.remove(script)
+    else:
+        categories = shop_jass.collect_catalog(w)
+        total = sum(len(c['items']) for c in categories)
+        print(f'Категорий: {len(categories)}, товаров: {total}')
+        for c in categories:
+            print(f"  {c['name']:30s} {len(c['items']):2d} товаров, коды лавки: {','.join(c['shop_codes'])}")
+        new = shop_jass.inject(script, categories)
+    present = 'HW_SHOP_BEGIN' in script
+    print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
+    if not apply: print('План. Запустите с --apply.'); return
+    w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
+    print('Записано. Откат: map_fix.py shop-ui --undo --apply')
+
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1218,6 +1244,7 @@ def main():
     elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures, a.models)
     elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font, a.parent, a.debug)
+    elif a.fix == 'shop-ui': FIXES[a.fix](w, a.apply, a.undo)
     else: FIXES[a.fix](w, a.apply)
 
 if __name__ == '__main__':

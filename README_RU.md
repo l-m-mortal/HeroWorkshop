@@ -103,6 +103,7 @@ python3 map_fix.py custom-doodads [--types D001,AOob] [--near=X,Y,R] [--undo] --
 python3 map_fix.py static-models [--match Fence] [--undo] --apply   # экспериментально: Stand для моделей без анимаций; --undo вернуть из папки HQ
 python3 map_fix.py repack-textures [--match Shrub] --apply  # JPEG-BLP текстуры HQ-моделей -> палитровый BLP1
 python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0.016] [--undo] --apply
+python3 map_fix.py shop-ui [--undo] --apply           # окно магазина в стиле Dota 2 (прототип)
 ```
 
 * `probe` сравнивает размещения декораций вокруг точки (по умолчанию фонтан Radiant)
@@ -118,6 +119,23 @@ python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0
 * `cooldown-numbers --debug` показывает на всех кнопках их номера 0..11 и строку
   состояния вверху экрана (выбранный юнит, число найденных способностей, кулдауны).
 
+## Магазин (прототип)
+
+`map_fix.py shop-ui --apply` собирает 14 базовых лавок карты (`workshop.py
+shops()`/`item_list()`, без потайной `uC74` и боковой `u010` — те остаются
+обычными кликовыми зданиями) и внедряет в `war3map.j` один чистый JASS-блок
+(`shop_jass.py`, план — `docs/SHOP_UI_PLAN.md`, вариант A): окно со вкладками
+категорий и сеткой из иконок/цен, без FDF/TOC, без vJASS/Lua.
+
+В игре: команда в чат `-shop` открывает/закрывает окно (у каждого игрока —
+своё состояние открыто/закрыто); клик по вкладке переключает категорию для
+всех, кто сейчас смотрит в магазин (общая страница, см.
+`docs/SHOP_UI_NOTES.md`); клик по иконке товара — покупка: проверка золота,
+списание и `UnitAddItemById` в инвентарь первого героя игрока (упрощённый
+путь, без имитации штатной продажи лавкой и без выдачи через курьера/фонтан
+— см. заметки). `map_fix.py shop-ui --undo --apply` откатывает блок, не
+трогая `HW_COOLDOWN_*`.
+
 ## Быстрые скрипты
 
 * `zsh fix_scene.sh` — вся сцена разом (заборы, фонари, высоты, яма Рошана), повторяемо.
@@ -130,8 +148,8 @@ python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0
 * `mpq.py` — чтение и запись MPQ на чистом Python (без внешних утилит).
 * `blp.py` — декодирование BLP1 (палитра и JPEG), кодирование BLP1 с альфой, серые иконки.
 * `workshop.py` — ядро: состояние карты, применение иконок и масштабов.
-* `map_fix.py`, `doo.py`, `cooldown_jass.py`, `map_audit.py` — исправления карты:
-  лавки, декорации из 6.77b, HQ-модели, счётчики кулдаунов.
+* `map_fix.py`, `doo.py`, `cooldown_jass.py`, `shop_jass.py`, `map_audit.py` — исправления
+  карты: лавки, декорации из 6.77b, HQ-модели, счётчики кулдаунов, окно магазина.
 * `library_scan.py`, `inventory_build.py`, `HeroWorkshop_inventory/` — инвентарь
   папки игры для работы без доступа к диску.
 * `tools/` — старые MPQ-утилиты, больше не используются.
