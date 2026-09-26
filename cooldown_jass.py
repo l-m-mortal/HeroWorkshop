@@ -69,7 +69,7 @@ function HW_cdInit takes nothing returns nothing
         set btn=BlzGetOriginFrame(ORIGIN_FRAME_COMMAND_BUTTON,i)
         set HW_cdText[i]=BlzCreateFrameByType("TEXT","HWcd",btn,"",0)
         call BlzFrameSetPoint(HW_cdText[i],FRAMEPOINT_CENTER,btn,FRAMEPOINT_CENTER,0.0,0.0)
-        call BlzFrameSetTextAlignment(HW_cdText[i],TEXT_JUSTIFY_CENTER)
+        call BlzFrameSetTextAlignment(HW_cdText[i],TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
         call BlzFrameSetFont(HW_cdText[i],"Fonts\\\\FRIZQT__.TTF",HW_CD_FONT,0)
         call BlzFrameSetTextColor(HW_cdText[i],BlzConvertColor(255,255,255,255))
         call BlzFrameSetLevel(HW_cdText[i],5)
