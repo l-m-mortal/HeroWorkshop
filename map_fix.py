@@ -1071,6 +1071,27 @@ def fix_piece_lift(w: workshop.Workshop, apply: bool, offset: float = 0.0, types
     if not apply: print('\nПлан. Запустите с --apply.'); return
     w.commit(); print('Записано.')
 
+def fix_untint(w: workshop.Workshop, apply: bool, types: str | None = None):
+    """Remove the colour tint (red/green/blue in unitUI.slk) from hero units and their
+    tavern/alternate forms: the HQ models are painted already, a tint only darkens them.
+
+    --types A,B   only these unit codes (default: every hero-like unit with a tint)"""
+    cells, h, rows = w.unit_ui
+    codes = set(types.split(',')) if types else set(w.hero_like())
+    plan = []
+    for code in sorted(codes):
+        r = rows.get(code)
+        if not r: continue
+        t = tuple(cells.get((h[c], r), '') for c in ('red', 'green', 'blue'))
+        if any(v not in ('', '255') for v in t): plan.append((code, w.name(code, 'UnitFunc') or code, t))
+    for code, name, t in plan: print(f'  {code} {name}: {t} -> (255, 255, 255)')
+    print(f'Юнитов с окраской: {len(plan)}')
+    if not plan or not apply:
+        if plan: print('\nПлан. Запустите с --apply.')
+        return
+    for code, _, _ in plan: w.set_unit_ui(code, {'red': 255, 'green': 255, 'blue': 255})
+    w.commit(); print('Записано.')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1255,7 +1276,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1299,6 +1320,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'untint': FIXES[a.fix](w, a.apply, a.types)
     elif a.fix == 'piece-lift': FIXES[a.fix](w, a.apply, a.offset, a.types)
     elif a.fix == 'split-model': FIXES[a.fix](w, a.apply, a.path, a.types, a.drop, a.gap, a.sink, a.undo, a.redo)
     elif a.fix == 'model-bounds': FIXES[a.fix](w, a.apply, a.match)
