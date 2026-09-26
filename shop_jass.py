@@ -654,22 +654,45 @@ def _build_parts(w, result: list[dict]) -> None:
             if n:
                 secret_side_norm.add(n)
 
+    def map_components(unit_code: str) -> list:
+        """Components from the map's own shop tooltip ('Requires:' section):
+        'Ring of Basilius - 525 (Supportive Vestments)' -> 'Ring of Basilius'.
+        The 'Recipe - N' line is the scroll the clicked entry itself sells."""
+        tip = w.txt_value(unit_code, 'Ubertip', 'UnitFunc')[1] or ''
+        i = tip.find('Requires')
+        if i < 0: return None
+        body = tip[i:]
+        j = body.find('Total Cost')
+        if j > 0: body = body[:j]
+        body = re.sub(r'\|c[0-9a-fA-F]{8}|\|r', '', body).replace('|n', '\n')
+        comps = []
+        for line in body.split('\n')[1:]:
+            line = line.strip()
+            m = re.match(r'^(.+?)\s*-\s*\d+', line)
+            if not m: continue
+            name = m.group(1).strip()
+            if name.lower() == 'recipe': continue
+            comps.append(name)
+        return comps
+
     def expand(ci: int, it: dict, visited: set, skipped: list) -> list:
         parts = [(ci, it['unit'], it['cost'], it['name'])]
-        dkey = _match_by_norm(norm(base_name(it['name'])), dota_by_norm)
-        if dkey is None or dkey in visited:
+        comps = map_components(it['unit'])
+        if comps is None:
+            dkey = _match_by_norm(norm(base_name(it['name'])), dota_by_norm)
+            if dkey is None: return parts
+            comps = [(dota_items.get(k) or {}).get('name') or k for k in dota_items.get(dkey, {}).get('components') or []]
+        key = norm(base_name(it['name']))
+        if key in visited:
             return parts
-        visited.add(dkey)
-        for comp_key in dota_items.get(dkey, {}).get('components') or []:
-            comp_info = dota_items.get(comp_key) or {}
-            comp_name = comp_info.get('name') or comp_key
+        visited.add(key)
+        for comp_name in comps:
             found = _match_by_norm(norm(base_name(comp_name)), name_index)
             if found is None:
                 cn = norm(base_name(comp_name))
                 where = 'secret/side shop only' if _match_by_norm(cn, {k: True for k in secret_side_norm}) else 'not sold on this team (or this map)'
                 msg = f"    skipped component '{comp_name}' of '{it['name']}' ({where})"
                 skipped.append(msg)
-                print(msg)
                 continue
             fci, fit = found
             parts.extend(expand(fci, fit, visited, skipped))
