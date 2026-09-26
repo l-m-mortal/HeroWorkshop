@@ -592,11 +592,12 @@ def fix_dump(w: workshop.Workshop, apply: bool):
             if w.mpq.has(n): z.writestr(n.replace('\\', '/'), w.mpq.read(n))
     print(f'Записано: {out} ({out.stat().st_size / 1e6:.1f} МБ)')
 
-def fix_remove(w: workshop.Workshop, apply: bool, ids: str | None = None, undo: bool = False):
+def fix_remove(w: workshop.Workshop, apply: bool, ids: str | None = None, undo: bool = False, types: str | None = None, near: str | None = None):
     """Remove single placements by editor id (numbers printed by probe). Removed
     entries are kept in the state file; --undo puts them back.
 
     --ids 5254,5244   editor ids to remove
+    --types A,B --near=X,Y,R   instead of ids: every placement of these types within R of (X,Y)
     --undo            restore everything removed by this command"""
     import doo
     cur = doo.parse(w.mpq.read('war3map.doo'))
@@ -608,9 +609,15 @@ def fix_remove(w: workshop.Workshop, apply: bool, ids: str | None = None, undo: 
         have = {e['editor_id'] for e in cur['entries']}
         cur['entries'].extend(e for e in saved if e['editor_id'] not in have)
         w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); w.state['removed_placements'] = []; w.save_state(); print('Готово.'); return
-    if not ids: workshop.die('нужен --ids 1,2,3')
-    want = {int(v) for v in ids.split(',')}
-    victims = [e for e in cur['entries'] if e['editor_id'] in want]
+    if types and near:
+        import math
+        cx, cy, r = [float(v) for v in near.split(',')]; kinds = set(types.split(','))
+        victims = [e for e in cur['entries'] if e['type'] in kinds and math.hypot(e['x'] - cx, e['y'] - cy) <= r]
+        want = {e['editor_id'] for e in victims}
+    else:
+        if not ids: workshop.die('нужен --ids 1,2,3 или --types A,B --near=X,Y,R')
+        want = {int(v) for v in ids.split(',')}
+        victims = [e for e in cur['entries'] if e['editor_id'] in want]
     for e in victims: print(f"  {e['type']} {e['editor_id']} ({e['x']:.0f}, {e['y']:.0f})")
     missing = want - {e['editor_id'] for e in victims}
     if missing: print(f'  нет таких номеров: {sorted(missing)}')
@@ -1337,7 +1344,7 @@ def main():
     elif a.fix == 'model-bounds': FIXES[a.fix](w, a.apply, a.match)
     elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius, a.pairs, a.prefer)
     elif a.fix == 'model-cut': FIXES[a.fix](w, a.apply, a.path, a.drop, a.source)
-    elif a.fix == 'remove': FIXES[a.fix](w, a.apply, a.ids, a.undo)
+    elif a.fix == 'remove': FIXES[a.fix](w, a.apply, a.ids, a.undo, a.types, a.near)
     elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types, a.offset)
     elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate, a.angle)
     elif a.fix == 'custom-doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near, a.undo)
