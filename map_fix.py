@@ -485,7 +485,7 @@ def terrain_z(w: workshop.Workshop):
         return (struct.unpack_from('<h', c)[0] - 8192) / 4 + ((c[6] & 0xF) - 2) * 128
     return f
 
-def fix_move_doodads(w: workshop.Workshop, apply: bool, types: str | None = None, frm: str | None = None, to: str | None = None, rotate: float = 0.0):
+def fix_move_doodads(w: workshop.Workshop, apply: bool, types: str | None = None, frm: str | None = None, to: str | None = None, rotate: float = 0.0, angle: float | None = None):
     """Move (and optionally rotate) every placement of the given doodad types: the point
     --from is carried to --to, the rest of the group keeps its shape. Heights follow the
     terrain at the new spot.
@@ -493,7 +493,9 @@ def fix_move_doodads(w: workshop.Workshop, apply: bool, types: str | None = None
     --types A,B     doodad type ids to move (required)
     --from=X,Y      reference point (default: centre of the group)
     --to=X,Y        where the reference point goes (required)
-    --rotate DEG    turn the group around the reference point (counter-clockwise)"""
+    --rotate DEG    turn the group around the reference point (counter-clockwise)
+    --angle DEG     instead of --rotate: turn so that the first placement of the group
+                    faces DEG (absolute, so repeated runs change nothing)"""
     import doo, math
     if not types or not to: workshop.die('нужны --types и --to=X,Y')
     kinds = set(types.split(','))
@@ -503,6 +505,10 @@ def fix_move_doodads(w: workshop.Workshop, apply: bool, types: str | None = None
     tx, ty = [float(v) for v in to.split(',')]
     if frm: fx, fy = [float(v) for v in frm.split(',')]
     else: fx = sum(e['x'] for e in group) / len(group); fy = sum(e['y'] for e in group) / len(group)
+    if angle is not None:
+        first = min(group, key=lambda e: e['editor_id'])
+        rotate = (angle - math.degrees(first['angle']) + 180) % 360 - 180
+        if abs(rotate) < 0.5 and not frm and abs(tx - fx) < 0.5 and abs(ty - fy) < 0.5: print('Уже в нужном положении.'); return
     tz = terrain_z(w); rad = math.radians(rotate); ca, sa = math.cos(rad), math.sin(rad)
     print(f'Размещений: {len(group)}; опорная точка ({fx:g}, {fy:g}) -> ({tx:g}, {ty:g}), поворот {rotate:g}°')
     for e in group:
@@ -894,6 +900,7 @@ def main():
     ap.add_argument('--source', help='model-cut: взять модель из файла')
     ap.add_argument('--ids', help='remove: номера размещений через запятую')
     ap.add_argument('--offset', type=float, default=0.0, help='doodads-z: добавка к высоте')
+    ap.add_argument('--angle', type=float, help='move-doodads: абсолютный угол первого размещения группы')
     ap.add_argument('--rotate', type=float, default=0.0, help='move-doodads: поворот группы в градусах')
     ap.add_argument('--at', help='probe: X,Y,R — точка и радиус')
     ap.add_argument('--opaque', action='store_true', help='repack-textures: убрать альфа-канал')
@@ -918,7 +925,7 @@ def main():
     elif a.fix == 'model-cut': FIXES[a.fix](w, a.apply, a.path, a.drop, a.source)
     elif a.fix == 'remove': FIXES[a.fix](w, a.apply, a.ids, a.undo)
     elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types, a.offset)
-    elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate)
+    elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate, a.angle)
     elif a.fix == 'custom-doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near, a.undo)
     elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match, a.undo)
     elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)
