@@ -1384,7 +1384,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
+def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: float = 0.0, top: float = None, bottom: float = None):
     """Dota 2-style shop window (JASS block in war3map.j, pure JASS/frames).
 
     Collects the base category shops (workshop.py shops()/item_list(), excluding
@@ -1414,7 +1414,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
         print(f'Категорий: {len(categories)}, товаров: {total}')
         for c in categories:
             print(f"  {c['name']:30s} {len(c['items']):2d} товаров, коды лавки: {','.join(c['shop_codes'])}")
-        new = shop_jass.inject(script, categories)
+        new = shop_jass.inject(script, categories, right, top, bottom)
     present = 'HW_SHOP_BEGIN' in script
     print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
     if not apply: print('План. Запустите с --apply.'); return
@@ -1435,6 +1435,9 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--right', type=float, default=0.0, help='shop-ui: правый край панели (0 = по размеру окна)')
+    ap.add_argument('--top', type=float, default=None, help='shop-ui: верх панели (0.555)')
+    ap.add_argument('--bottom', type=float, default=None, help='shop-ui: низ панели (0.20)')
     ap.add_argument('--parts', help='model-lift: номера частей через запятую или all')
     ap.add_argument('--redo', action='store_true', help='split-model: откатить прежнее разрезание и сделать заново')
     ap.add_argument('--gap', type=float, default=350.0, help='split-model: расстояние объединения кусков')
@@ -1482,7 +1485,7 @@ def main():
     elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures, a.models)
     elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font, a.parent, a.debug)
-    elif a.fix == 'shop-ui': FIXES[a.fix](w, a.apply, a.undo)
+    elif a.fix == 'shop-ui': FIXES[a.fix](w, a.apply, a.undo, a.right, a.top, a.bottom)
     else: FIXES[a.fix](w, a.apply)
 
 if __name__ == '__main__':

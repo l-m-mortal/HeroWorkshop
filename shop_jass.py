@@ -170,6 +170,7 @@ framehandle HW_shopCloseBtn=null
 framehandle HW_shopToggleBg=null
 framehandle HW_shopToggleBtn=null
 framehandle array HW_shopBlockHeader
+framehandle HW_shopDbg=null
 real HW_shopRightX=0.8
 framehandle array HW_shopCellBg
 framehandle array HW_shopCellBtn
@@ -361,8 +362,11 @@ function HW_ShopBuild takes nothing returns nothing
     set HW_shopPanel=BlzCreateFrameByType("BACKDROP","HWShopPanel",ui,"",0)
     // right screen edge in 4:3 frame coordinates depends on the client aspect ratio
     set HW_shopRightX=0.4+0.3*I2R(BlzGetLocalClientWidth())/I2R(BlzGetLocalClientHeight())
-    call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPRIGHT,HW_shopRightX,{PANEL_TOP_Y:.6f})
-    call BlzFrameSetSize(HW_shopPanel,{PANEL_W:.6f},{PANEL_H:.6f})
+    if HW_SHOP_RIGHT_OVERRIDE>0.0 then
+        set HW_shopRightX=HW_SHOP_RIGHT_OVERRIDE
+    endif
+    call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPRIGHT,HW_shopRightX,HW_SHOP_TOP_Y)
+    call BlzFrameSetSize(HW_shopPanel,{PANEL_W:.6f},HW_SHOP_TOP_Y-HW_SHOP_BOTTOM_Y)
     call BlzFrameSetTexture(HW_shopPanel,"{PANEL_TEXTURE}",0,true)
     call BlzFrameSetVisible(HW_shopPanel,false)
     set HW_shopCloseBg=BlzCreateFrameByType("BACKDROP","HWShopCloseBg",HW_shopPanel,"",0)
@@ -373,6 +377,10 @@ function HW_ShopBuild takes nothing returns nothing
     call BlzFrameSetAllPoints(HW_shopCloseText,HW_shopCloseBg)
     call BlzFrameSetTextAlignment(HW_shopCloseText,TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
     call BlzFrameSetText(HW_shopCloseText,"X")
+    set HW_shopDbg=BlzCreateFrameByType("TEXT","HWShopDbg",HW_shopPanel,"",0)
+    call BlzFrameSetPoint(HW_shopDbg,FRAMEPOINT_TOPLEFT,HW_shopPanel,FRAMEPOINT_TOPLEFT,0.004,-0.004)
+    call BlzFrameSetScale(HW_shopDbg,0.6)
+    call BlzFrameSetText(HW_shopDbg,"client "+I2S(BlzGetLocalClientWidth())+"x"+I2S(BlzGetLocalClientHeight())+" right="+R2S(HW_shopRightX))
     set HW_shopCloseBtn=BlzCreateFrameByType("BUTTON","HWShopClose",HW_shopCloseBg,"",0)
     call BlzFrameSetAllPoints(HW_shopCloseBtn,HW_shopCloseBg)
     set HW_shopCloseTrig=CreateTrigger()
@@ -678,7 +686,7 @@ def catalog_function(categories: list[dict]) -> str:
     return '\n'.join(lines)
 
 
-def inject(script: str, categories: list[dict]) -> str:
+def inject(script: str, categories: list[dict], right: float = 0.0, top: float = None, bottom: float = None) -> str:
     """Return the script with the shop-window block added (idempotent). Coexists
     with the HW_COOLDOWN_* block; both are spliced the same way (globals appended
     to the first `globals` block, functions right before `main`, one call at the
@@ -689,7 +697,10 @@ def inject(script: str, categories: list[dict]) -> str:
     if len(categories) > HW_SHOP_MAX_SHOPS:
         raise ValueError(f'{len(categories)} shop categories, HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS} is too small')
     script = remove(script)
-    funcs = FUNCTIONS.replace('// HW_SHOP_BEGIN', '// HW_SHOP_BEGIN\n' + catalog_function(categories))
+    funcs = (FUNCTIONS.replace('// HW_SHOP_BEGIN', '// HW_SHOP_BEGIN\n' + catalog_function(categories))
+             .replace('HW_SHOP_RIGHT_OVERRIDE', f'{right:.6f}')
+             .replace('HW_SHOP_TOP_Y', f'{(top if top is not None else PANEL_TOP_Y):.6f}')
+             .replace('HW_SHOP_BOTTOM_Y', f'{(bottom if bottom is not None else PANEL_BOTTOM_Y):.6f}'))
     g = re.search(r'^globals\r?\n', script, re.M)
     if not g: raise ValueError('globals block not found')
     end = script.index('endglobals', g.end())
