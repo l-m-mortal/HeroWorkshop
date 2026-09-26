@@ -202,7 +202,7 @@ def probe(w: workshop.Workshop, apply: bool, at: str | None = None, ref: str | N
             desc += '  [в карте]' if any(w.mpq.has(p) for p in paths) else '  [на диске]' if any(w.disk(p).is_file() for p in paths) else '  [файла нет: стандартная]'
         mark = '' if t in here else '  <- нет здесь'
         print(f'{t:5} {len(here.get(t, [])):>5} {len(there.get(t, [])):>5}  {desc}{mark}')
-        if i.get('model') or re.match(r'^[DB][0-9A-Z]{3}$', t) and not t[1].isalpha():
+        if i.get('model') or (re.match(r'^[DB][0-9A-Z]{3}$', t) and not t[1].isalpha()) or len(here.get(t, [])) <= 4:
             for e in here.get(t, []): print(f"        здесь: #{e['editor_id']} ({e['x']:.0f}, {e['y']:.0f}) z {e['z']:.0f} угол {math.degrees(e['angle']):.0f}° вариация {e['variation']} масштаб {e['sx']:.2f}")
 
 def _ref_map(ref):
