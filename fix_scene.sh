@@ -7,7 +7,6 @@ AONT=400      # круговая стена базы Radiant (AOnt): больш�
 ARRK=0        # прочие камни ARrk (сама лестница теперь в кусках DS)
 D000=226      # тёмные стены Dire (D000), точное значение по геометрии модели
 DS=0          # куски лестниц/стен из сборки AshenRock7 (DS00..): 0 = низ на земле
-ROSHAN_ANGLE=180  # абсолютный угол скал ямы Рошана (OOob), 0..359
 
 step() { echo; echo "=== $1"; }
 
@@ -33,10 +32,10 @@ python3 map_fix.py doodads-z --types ARrk --offset $ARRK --apply || true
 python3 map_fix.py doodads-z --types D000 --offset $D000 --apply || true
 
 step "6b. Модель-сборка лестниц/стен AshenRock7 (ARrk вариация 7): разрезать на куски по земле"
-python3 map_fix.py split-model --path 'Doodads\Ashenvale\Rocks\AshenRock\AshenRock7.mdx' --types ARrk:7 --drop 39,40,41 --apply || true
+python3 map_fix.py split-model --path 'Doodads\Ashenvale\Rocks\AshenRock\AshenRock7.mdx' --types ARrk:7 --drop 39,40,41 --redo --apply || true
 python3 map_fix.py doodads-z --types 'DS*' --offset $DS --apply || true
 
-step "7. Яма Рошана: скалы OOob у нового Рошана, абсолютный угол $ROSHAN_ANGLE"
-python3 map_fix.py move-doodads --types OOob --to=4110,-2100 --angle $ROSHAN_ANGLE --apply || true
+step "7. Яма Рошана: скалы OOob убрать совсем"
+python3 map_fix.py doodads --undo --types OOob --apply || true
 
 step "Готово. Перезапустите карту в игре."

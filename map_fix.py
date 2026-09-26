@@ -781,7 +781,70 @@ def mdx_geoset_boxes(data: bytes):
         o = b + size
     return out
 
-def mdx_translate(data: bytes, dx: float, dy: float, dz: float, drop_chunks=(b'ATCH', b'CAMS', b'EVTS', b'CLID', b'PRE2', b'PREM', b'RIBB', b'LITE')) -> bytes:
+_NODE_CHUNKS = (b'BONE', b'LITE', b'HELP', b'ATCH', b'PREM', b'PRE2', b'RIBB', b'EVTS', b'CLID', b'CORN')
+
+def _node_records(data: bytes):
+    """[(chunk_tag, chunk_off, rec_off, rec_size, object_id, parent_id)] in file order.
+    rec_size covers the node block plus the chunk-specific tail (whole record)."""
+    import struct
+    out = []; o = 4
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; b = o + 8
+        if tag in _NODE_CHUNKS:
+            q = b
+            while q < b + size:
+                if tag == b'BONE':
+                    ns = struct.unpack_from('<I', data, q)[0]; rs = ns + 8
+                elif tag in (b'HELP',):
+                    ns = struct.unpack_from('<I', data, q)[0]; rs = ns
+                elif tag == b'EVTS':
+                    ns = struct.unpack_from('<I', data, q)[0]; r = q + ns
+                    # 'KEVT' count u32, globalSeqId, then count*u32
+                    cnt = struct.unpack_from('<I', data, r + 4)[0]; rs = ns + 12 + cnt * 4
+                elif tag == b'CLID':
+                    ns = struct.unpack_from('<I', data, q)[0]; r = q + ns; shape = struct.unpack_from('<I', data, r)[0]
+                    rs = ns + 4 + (12 if shape == 2 else 24) + (4 if shape == 2 else 0)
+                else:  # LITE, ATCH, PRE2, PREM, RIBB, CORN: record size is the first u32
+                    rs = struct.unpack_from('<I', data, q)[0]; ns = struct.unpack_from('<I', data, q + 4)[0]
+                    node_off = q + 4
+                    oid, pid = struct.unpack_from('<II', data, node_off + 84)
+                    out.append((tag, o, q, rs, oid, pid)); q += rs; continue
+                oid, pid = struct.unpack_from('<II', data, q + 84)
+                out.append((tag, o, q, rs, oid, pid)); q += rs
+        o = b + size
+    return out
+
+def mdx_drop_nodes(data: bytes, drop_tags=(b'LITE', b'ATCH', b'PRE2', b'PREM', b'RIBB', b'EVTS', b'CLID', b'CORN'), drop_chunks=(b'CAMS',)) -> bytes:
+    """Remove whole node chunks (lights, attachments, emitters, events, collision) and
+    renumber the remaining nodes' object/parent ids and the PIVT table consistently."""
+    import struct
+    recs = _node_records(data)
+    keep_ids = sorted(oid for tag, _, _, _, oid, _ in recs if tag not in drop_tags)
+    remap = {oid: i for i, oid in enumerate(keep_ids)}
+    out = bytearray(b'MDLX'); o = 4
+    pivots = None
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; body = bytearray(data[o + 8:o + 8 + size])
+        if tag in drop_tags or tag in drop_chunks: o += 8 + size; continue
+        if tag == b'PIVT': pivots = body; o += 8 + size; continue
+        if tag in _NODE_CHUNKS:
+            for t, co, q, rs, oid, pid in recs:
+                if co != o: continue
+                node_off = q - (o + 8) + (4 if t in (b'LITE', b'ATCH', b'PRE2', b'PREM', b'RIBB', b'CORN') else 0)
+                struct.pack_into('<I', body, node_off + 84, remap[oid])
+                if pid != 0xFFFFFFFF: struct.pack_into('<I', body, node_off + 88, remap.get(pid, 0xFFFFFFFF))
+        out += tag + struct.pack('<I', len(body)) + bytes(body)
+        if tag == b'BONE' and pivots is not None:
+            pass
+        o += 8 + size
+    if pivots is not None:
+        newp = b''.join(bytes(pivots[oid * 12:oid * 12 + 12]) for oid in keep_ids)
+        # PIVT goes right after the last node chunk in file order: append at the end
+        # of the chunk list is accepted by the game as well.
+        out += b'PIVT' + struct.pack('<I', len(newp)) + newp
+    return bytes(out)
+
+def mdx_translate(data: bytes, dx: float, dy: float, dz: float, drop_chunks=()) -> bytes:
     """Move every vertex by (dx,dy,dz), recompute geoset/model/sequence extents, drop
     positional extras (attachments, cameras, emitters...)."""
     import struct
@@ -790,6 +853,8 @@ def mdx_translate(data: bytes, dx: float, dy: float, dz: float, drop_chunks=(b'A
     while o + 8 <= len(data):
         tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; body = data[o + 8:o + 8 + size]
         if tag in drop_chunks: o += 8 + size; continue
+        if tag == b'PIVT':
+            body = b''.join(struct.pack('<3f', x + dx, y + dy, z + dz) for x, y, z in struct.iter_unpack('<3f', body))
         if tag == b'GEOS':
             q = 0; parts = []
             while q < len(body):
@@ -828,10 +893,10 @@ def mdx_translate(data: bytes, dx: float, dy: float, dz: float, drop_chunks=(b'A
         res = bytes(res)
     return res
 
-def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, types: str | None = None, drop: str | None = None, gap: float = 350.0, sink: float = 15.0, undo: bool = False):
+def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, types: str | None = None, drop: str | None = None, gap: float = 350.0, sink: float = 15.0, undo: bool = False, redo: bool = False):
     """A model that holds many pieces spread over the whole map (the HQ stairs model
     AshenRock7 covers both bases from one placement) cannot follow the terrain. Split it:
-    each cluster of geosets becomes its own model (war3mapImported\HW_*.mdx) and its
+    each cluster of geosets becomes its own model (war3mapImported\\HW_*.mdx) and its
     own doodad type, placed at the piece's real position on the ground.
 
     --path P        model path inside the map
@@ -839,9 +904,13 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     --drop 41       geoset indices to leave out (lanterns...)
     --gap 350       pieces closer than this (model units) stay in one cluster
     --sink 15       how deep the lowest vertex sits below ground
-    --undo          remove everything this command added and restore the original placements"""
+    --undo          remove everything this command added and restore the original placements
+    --redo          undo a previous split first (if any), then split again"""
     import doo, math, map_audit
     rec_key = 'split_models'
+    if redo and w.state.get(rec_key):
+        fix_split_model(w, apply, undo=True)
+        if not apply: return
     cur = doo.parse(w.mpq.read('war3map.doo'))
     w3d = map_audit.parse_obj_file(w.mpq.read('war3map.w3d'))
     if undo:
@@ -906,6 +975,7 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     keep_all = set(idx)
     for k, c, cx, cy, zmin, code, mpath in plan:
         part = mdx_drop_geosets(data, keep_all.difference(c) | dropset)
+        part = mdx_drop_nodes(part)
         part = mdx_translate(part, -cx, -cy, -zmin - sink)
         w.changes[mpath] = part
         w3d['custom'].append({'old': t, 'new': code, 'mods': [('dfil', 3, mpath), ('dvar', 0, 1), ('dptx', 3, ''), ('dnam', 3, f'HW {t}{var} part {k}')], 'raw': None})
@@ -1072,6 +1142,7 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--redo', action='store_true', help='split-model: откатить прежнее разрезание и сделать заново')
     ap.add_argument('--gap', type=float, default=350.0, help='split-model: расстояние объединения кусков')
     ap.add_argument('--sink', type=float, default=15.0, help='split-model: заглубление низа')
     ap.add_argument('--path', help='model-cut: путь модели в карте')
@@ -1101,7 +1172,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
-    elif a.fix == 'split-model': FIXES[a.fix](w, a.apply, a.path, a.types, a.drop, a.gap, a.sink, a.undo)
+    elif a.fix == 'split-model': FIXES[a.fix](w, a.apply, a.path, a.types, a.drop, a.gap, a.sink, a.undo, a.redo)
     elif a.fix == 'model-bounds': FIXES[a.fix](w, a.apply, a.match)
     elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius, a.pairs, a.prefer)
     elif a.fix == 'model-cut': FIXES[a.fix](w, a.apply, a.path, a.drop, a.source)
