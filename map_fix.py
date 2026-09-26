@@ -1109,6 +1109,9 @@ def fix_script_tints(w: workshop.Workshop, apply: bool, undo: bool = False):
     known spots to plain white. Idempotent; --undo restores the original lines."""
     patches = [
         ('Faceless Void: Time Walk end', "call SetUnitVertexColor(Cu,0,$FF,$96,$FF)", "call SetUnitVertexColor(Cu,$FF,$FF,$FF,$FF) // HW_TINT"),
+        # during the jump the old script painted the hero black (made for the old blurry model);
+        # the HQ model just vanishes. Keep it visible, half transparent instead.
+        ('Faceless Void: Time Walk start', "call SetUnitVertexColor(Cu,0,0,0,$FF)\ncall SaveInteger(HY,(GetHandleId((Cu))),4261,1)", "call SetUnitVertexColor(Cu,$FF,$FF,$FF,$80) // HW_TINT\ncall SaveInteger(HY,(GetHandleId((Cu))),4261,1)"),
     ]
     script = w.script; changed = []
     for label, old, new in patches:
