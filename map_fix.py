@@ -78,12 +78,18 @@ def fix_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types
     w.save_state()
     print(f'Добавлено {len(picked)} размещений; теперь {len(cur["entries"])}. Откат: map_fix.py doodads --undo --apply')
 
-def undo_doodads(w: workshop.Workshop, apply: bool, types: str | None = None):
-    """Remove doodad placements added by `doodads` (from state) or all placements of --types."""
+def undo_doodads(w: workshop.Workshop, apply: bool, types: str | None = None, ported: bool = False):
+    """Remove doodad placements added by `doodads` (from state) or all placements of --types
+    (with --ported: only those of --types that were added by doodads/custom-doodads)."""
     import doo
     cur = doo.parse(w.mpq.read('war3map.doo'))
     if types:
         kill = set(types.split(',')); victims = [e for e in cur['entries'] if e['type'] in kill]
+        if ported:
+            ids = set()
+            for rec in w.state.get('doodads_added', []) + w.state.get('custom_doodads_added', []):
+                ids.update(range(rec['editor_ids'][0], rec['editor_ids'][1] + 1))
+            victims = [e for e in victims if e['editor_id'] in ids]
     else:
         added = w.state.get('doodads_added', [])
         if not added: workshop.die('нет записей о добавленных декорациях; укажите --types')
@@ -913,6 +919,7 @@ def main():
     ap.add_argument('--path', help='model-cut: путь модели в карте')
     ap.add_argument('--drop', help='model-cut: номера геосетов через запятую')
     ap.add_argument('--source', help='model-cut: взять модель из файла')
+    ap.add_argument('--ported', action='store_true', help='doodads --undo --types: только перенесённые нами')
     ap.add_argument('--ids', help='remove: номера размещений через запятую')
     ap.add_argument('--offset', type=float, default=0.0, help='doodads-z: добавка к высоте')
     ap.add_argument('--angle', type=float, help='move-doodads: абсолютный угол первого размещения группы')
@@ -933,7 +940,7 @@ def main():
         for k, f in FIXES.items(): print(f'{k:10s} {f.__doc__.strip().splitlines()[0]}')
         return
     w = workshop.Workshop()
-    if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
+    if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
     elif a.fix == 'model-bounds': FIXES[a.fix](w, a.apply, a.match)
