@@ -273,11 +273,25 @@ def _strip_seqs(data: bytes) -> bytes:
         o += 8 + size
     return bytes(out)
 
-def fix_static_models(w: workshop.Workshop, apply: bool, match: str | None = None):
-    """Models inside the map that have no animation sequence are invisible in game
-    (the HQ Village fences, for example). Add an empty 'Stand' sequence to each.
+def fix_static_models(w: workshop.Workshop, apply: bool, match: str | None = None, undo: bool = False):
+    """Add an empty 'Stand' sequence to models inside the map that have none.
+    (Experimental: on the HQ fences this made the models jitter instead of appearing.)
 
-    --match text   only paths containing text"""
+    --match text   only paths containing text
+    --undo         restore every model the map holds from its copy in WC3DotaHQTest\A"""
+    if undo:
+        a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+        plan = []
+        for name in w.mpq.list():
+            if not name.lower().endswith('.mdx'): continue
+            if match and match.lower() not in name.lower(): continue
+            src = a_root / name.replace('\\', '/')
+            if src.is_file() and src.read_bytes() != w.mpq.read(name): plan.append((name, src))
+        for name, _ in plan: print(f'  {name}: восстановить из папки HQ')
+        if not plan: print('Все модели в карте совпадают с папкой HQ.'); return
+        if not apply: print(f'\nПлан: восстановить {len(plan)} моделей. Запустите с --apply.'); return
+        for name, src in plan: w.changes[name] = src.read_bytes()
+        w.commit(); print(f'Восстановлено {len(plan)} моделей.'); return
     plan = []
     for name in w.mpq.list():
         if not name.lower().endswith('.mdx'): continue
@@ -480,7 +494,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
-    elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match)
+    elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match, a.undo)
     elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures, a.models)
     elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font, a.parent, a.debug)
