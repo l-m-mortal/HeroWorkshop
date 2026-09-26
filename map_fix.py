@@ -1330,14 +1330,20 @@ def fix_part_labels(w: workshop.Workshop, apply: bool, path: str | None = None, 
         e = pl[0]; ca, sa = math.cos(e['angle']), math.sin(e['angle'])
         A = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         lines = ['function HW_LabelsInit takes nothing returns nothing', '    local texttag tt']
+        # the doodad angle is stored as the model's yaw; three candidate mappings are
+        # labelled so the right one can be read off in game: plain (A), mirrored (B), -angle (C)
         for k, b in enumerate(mdx_geoset_boxes(data)):
             cx = (b[0] + b[3]) / 2; cy = (b[1] + b[4]) / 2
-            wx = e['x'] + (cx * ca - cy * sa) * e['sx']; wy = e['y'] + (cx * sa + cy * ca) * e['sy']
-            name = f'DS{A[k // 36]}{A[k % 36]}'
-            lines += ['    set tt=CreateTextTag()', f'    call SetTextTagText(tt,"{name}",0.03)', f'    call SetTextTagPos(tt,{wx:.1f},{wy:.1f},250.0)',
-                      '    call SetTextTagColor(tt,255,255,0,255)', '    call SetTextTagPermanent(tt,true)', '    call SetTextTagVisibility(tt,true)']
-            print(f'  {name}: ({wx:.0f}, {wy:.0f})')
+            for tag, (wx, wy) in (('', (e['x'] + (cx * ca - cy * sa) * e['sx'], e['y'] + (cx * sa + cy * ca) * e['sy'])),
+                                  ('b', (e['x'] + (cx * ca + cy * sa) * e['sx'], e['y'] + (cx * sa - cy * ca) * e['sy'])),
+                                  ('c', (e['x'] + (cx * ca + cy * sa) * e['sx'], e['y'] + (-cx * sa + cy * ca) * e['sy']))):
+                name = f'DS{A[k // 36]}{A[k % 36]}{tag}'
+                lines += ['    set tt=CreateTextTag()', f'    call SetTextTagText(tt,"{name}",0.03)', f'    call SetTextTagPos(tt,{wx:.1f},{wy:.1f},250.0)',
+                          '    call SetTextTagColor(tt,255,255,0,255)', '    call SetTextTagPermanent(tt,true)', '    call SetTextTagVisibility(tt,true)']
+            continue
+            wx = wy = 0
         lines += ['    set tt=null', 'endfunction']
+        print(f'Меток: {len(lines) // 6}: DSxx (вариант A), DSxxb (вариант B), DSxxc (вариант C)')
         block = LABELS_BEGIN + '\n' + '\n'.join(lines) + '\n' + LABELS_END + '\n'
         eol = '\r\n' if '\r\n' in script[:2000] else '\n'
         m = re.search(r'^function main takes nothing returns nothing\r?\n', script, re.M)
