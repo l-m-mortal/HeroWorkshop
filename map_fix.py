@@ -7,7 +7,7 @@ plan; nothing is written without --apply.
     python3 map_fix.py shops --apply
 """
 from __future__ import annotations
-import argparse, sys
+import argparse, re, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -49,7 +49,9 @@ def fix_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types
     if ref_path is None: workshop.die('эталонная карта 6.77b не найдена, укажите --ref <путь к DotA v6.77b.w3x>')
     cur = doo.parse(w.mpq.read('war3map.doo')); src = doo.parse(MPQ(ref_path).read('war3map.doo'))
     here = {e['type'] for e in cur['entries']}
-    wanted = set(types.split(',')) if types else {e['type'] for e in src['entries']} - here
+    # Custom types (D000, B000...) mean different things in each map: never port them blindly.
+    wanted = set(types.split(',')) if types else {e['type'] for e in src['entries']} - here - {t for t in {e['type'] for e in src['entries']} if re.match(r'^[DB][0-9A-Z]{3}$', t) and not t[1].isalpha()}
+    wanted = {t for t in wanted if types or not re.match(r'^[DB]\d', t)}
     picked = [e for e in src['entries'] if e['type'] in wanted]
     by_type = {}
     for e in picked: by_type[e['type']] = by_type.get(e['type'], 0) + 1
@@ -162,7 +164,21 @@ def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: 
             shutil.copy2(p, dst)
         print(f'Скопировано в корень игры {len(files)} файлов.')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads}
+def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, font: float = 0.016):
+    """Numeric cooldown counters over the command buttons (JASS block in war3map.j).
+
+    --undo        remove the block again
+    --font 0.016  text height (fraction of screen height)"""
+    import cooldown_jass
+    script = w.script
+    new = cooldown_jass.remove(script) if undo else cooldown_jass.inject(script, font)
+    present = 'HW_COOLDOWN_BEGIN' in script
+    print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
+    if not apply: print('План. Запустите с --apply.'); return
+    w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
+    print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
+
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -172,6 +188,7 @@ def main():
     ap.add_argument('--types', help='список типов декораций через запятую для doodads')
     ap.add_argument('--undo', action='store_true', help='doodads: удалить ранее добавленные размещения')
     ap.add_argument('--into', choices=['map', 'root'], default='map', help='hq-doodads: куда класть файлы')
+    ap.add_argument('--font', type=float, default=0.016, help='cooldown-numbers: высота шрифта')
     ap.add_argument('--match', help='hq-doodads: только пути, содержащие текст')
     ap.add_argument('--folders', default='Doodads', help='hq-doodads: папки под WC3DotaHQTest\\A через запятую')
     a = ap.parse_args()
@@ -182,6 +199,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders)
+    elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font)
     else: FIXES[a.fix](w, a.apply)
 
 if __name__ == '__main__':
