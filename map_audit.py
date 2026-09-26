@@ -76,17 +76,18 @@ def _parse_obj_shape(b: bytes, has_level: bool):
     r = _R(b)
     def rec():
         old, new, n = r.u32(), r.u32(), r.u32()
-        mods = []
+        mods = []; raw = []
         for _ in range(n):
             field, typ = r.u32(), r.u32()
+            level = pointer = 0
             if has_level:
-                r.u32(); r.u32()  # level, pointer -- unused here
+                level, pointer = r.u32(), r.u32()  # level/variation, data pointer
             if typ == 3: val = r.st()
             elif typ in (1, 2): val = r.f32()
             else: val = r.u32()
-            r.u32()  # end marker
-            mods.append((fourstr(field), typ, val))
-        return {'old': fourstr(old), 'new': fourstr(new) if new else None, 'mods': mods}
+            end = r.u32()  # end marker (0 or the object id, editor dependent)
+            mods.append((fourstr(field), typ, val)); raw.append((level, pointer, end))
+        return {'old': fourstr(old), 'new': fourstr(new) if new else None, 'mods': mods, 'raw': raw}
     ver = r.u32()
     orig = [rec() for _ in range(r.u32())]
     cust = [rec() for _ in range(r.u32())]
@@ -102,6 +103,27 @@ def parse_obj_file(b: bytes):
         if consumed == len(b):
             return {'version': ver, 'original': orig, 'custom': cust, 'shape': 'with_level' if has_level else 'without_level'}
     return None  # both shapes failed to cleanly consume -> report failure upstream
+
+def serialize_obj_file(parsed) -> bytes:
+    """Inverse of parse_obj_file (same shape as parsed: 'with_level' or 'without_level')."""
+    has_level = parsed['shape'] == 'with_level'
+    out = bytearray(struct.pack('<I', parsed['version']))
+    def rec(r):
+        out.extend(struct.pack('<II', four(r['old']), four(r['new']) if r['new'] else 0))
+        out.extend(struct.pack('<I', len(r['mods'])))
+        raw = r.get('raw') or [(0, 0, four(r['new']) if r['new'] else four(r['old']))] * len(r['mods'])
+        for (field, typ, val), (level, pointer, end) in zip(r['mods'], raw):
+            out.extend(struct.pack('<II', four(field), typ))
+            if has_level: out.extend(struct.pack('<II', level, pointer))
+            if typ == 3: out.extend(str(val).encode('latin1', 'replace') + b'\0')
+            elif typ in (1, 2): out.extend(struct.pack('<f', float(val)))
+            else: out.extend(struct.pack('<I', int(val)))
+            out.extend(struct.pack('<I', end))
+    out.extend(struct.pack('<I', len(parsed['original'])))
+    for r in parsed['original']: rec(r)
+    out.extend(struct.pack('<I', len(parsed['custom'])))
+    for r in parsed['custom']: rec(r)
+    return bytes(out)
 
 def obj_index(parsed, model_field: str, name_field: str):
     """type id -> {model, name, base, kind} using the LAST value seen per field

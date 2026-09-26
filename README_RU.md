@@ -92,6 +92,7 @@ python3 map_fix.py shops --apply                     # модели боково
 python3 map_fix.py doodads [--ref карта] [--types A,B] [--near=X,Y,R] [--undo] --apply
 python3 map_fix.py hq-doodads [--match Fence] [--textures] [--models] --apply
 python3 map_fix.py probe [--at=-7168,-7168,2600]     # декорации вокруг точки здесь и в 6.77b
+python3 map_fix.py custom-doodads [--types D001,AOob] [--near=X,Y,R] [--undo] --apply  # пользовательские типы 6.77b под новыми кодами
 python3 map_fix.py static-models [--match Fence] [--undo] --apply   # экспериментально: Stand для моделей без анимаций; --undo вернуть из папки HQ
 python3 map_fix.py repack-textures [--match Shrub] --apply  # JPEG-BLP текстуры HQ-моделей -> палитровый BLP1
 python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0.016] [--undo] --apply
@@ -101,6 +102,9 @@ python3 map_fix.py cooldown-numbers [--debug] [--parent gameui|button] [--font 0
   в текущей карте и в 6.77b, показывает модели пользовательских типов.
 * `doodads --near=X,Y,R` переносит из 6.77b только размещения в радиусе R, пропуская
   уже стоящие на том же месте. Знак `=` обязателен из-за минусов в координатах.
+* `custom-doodads` переносит пользовательские типы декораций 6.77b (D0xx/B0xx и
+  стандартные типы с заменённой моделью) под новыми кодами `DH00..`, `BH00..`, вместе с
+  размещениями и моделями (HQ-копия из `WC3DotaHQTest\A` или файл из 6.77b).
 * `hq-doodads --models` проверяет каждую HQ-модель (версия MDX, число геосетов) и
   формат каждой текстуры так, как их найдёт игра: BLP2 или отсутствующая текстура
   означает белую модель.

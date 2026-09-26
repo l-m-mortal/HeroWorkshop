@@ -187,9 +187,10 @@ def probe(w: workshop.Workshop, apply: bool, at: str | None = None, ref: str | N
         elif re.match(r'^[DB]\d', t): desc = 'пользовательский тип без модели'
         else: desc = 'стандартная декорация'
         if i.get('model'):
-            path = i['model'].replace('/', '\\')
-            if not path.lower().endswith(('.mdx', '.mdl')): path += '.mdx'
-            desc += '  [в карте]' if w.mpq.has(path) else '  [на диске]' if w.disk(path).is_file() else '  [файла нет: стандартная]'
+            stem = i['model'].replace('/', '\\')
+            if stem.lower().endswith(('.mdx', '.mdl')): stem = stem[:-4]
+            paths = [stem + '.mdx', stem + '.mdl']
+            desc += '  [в карте]' if any(w.mpq.has(p) for p in paths) else '  [на диске]' if any(w.disk(p).is_file() for p in paths) else '  [файла нет: стандартная]'
         mark = '' if t in here else '  <- нет здесь'
         print(f'{t:5} {len(here.get(t, [])):>5} {len(there.get(t, [])):>5}  {desc}{mark}')
 
@@ -348,6 +349,122 @@ def fix_repack_textures(w: workshop.Workshop, apply: bool, match: str | None = N
     for t, b in out.items(): w.changes[t] = b
     w.commit(); print(f'Перепаковано {len(out)} текстур.')
 
+_HQ_INDEX = None
+def _hq_file(a_root, rel: str):
+    """Case-insensitive lookup of a game path under WC3DotaHQTest\A."""
+    global _HQ_INDEX
+    if _HQ_INDEX is None:
+        _HQ_INDEX = {}
+        if a_root.is_dir():
+            for q in a_root.rglob('*'):
+                if q.is_file(): _HQ_INDEX[str(q.relative_to(a_root)).replace('/', '\\').lower()] = q
+    return _HQ_INDEX.get(rel.replace('/', '\\').lower())
+
+def fix_custom_doodads(w: workshop.Workshop, apply: bool, ref: str | None = None, types: str | None = None, near: str | None = None, undo: bool = False):
+    """Port the reference map's custom doodad/destructable types (D0xx/B0xx and modified
+    standard types) together with their placements. Each ported type gets a fresh id
+    here (D0H0.., B0H0..), so nothing existing is touched. Models the types use are
+    put into the map: HQ replacements from WC3DotaHQTest\A at their standard path
+    (with textures), imported models copied from the reference map.
+
+    --types A,B     only these type ids of the reference (default: every custom or
+                    modified type that has placements)
+    --near=X,Y,R    only placements within R of (X,Y)
+    --undo          remove everything this fix added (records, placements, files stay)"""
+    import doo, math, map_audit
+    from mpq import MPQ
+    a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    objs = {}
+    for fn, mf in (('war3map.w3d', 'dfil'), ('war3map.w3b', 'bfil')):
+        objs[fn] = map_audit.parse_obj_file(w.mpq.read(fn)) if w.mpq.has(fn) else {'version': 2, 'original': [], 'custom': [], 'shape': 'with_level' if fn.endswith('w3d') else 'without_level'}
+    if undo:
+        recs = w.state.get('custom_doodads_added', [])
+        if not recs: workshop.die('нет записей о перенесённых типах')
+        ids = set(); tids = set()
+        for r in recs: ids.update(range(r['editor_ids'][0], r['editor_ids'][1] + 1)); tids.update(r['new_types'])
+        before = len(cur['entries']); cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in ids and e['type'] not in tids]
+        for fn in objs: objs[fn]['custom'] = [r for r in objs[fn]['custom'] if r['new'] not in tids]
+        print(f'Удалить типов {len(tids)} ({", ".join(sorted(tids))}), размещений {before - len(cur["entries"])}.')
+        if not apply: print('\nПлан. Запустите с --apply.'); return
+        w.changes['war3map.doo'] = doo.serialize(cur)
+        for fn in objs: w.changes[fn] = map_audit.serialize_obj_file(objs[fn])
+        w.commit(); w.state['custom_doodads_added'] = []; w.save_state(); print('Готово.'); return
+    ref_path = _ref_map(ref)
+    if ref_path is None: workshop.die('эталонная карта не найдена, укажите --ref')
+    rm = MPQ(ref_path); src = doo.parse(rm.read('war3map.doo'))
+    robjs = {fn: (map_audit.parse_obj_file(rm.read(fn)) if rm.has(fn) else None) for fn in objs}
+    # candidate types: custom records, plus original records with a model change
+    cands = {}
+    for fn, parsed in robjs.items():
+        if not parsed: continue
+        for r in parsed['custom']: cands[r['new']] = (fn, r)
+        for r in parsed['original']:
+            if any(f in ('dfil', 'bfil') for f, _, _ in r['mods']): cands[r['old']] = (fn, r)
+    if types: cands = {t: v for t, v in cands.items() if t in set(types.split(','))}
+    else:
+        # skip types this map already defines the same way (same id, same fields)
+        here = {}
+        for fn in objs:
+            for r in objs[fn]['custom']: here[r['new']] = r['mods']
+            for r in objs[fn]['original']: here[r['old']] = r['mods']
+        def model_of(mods): return next((v for f, _, v in mods if f in ('dfil', 'bfil')), None)
+        cands = {t: v for t, v in cands.items() if not (t in here and model_of(v[1]['mods']) == model_of(here[t]))}
+    placed = {}
+    for e in src['entries']:
+        if e['type'] in cands: placed.setdefault(e['type'], []).append(e)
+    if near:
+        cx, cy, rr = [float(v) for v in near.split(',')]
+        placed = {t: [e for e in es if math.hypot(e['x'] - cx, e['y'] - cy) <= rr] for t, es in placed.items()}
+        placed = {t: es for t, es in placed.items() if es}
+    if not placed: print('Нет размещений подходящих типов.'); return
+    used = {e['type'] for e in cur['entries']} | {r['new'] for fn in objs for r in objs[fn]['custom'] if r['new']}
+    def fresh(prefix):
+        for i in range(36 * 36):
+            cand = prefix + 'H' + '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i // 36] + '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i % 36]
+            if cand not in used: used.add(cand); return cand
+        workshop.die('нет свободных кодов')
+    plan = []; files = {}
+    for t, es in sorted(placed.items(), key=lambda kv: -len(kv[1])):
+        fn, r = cands[t]
+        new_id = fresh('D' if fn.endswith('w3d') else 'B')
+        base = r['old']
+        model = next((v for f, _, v in r['mods'] if f in ('dfil', 'bfil')), None)
+        status = 'стандартная модель'
+        if model:
+            path = model.replace('/', '\\')
+            stem = path[:-4] if path.lower().endswith(('.mdl', '.mdx')) else path
+            hq = _hq_file(a_root, stem + '.mdx')
+            if rm.has(stem + '.mdx'): files[stem + '.mdx'] = rm.read(stem + '.mdx'); status = 'модель из эталонной карты'
+            elif hq is not None:
+                files[stem + '.mdx'] = hq.read_bytes(); status = f'HQ-модель {hq.name}'
+                for tex in mdx_textures(hq.read_bytes()):
+                    tp = tex.replace('/', '\\')
+                    if w.mpq.has(tp) or tp in files: continue
+                    for c in (a_root / tp.replace('\\', '/'), hq.parent / tp.split('\\')[-1], workshop.GAME / tp.replace('\\', '/')):
+                        if c.is_file(): files[tp] = c.read_bytes(); break
+                    else: status += f'; текстура {tex} не найдена'
+            elif w.mpq.has(stem + '.mdx') or w.mpq.has(stem + '.mdl'): status = 'модель уже в карте'
+            else: status = f'модель {model}: файла нет ни в карте, ни в HQ (будет стандартная)'
+        plan.append((t, new_id, fn, r, es, status))
+        print(f'  {t} (база {base}) -> {new_id}: {len(es)} шт., {status}')
+    print(f'Файлов в карту: {len(files)}')
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    first_id = max((e['editor_id'] for e in cur['entries']), default=0) + 1; nid = first_id; new_types = []
+    for t, new_id, fn, r, es, _ in plan:
+        rec = {'old': r['old'], 'new': new_id, 'mods': list(r['mods'])}
+        objs[fn]['custom'].append(rec); new_types.append(new_id)
+        conv = []
+        for e in es:
+            c = dict(e); c['type'] = new_id; conv.append(c)
+        nid += doo.append(cur, conv, nid)
+    w.changes['war3map.doo'] = doo.serialize(cur)
+    for fn in objs: w.changes[fn] = map_audit.serialize_obj_file(objs[fn])
+    w.changes.update(files); w.commit()
+    w.state.setdefault('custom_doodads_added', []).append({'ref': ref_path.name, 'new_types': new_types, 'editor_ids': [first_id, nid - 1], 'applied': __import__('time').strftime('%Y-%m-%d %H:%M:%S')})
+    w.save_state()
+    print(f'Добавлено типов {len(new_types)}, размещений {nid - first_id}, файлов {len(files)}. Откат: map_fix.py custom-doodads --undo --apply')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -466,7 +583,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -494,6 +611,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'custom-doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near, a.undo)
     elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match, a.undo)
     elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures, a.models)
