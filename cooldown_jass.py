@@ -11,6 +11,13 @@ integer array HW_cdPos
 integer HW_cdIdCount=0
 integer array HW_cdUnitIds
 integer array HW_cdUnitPos
+integer array HW_cdUnitSeen
+integer array HW_cdUnitSlot
+integer array HW_cdOldIds
+integer array HW_cdOldSeen
+integer HW_cdOldN=0
+boolean array HW_cdBusy
+integer HW_cdNow=0
 integer HW_cdUnitN=0
 integer HW_cdTicks=0
 unit HW_cdUnit=null
@@ -36,18 +43,85 @@ function HW_cdFormat takes real r returns string
 endfunction
 function HW_cdScan takes nothing returns nothing
     local integer i=0
+    local integer j
+    local integer k
+    local integer best
+    local integer slot
+    set HW_cdNow=HW_cdNow+1
+    // remember the previous list to keep "first seen" ticks
+    set HW_cdOldN=HW_cdUnitN
+    loop
+        exitwhen i>=HW_cdOldN
+        set HW_cdOldIds[i]=HW_cdUnitIds[i]
+        set HW_cdOldSeen[i]=HW_cdUnitSeen[i]
+        set i=i+1
+    endloop
     set HW_cdUnitN=0
     if HW_cdUnit==null then
         return
     endif
+    set i=0
     loop
         exitwhen i>=HW_cdIdCount
         if GetUnitAbilityLevel(HW_cdUnit,HW_cdIds[i])>0 then
             set HW_cdUnitIds[HW_cdUnitN]=HW_cdIds[i]
             set HW_cdUnitPos[HW_cdUnitN]=HW_cdPos[i]
+            set HW_cdUnitSeen[HW_cdUnitN]=HW_cdNow
+            set j=0
+            loop
+                exitwhen j>=HW_cdOldN
+                if HW_cdOldIds[j]==HW_cdIds[i] then
+                    set HW_cdUnitSeen[HW_cdUnitN]=HW_cdOldSeen[j]
+                    set j=HW_cdOldN
+                endif
+                set j=j+1
+            endloop
             set HW_cdUnitN=HW_cdUnitN+1
         endif
         set i=i+1
+    endloop
+    // Slots: abilities sharing a data position are displaced by the game to the next
+    // free slot (Invoker's invoked spells). The newest keeps the base slot.
+    set i=0
+    loop
+        exitwhen i>11
+        set HW_cdBusy[i]=false
+        set i=i+1
+    endloop
+    set i=0
+    loop
+        exitwhen i>=HW_cdUnitN
+        set HW_cdUnitSlot[i]=-2
+        set i=i+1
+    endloop
+    set k=0
+    loop
+        exitwhen k>=HW_cdUnitN
+        set best=-1
+        set i=0
+        loop
+            exitwhen i>=HW_cdUnitN
+            if HW_cdUnitSlot[i]==-2 and (best<0 or HW_cdUnitSeen[i]>HW_cdUnitSeen[best]) then
+                set best=i
+            endif
+            set i=i+1
+        endloop
+        set slot=HW_cdUnitPos[best]
+        if slot<0 then
+            set HW_cdUnitSlot[best]=-1
+        else
+            loop
+                exitwhen slot>11 or not HW_cdBusy[slot]
+                set slot=slot+1
+            endloop
+            if slot>11 then
+                set HW_cdUnitSlot[best]=-1
+            else
+                set HW_cdUnitSlot[best]=slot
+                set HW_cdBusy[slot]=true
+            endif
+        endif
+        set k=k+1
     endloop
 endfunction
 function HW_cdPick takes nothing returns nothing
@@ -58,6 +132,7 @@ function HW_cdPick takes nothing returns nothing
     set u=FirstOfGroup(HW_cdGroup)
     if u!=HW_cdUnit then
         set HW_cdUnit=u
+        set HW_cdUnitN=0
         call HW_cdScan()
     endif
     set u=null
@@ -101,7 +176,7 @@ function HW_cdTick takes nothing returns nothing
         exitwhen i>=HW_cdUnitN
         set r=BlzGetUnitAbilityCooldownRemaining(HW_cdUnit,HW_cdUnitIds[i])
         if r>0.05 then
-            set idx=HW_cdUnitPos[i]
+            set idx=HW_cdUnitSlot[i]
             set dbg=dbg+" ["+I2S(idx)+"]="+HW_cdFormat(r)
             if idx>=0 and idx<=11 then
                 if HW_cdText[idx]!=null then
