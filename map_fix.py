@@ -194,7 +194,7 @@ def probe(w: workshop.Workshop, apply: bool, at: str | None = None, ref: str | N
         mark = '' if t in here else '  <- нет здесь'
         print(f'{t:5} {len(here.get(t, [])):>5} {len(there.get(t, [])):>5}  {desc}{mark}')
         if i.get('model') or re.match(r'^[DB][0-9A-Z]{3}$', t) and not t[1].isalpha():
-            for e in here.get(t, []): print(f"        здесь: ({e['x']:.0f}, {e['y']:.0f}) z {e['z']:.0f} угол {math.degrees(e['angle']):.0f}° вариация {e['variation']} масштаб {e['sx']:.2f}")
+            for e in here.get(t, []): print(f"        здесь: #{e['editor_id']} ({e['x']:.0f}, {e['y']:.0f}) z {e['z']:.0f} угол {math.degrees(e['angle']):.0f}° вариация {e['variation']} масштаб {e['sx']:.2f}")
 
 def _ref_map(ref):
     from pathlib import Path
@@ -570,6 +570,35 @@ def fix_dump(w: workshop.Workshop, apply: bool):
             if w.mpq.has(n): z.writestr(n.replace('\\', '/'), w.mpq.read(n))
     print(f'Записано: {out} ({out.stat().st_size / 1e6:.1f} МБ)')
 
+def fix_remove(w: workshop.Workshop, apply: bool, ids: str | None = None, undo: bool = False):
+    """Remove single placements by editor id (numbers printed by probe). Removed
+    entries are kept in the state file; --undo puts them back.
+
+    --ids 5254,5244   editor ids to remove
+    --undo            restore everything removed by this command"""
+    import doo
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    if undo:
+        saved = w.state.get('removed_placements', [])
+        if not saved: workshop.die('нечего восстанавливать')
+        print(f'Восстановить {len(saved)} размещений: ' + ', '.join(f"{e['type']} {e['editor_id']}" for e in saved))
+        if not apply: print('\nПлан. Запустите с --apply.'); return
+        have = {e['editor_id'] for e in cur['entries']}
+        cur['entries'].extend(e for e in saved if e['editor_id'] not in have)
+        w.changes['war3map.doo'] = doo.serialize(cur); w.commit(); w.state['removed_placements'] = []; w.save_state(); print('Готово.'); return
+    if not ids: workshop.die('нужен --ids 1,2,3')
+    want = {int(v) for v in ids.split(',')}
+    victims = [e for e in cur['entries'] if e['editor_id'] in want]
+    for e in victims: print(f"  {e['type']} {e['editor_id']} ({e['x']:.0f}, {e['y']:.0f})")
+    missing = want - {e['editor_id'] for e in victims}
+    if missing: print(f'  нет таких номеров: {sorted(missing)}')
+    if not victims: return
+    if not apply: print(f'\nПлан: удалить {len(victims)}. Запустите с --apply.'); return
+    cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in want]
+    w.changes['war3map.doo'] = doo.serialize(cur); w.commit()
+    w.state.setdefault('removed_placements', []).extend(victims); w.save_state()
+    print(f'Удалено {len(victims)}. Вернуть: map_fix.py remove --undo --apply')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -709,7 +738,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -720,6 +749,7 @@ def main():
     ap.add_argument('--near', help='doodads: X,Y,R — только размещения в радиусе R от точки')
     ap.add_argument('--from', help='move-doodads: X,Y опорная точка (писать через =)')
     ap.add_argument('--to', help='move-doodads: X,Y куда (писать через =)')
+    ap.add_argument('--ids', help='remove: номера размещений через запятую')
     ap.add_argument('--offset', type=float, default=0.0, help='doodads-z: добавка к высоте')
     ap.add_argument('--rotate', type=float, default=0.0, help='move-doodads: поворот группы в градусах')
     ap.add_argument('--at', help='probe: X,Y,R — точка и радиус')
@@ -741,6 +771,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'remove': FIXES[a.fix](w, a.apply, a.ids, a.undo)
     elif a.fix == 'doodads-z': FIXES[a.fix](w, a.apply, a.ref, a.types, a.offset)
     elif a.fix == 'move-doodads': FIXES[a.fix](w, a.apply, a.types, getattr(a, 'from'), a.to, a.rotate)
     elif a.fix == 'custom-doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near, a.undo)
