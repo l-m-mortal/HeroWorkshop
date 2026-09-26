@@ -225,6 +225,14 @@ struct MapState: Codable {
             else { self.busy = false; self.status = "Ошибка: \(out)" }
         }
     }
+    func addIcon(key: String, file: URL) {
+        let ext = file.pathExtension.lowercased()
+        guard ["png", "blp", "bmp", "tga", "jpg", "jpeg"].contains(ext) else { status = "Нужен PNG или BLP"; return }
+        run(["add-icon", key, file.path]) { code, out in
+            self.busy = false
+            self.status = code == 0 ? (out.split(separator: "\n").last.map(String.init) ?? "Добавлено в библиотеку") : "Ошибка: \(out)"
+        }
+    }
     func clearIcon(key: String) {
         run(["clear-icon", key]) { code, out in
             if code == 0 { self.refresh(message: "Возвращена исходная иконка: \(key)") } else { self.busy = false; self.status = "Ошибка: \(out)" }
@@ -285,6 +293,7 @@ struct IconSlot: View {
     var forceDisabled: Bool? = nil
     @State private var targeted = false
     @State private var importing = false
+    @State private var addingToLibrary = false
     @State private var pickerOpen = false
     @State private var candidateList: [Candidate] = []
     @State private var candidatesLoading = false
@@ -341,6 +350,7 @@ struct IconSlot: View {
             .contextMenu {
                 Button("Выбрать файл…") { importing = true }
                 Button("Выбрать из библиотеки…") { openPicker() }
+                Button("Добавить PNG в библиотеку для этой ячейки…") { addingToLibrary = true }
                 if icon.override != nil { Button("Вернуть исходную иконку") { store.clearIcon(key: key) } }
                 if let path = resolved.path, resolved.source == "disk" {
                     Button("Показать файл в Finder") {
@@ -350,6 +360,9 @@ struct IconSlot: View {
                 }
             }
             .help("\(title)\n\(subtitle)\nПуть: \(icon.art ?? "—")\nИсточник: \(originText)" + (icon.override.map { "\nЗаменена: \($0.applied ?? "")" } ?? ""))
+            .fileImporter(isPresented: $addingToLibrary, allowedContentTypes: [.png, .bmp, .jpeg, UTType(filenameExtension: "blp") ?? .data, UTType(filenameExtension: "tga") ?? .data], allowsMultipleSelection: true) { result in
+                if case let .success(urls) = result { for url in urls { store.addIcon(key: key, file: url) } }
+            }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.png, .bmp, .jpeg, UTType(filenameExtension: "blp") ?? .data, UTType(filenameExtension: "tga") ?? .data]) { result in
                 if case let .success(url) = result { store.setIcon(key: key, file: url) }
             }

@@ -792,6 +792,14 @@ def candidates(key: str, w: 'Workshop'):
         return
     data = json.loads(index_path.read_text())
     seen = set(); out = []
+    # user-added icons: Library/icons/custom/<kind>/<id>/*.png|blp (see add-icon)
+    custom_dir = LIBRARY / 'custom'
+    for ck, cid in list(want) + ([('item', code)] if kind == 'item' else []):
+        d = custom_dir / ck / re.sub(r'[^A-Za-z0-9_.\'-]+', '_', str(cid))
+        if d.is_dir():
+            for f in sorted(d.iterdir()):
+                if f.suffix.lower() in ('.png', '.blp', '.tga', '.jpg', '.jpeg', '.bmp'):
+                    out.append({'file': str(f.resolve()), 'preview': str(f.resolve()), 'set': 'custom', 'source': str(f), 'how': 'добавлено вручную', 'rank': -1})
     for e in data.get('entries', []):
         how = next((m.get('how') for m in e.get('matches', []) if (m.get('kind'), m.get('id')) in want), None)
         rank = 0
@@ -825,6 +833,30 @@ def candidates(key: str, w: 'Workshop'):
     print(json.dumps(out, ensure_ascii=False))
 
 # ------------------------------------------------------------------ cli ----
+def add_icon(key: str, source: Path, w: 'Workshop'):
+    """Copy a PNG/BLP into the library as a user icon for this slot key (unit:/ability:/
+    item:/common:), so it appears first in the cell picker; the item key is stored under
+    the item family name. Nothing is applied to the map (use set-icon for that)."""
+    from library_build import LIBRARY
+    keys = [k.strip() for k in key.split(',') if k.strip()]
+    first = next((k for k in keys if k.startswith('item:')), keys[0])
+    kind, code = first.split(':', 1)
+    target = code
+    if kind == 'item':
+        for g in w.item_list():
+            if code in g['codes'] or code == g['name']: target = g['name']; break
+    elif kind == 'common':
+        target = next((b for n, _, b in w.COMMON if n == code), code).lower()
+        kind = 'unassigned'
+    d = LIBRARY / 'custom' / kind / re.sub(r'[^A-Za-z0-9_.\'-]+', '_', str(target))
+    d.mkdir(parents=True, exist_ok=True)
+    dst = d / source.name
+    n = 1
+    while dst.exists() and dst.read_bytes() != source.read_bytes():
+        dst = d / f'{source.stem}_{n}{source.suffix}'; n += 1
+    dst.write_bytes(source.read_bytes())
+    print(f'Добавлено в библиотеку: {dst}')
+
 def doctor():
     print('Repo:      ', ROOT); print('Game root: ', GAME, '(ok)' if (GAME / 'Maps').is_dir() else '(нет папки Maps!)')
     print('Map:       ', MAP, '(ok)' if MAP.is_file() else '(не найдена)')
@@ -838,6 +870,7 @@ def main():
     sub.add_parser('doctor')
     s = sub.add_parser('state'); s.add_argument('--no-previews', action='store_true')
     s = sub.add_parser('set-icon'); s.add_argument('key'); s.add_argument('file')
+    s = sub.add_parser('add-icon'); s.add_argument('key'); s.add_argument('file')
     s = sub.add_parser('clear-icon'); s.add_argument('key')
     s = sub.add_parser('set-scale'); s.add_argument('rawcode'); s.add_argument('scale', type=float); s.add_argument('--morph', type=float); s.add_argument('--alt', type=float)
     s = sub.add_parser('set-model', help='сменить модель юнита (unitUI.slk:file)'); s.add_argument('unit'); s.add_argument('model'); s.add_argument('--sound'); s.add_argument('--scale', type=float); s.add_argument('--selection', type=float)
@@ -850,6 +883,7 @@ def main():
     w = Workshop()
     if a.cmd == 'state': print(w.export_state(not a.no_previews))
     elif a.cmd == 'candidates': candidates(a.key, w)
+    elif a.cmd == 'add-icon': add_icon(a.key, Path(a.file), Workshop())
     elif a.cmd == 'set-icon':
         for key in [k.strip() for k in a.key.split(',') if k.strip()]: w.set_icon(key, Path(a.file).expanduser())
     elif a.cmd == 'clear-icon':
