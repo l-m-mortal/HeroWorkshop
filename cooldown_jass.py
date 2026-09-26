@@ -24,6 +24,8 @@ unit HW_cdUnit=null
 group HW_cdGroup=null
 timer HW_cdTimer=null
 framehandle HW_cdDebug=null
+framehandle array HW_cdItemText
+hashtable HW_cdItemHT=null
 boolean HW_cdIsDebug=false
 // HW_COOLDOWN_GLOBALS_END"""
 
@@ -161,6 +163,14 @@ function HW_cdTick takes nothing returns nothing
         set i=i+1
     endloop
     if HW_cdUnit==null then
+        set i=0
+        loop
+            exitwhen i>5
+            if HW_cdItemText[i]!=null then
+                call BlzFrameSetVisible(HW_cdItemText[i],false)
+            endif
+            set i=i+1
+        endloop
         if HW_cdDebug!=null then
             call BlzFrameSetText(HW_cdDebug,"HW cd: nothing selected")
         endif
@@ -187,6 +197,26 @@ function HW_cdTick takes nothing returns nothing
         endif
         set i=i+1
     endloop
+    set i=0
+    loop
+        exitwhen i>5
+        if HW_cdItemText[i]!=null then
+            set r=0.0
+            if UnitItemInSlot(HW_cdUnit,i)!=null then
+                set idx=LoadInteger(HW_cdItemHT,GetItemTypeId(UnitItemInSlot(HW_cdUnit,i)),0)
+                if idx!=0 then
+                    set r=BlzGetUnitAbilityCooldownRemaining(HW_cdUnit,idx)
+                endif
+            endif
+            if r>0.05 then
+                call BlzFrameSetText(HW_cdItemText[i],HW_cdFormat(r))
+                call BlzFrameSetVisible(HW_cdItemText[i],true)
+            else
+                call BlzFrameSetVisible(HW_cdItemText[i],false)
+            endif
+        endif
+        set i=i+1
+    endloop
     if HW_cdDebug!=null then
         call BlzFrameSetText(HW_cdDebug,dbg)
     endif
@@ -196,7 +226,21 @@ function HW_cdInit takes nothing returns nothing
     local framehandle btn
     local framehandle ui=BlzGetOriginFrame(ORIGIN_FRAME_GAME_UI,0)
     call HW_cdIdsInit()
+    call HW_cdItemsInit()
     set HW_cdGroup=CreateGroup()
+    loop
+        exitwhen i>5
+        set btn=BlzGetOriginFrame(ORIGIN_FRAME_ITEM_BUTTON,i)
+        if btn!=null then
+            set HW_cdItemText[i]=BlzCreateFrameByType("TEXT","HWcdItem",HW_CD_PARENT,"",0)
+            call BlzFrameSetPoint(HW_cdItemText[i],FRAMEPOINT_CENTER,btn,FRAMEPOINT_CENTER,0.0,0.0)
+            call BlzFrameSetTextAlignment(HW_cdItemText[i],TEXT_JUSTIFY_MIDDLE,TEXT_JUSTIFY_CENTER)
+            call BlzFrameSetScale(HW_cdItemText[i],HW_CD_SCALE)
+            call BlzFrameSetVisible(HW_cdItemText[i],false)
+        endif
+        set i=i+1
+    endloop
+    set i=0
     loop
         exitwhen i>11
         set btn=BlzGetOriginFrame(ORIGIN_FRAME_COMMAND_BUTTON,i)
@@ -225,6 +269,14 @@ function HW_cdStart takes nothing returns nothing
 endfunction
 // HW_COOLDOWN_END"""
 
+def items_function(item_abils) -> str:
+    """JASS function filling a hashtable: item type id -> ability id with a cooldown."""
+    lines = ['function HW_cdItemsInit takes nothing returns nothing', '    set HW_cdItemHT=InitHashtable()']
+    for item, abil in item_abils:
+        lines.append(f"    call SaveInteger(HW_cdItemHT,'{item}',0,'{abil}')")
+    lines.append('endfunction')
+    return '\n'.join(lines)
+
 def ids_function(ids, positions=None) -> str:
     """JASS function filling HW_cdIds with the map's hero ability rawcodes and
     HW_cdPos with each ability's command-card slot (y*4+x, -1 = unknown)."""
@@ -239,7 +291,7 @@ def ids_function(ids, positions=None) -> str:
 
 MAIN_CALL = "call TimerStart(CreateTimer(),1.0,false,function HW_cdStart) // HW_COOLDOWN_CALL"
 
-def inject(script: str, ids, font_height: float = 0.016, positions=None, parent: str = 'gameui', debug: bool = False) -> str:
+def inject(script: str, ids, font_height: float = 0.016, positions=None, parent: str = 'gameui', debug: bool = False, item_abils=()) -> str:
     """Return the script with the cooldown block added (idempotent).
 
     parent: 'gameui' anchors the text frames to the game UI (positioned over the
@@ -251,7 +303,7 @@ def inject(script: str, ids, font_height: float = 0.016, positions=None, parent:
     script = remove(script)
     funcs = (FUNCTIONS.replace('HW_CD_SCALE', f'{max(0.5, font_height / 0.01):.2f}')
              .replace('HW_CD_PARENT', 'ui' if parent == 'gameui' else 'btn')
-             .replace('// HW_COOLDOWN_BEGIN', '// HW_COOLDOWN_BEGIN\n' + ids_function(ids, positions)))
+             .replace('// HW_COOLDOWN_BEGIN', '// HW_COOLDOWN_BEGIN\n' + ids_function(ids, positions) + '\n' + items_function(item_abils)))
     globals_block = GLOBALS.replace('boolean HW_cdIsDebug=false', f'boolean HW_cdIsDebug={"true" if debug else "false"}')
     # globals: append to the first globals block
     g = re.search(r'^globals\r?\n', script, re.M)

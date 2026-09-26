@@ -1207,11 +1207,18 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     cool = [c for c in ah if re.match(r'Cool\d+$', c)]
     # item abilities live in the inventory, not on the command card: never map them there
     icells, ih, irows = workshop.slk(w.mpq.read('units\\ItemData.slk').decode('latin1', 'replace'))
-    item_abils = set()
-    for r in irows.values():
+    item_abils = set(); item_pairs = []
+    for icode, r in irows.items():
         for c in (icells.get((ih['abilList'], r), '') or '').split(','):
             c = c.strip().strip('"')
-            if len(c) == 4: item_abils.add(c)
+            if len(c) != 4: continue
+            item_abils.add(c)
+            if c in arows and re.match(r'^[0-9A-Za-z]{4}$', icode):
+                cd = 0.0
+                for col in cool:
+                    try: cd = max(cd, float(data.get((ah[col], arows[c]), '0') or 0))
+                    except ValueError: pass
+                if cd > 0 and not any(p[0] == icode for p in item_pairs): item_pairs.append((icode, c))
     ids = [c for c in ids if c not in item_abils]
     for code, r in arows.items():
         if code in ids or code in item_abils or not re.match(r'^[0-9A-Za-z]{4}$', code): continue
@@ -1229,9 +1236,9 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     parked = [c for c in ids if positions.get(c) == 5 and skip_names.match(w.name(c, 'AbilityFunc') or '')]
     ids = [c for c in ids if c not in parked]
     for c in parked: positions.pop(c, None)
-    new = cooldown_jass.remove(script) if undo else cooldown_jass.inject(script, ids, font, positions, parent, debug)
+    new = cooldown_jass.remove(script) if undo else cooldown_jass.inject(script, ids, font, positions, parent, debug, item_pairs)
     if not undo:
-        print(f'Способностей в списке для опроса: {len(ids)}, с известной позицией кнопки: {len(positions)}; пропущено (Инвокер): {len(parked)}')
+        print(f'Способностей в списке для опроса: {len(ids)}, с известной позицией кнопки: {len(positions)}; пропущено (Инвокер): {len(parked)}; предметов с кулдауном: {len(item_pairs)}')
         print(f'Родитель текста: {parent}; отладка: {"вкл" if debug else "выкл"}')
     present = 'HW_COOLDOWN_BEGIN' in script
     print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
