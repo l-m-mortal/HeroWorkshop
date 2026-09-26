@@ -1,6 +1,12 @@
 #!/bin/zsh
-# Круговая стена базы Radiant и у фонтана (AOnt): высота над землёй. Не накапливает.
-#   zsh walls.sh 400
-# Второй параметр: другой тип, например   zsh walls.sh 226 D000   (тёмные стены Dire)
+# Стены вокруг фонтанов и баз. Высота над землёй, не накапливает.
+#   zsh walls.sh 100 radiant   # белая стена Radiant: столбы AOnt и фонари-колонны CPct
+#   zsh walls.sh 226 dire      # тёмная стена Dire: секции D000
+#   zsh walls.sh 100 AOnt      # любой тип напрямую
 cd "$(dirname "$0")"
-python3 map_fix.py doodads-z --types ${2:-AOnt} --offset ${1:-400} --apply
+case "${2:-radiant}" in
+  radiant) T=AOnt,CPct ;;
+  dire)    T=D000 ;;
+  *)       T=$2 ;;
+esac
+python3 map_fix.py doodads-z --types $T --offset ${1:-0} --apply
