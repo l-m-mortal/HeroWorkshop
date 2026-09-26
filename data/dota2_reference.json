@@ -4687,15 +4687,27 @@
   },
   "overwhelming_blink": {
    "name": "Overwhelming Blink",
-   "img": "/apps/dota2/images/dota_react/items/overwhelming_blink.png"
+   "img": "/apps/dota2/images/dota_react/items/overwhelming_blink.png",
+   "components": [
+    "blink",
+    "reaver"
+   ]
   },
   "swift_blink": {
    "name": "Swift Blink",
-   "img": "/apps/dota2/images/dota_react/items/swift_blink.png"
+   "img": "/apps/dota2/images/dota_react/items/swift_blink.png",
+   "components": [
+    "blink",
+    "eagle"
+   ]
   },
   "arcane_blink": {
    "name": "Arcane Blink",
-   "img": "/apps/dota2/images/dota_react/items/arcane_blink.png"
+   "img": "/apps/dota2/images/dota_react/items/arcane_blink.png",
+   "components": [
+    "blink",
+    "mystic_staff"
+   ]
   },
   "recipe_arcane_blink": {
    "name": "Arcane Blink Recipe",
@@ -4775,7 +4787,11 @@
   },
   "moon_shard": {
    "name": "Moon Shard",
-   "img": "/apps/dota2/images/dota_react/items/moon_shard.png"
+   "img": "/apps/dota2/images/dota_react/items/moon_shard.png",
+   "components": [
+    "hyperstone",
+    "hyperstone"
+   ]
   },
   "gauntlets": {
    "name": "Gauntlets of Strength",
@@ -4891,7 +4907,12 @@
   },
   "magic_wand": {
    "name": "Magic Wand",
-   "img": "/apps/dota2/images/dota_react/items/magic_wand.png"
+   "img": "/apps/dota2/images/dota_react/items/magic_wand.png",
+   "components": [
+    "magic_stick",
+    "branches",
+    "branches"
+   ]
   },
   "ghost": {
    "name": "Ghost Scepter",
@@ -4911,11 +4932,20 @@
   },
   "great_famango": {
    "name": "Great Healing Lotus",
-   "img": "/apps/dota2/images/dota_react/items/great_famango.png"
+   "img": "/apps/dota2/images/dota_react/items/great_famango.png",
+   "components": [
+    "famango",
+    "famango",
+    "famango"
+   ]
   },
   "greater_famango": {
    "name": "Greater Healing Lotus",
-   "img": "/apps/dota2/images/dota_react/items/greater_famango.png"
+   "img": "/apps/dota2/images/dota_react/items/greater_famango.png",
+   "components": [
+    "great_famango",
+    "great_famango"
+   ]
   },
   "blood_grenade": {
    "name": "Blood Grenade",
@@ -4947,7 +4977,11 @@
   },
   "ward_dispenser": {
    "name": "Observer and Sentry Wards",
-   "img": "/apps/dota2/images/dota_react/items/ward_dispenser.png"
+   "img": "/apps/dota2/images/dota_react/items/ward_dispenser.png",
+   "components": [
+    "ward_sentry",
+    "ward_observer"
+   ]
   },
   "tango": {
    "name": "Tango",
@@ -4975,15 +5009,27 @@
   },
   "travel_boots": {
    "name": "Boots of Travel",
-   "img": "/apps/dota2/images/dota_react/items/travel_boots.png"
+   "img": "/apps/dota2/images/dota_react/items/travel_boots.png",
+   "components": [
+    "boots"
+   ]
   },
   "travel_boots_2": {
    "name": "Boots of Travel 2",
-   "img": "/apps/dota2/images/dota_react/items/travel_boots_2.png"
+   "img": "/apps/dota2/images/dota_react/items/travel_boots_2.png",
+   "components": [
+    "travel_boots",
+    "recipe_travel_boots"
+   ]
   },
   "phase_boots": {
    "name": "Phase Boots",
-   "img": "/apps/dota2/images/dota_react/items/phase_boots.png"
+   "img": "/apps/dota2/images/dota_react/items/phase_boots.png",
+   "components": [
+    "boots",
+    "chainmail",
+    "blades_of_attack"
+   ]
   },
   "demon_edge": {
    "name": "Demon Edge",
@@ -5047,7 +5093,12 @@
   },
   "power_treads": {
    "name": "Power Treads",
-   "img": "/apps/dota2/images/dota_react/items/power_treads.png"
+   "img": "/apps/dota2/images/dota_react/items/power_treads.png",
+   "components": [
+    "boots",
+    "gloves",
+    "belt_of_strength"
+   ]
   },
   "recipe_phylactery": {
    "name": "Phylactery Recipe",
@@ -5055,11 +5106,19 @@
   },
   "phylactery": {
    "name": "Phylactery",
-   "img": "/apps/dota2/images/dota_react/items/phylactery.png"
+   "img": "/apps/dota2/images/dota_react/items/phylactery.png",
+   "components": [
+    "pers",
+    "diadem"
+   ]
   },
   "angels_demise": {
    "name": "Khanda",
-   "img": "/apps/dota2/images/dota_react/items/angels_demise.png"
+   "img": "/apps/dota2/images/dota_react/items/angels_demise.png",
+   "components": [
+    "phylactery",
+    "soul_booster"
+   ]
   },
   "recipe_hand_of_midas": {
    "name": "Hand of Midas Recipe",
@@ -5067,11 +5126,19 @@
   },
   "hand_of_midas": {
    "name": "Hand of Midas",
-   "img": "/apps/dota2/images/dota_react/items/hand_of_midas.png"
+   "img": "/apps/dota2/images/dota_react/items/hand_of_midas.png",
+   "components": [
+    "gloves"
+   ]
   },
   "oblivion_staff": {
    "name": "Oblivion Staff",
-   "img": "/apps/dota2/images/dota_react/items/oblivion_staff.png"
+   "img": "/apps/dota2/images/dota_react/items/oblivion_staff.png",
+   "components": [
+    "blitz_knuckles",
+    "robe",
+    "sobi_mask"
+   ]
   },
   "recipe_witch_blade": {
    "name": "Witch Blade Recipe",
@@ -5079,11 +5146,20 @@
   },
   "witch_blade": {
    "name": "Witch Blade",
-   "img": "/apps/dota2/images/dota_react/items/witch_blade.png"
+   "img": "/apps/dota2/images/dota_react/items/witch_blade.png",
+   "components": [
+    "oblivion_staff",
+    "chainmail",
+    "orb_of_venom"
+   ]
   },
   "pers": {
    "name": "Perseverance",
-   "img": "/apps/dota2/images/dota_react/items/pers.png"
+   "img": "/apps/dota2/images/dota_react/items/pers.png",
+   "components": [
+    "ring_of_health",
+    "void_stone"
+   ]
   },
   "cornucopia": {
    "name": "Cornucopia",
@@ -5099,7 +5175,11 @@
   },
   "bracer": {
    "name": "Bracer",
-   "img": "/apps/dota2/images/dota_react/items/bracer.png"
+   "img": "/apps/dota2/images/dota_react/items/bracer.png",
+   "components": [
+    "circlet",
+    "gauntlets"
+   ]
   },
   "recipe_wraith_band": {
    "name": "Wraith Band Recipe",
@@ -5107,7 +5187,11 @@
   },
   "wraith_band": {
    "name": "Wraith Band",
-   "img": "/apps/dota2/images/dota_react/items/wraith_band.png"
+   "img": "/apps/dota2/images/dota_react/items/wraith_band.png",
+   "components": [
+    "circlet",
+    "slippers"
+   ]
   },
   "recipe_null_talisman": {
    "name": "Null Talisman Recipe",
@@ -5115,7 +5199,11 @@
   },
   "null_talisman": {
    "name": "Null Talisman",
-   "img": "/apps/dota2/images/dota_react/items/null_talisman.png"
+   "img": "/apps/dota2/images/dota_react/items/null_talisman.png",
+   "components": [
+    "circlet",
+    "mantle"
+   ]
   },
   "recipe_mekansm": {
    "name": "Mekansm Recipe",
@@ -5123,15 +5211,29 @@
   },
   "mekansm": {
    "name": "Mekansm",
-   "img": "/apps/dota2/images/dota_react/items/mekansm.png"
+   "img": "/apps/dota2/images/dota_react/items/mekansm.png",
+   "components": [
+    "headdress",
+    "chainmail"
+   ]
   },
   "vladmir": {
    "name": "Vladmir's Offering",
-   "img": "/apps/dota2/images/dota_react/items/vladmir.png"
+   "img": "/apps/dota2/images/dota_react/items/vladmir.png",
+   "components": [
+    "buckler",
+    "ring_of_basilius",
+    "lifesteal",
+    "blades_of_attack"
+   ]
   },
   "wraith_pact": {
    "name": "Wraith Pact",
-   "img": "/apps/dota2/images/dota_react/items/wraith_pact.png"
+   "img": "/apps/dota2/images/dota_react/items/wraith_pact.png",
+   "components": [
+    "vladmir",
+    "point_booster"
+   ]
   },
   "recipe_buckler": {
    "name": "Buckler Recipe",
@@ -5139,7 +5241,10 @@
   },
   "buckler": {
    "name": "Buckler",
-   "img": "/apps/dota2/images/dota_react/items/buckler.png"
+   "img": "/apps/dota2/images/dota_react/items/buckler.png",
+   "components": [
+    "ring_of_protection"
+   ]
   },
   "recipe_ring_of_basilius": {
    "name": "Ring of Basilius Recipe",
@@ -5147,7 +5252,10 @@
   },
   "ring_of_basilius": {
    "name": "Ring of Basilius",
-   "img": "/apps/dota2/images/dota_react/items/ring_of_basilius.png"
+   "img": "/apps/dota2/images/dota_react/items/ring_of_basilius.png",
+   "components": [
+    "sobi_mask"
+   ]
   },
   "recipe_holy_locket": {
    "name": "Holy Locket Recipe",
@@ -5155,7 +5263,11 @@
   },
   "holy_locket": {
    "name": "Holy Locket",
-   "img": "/apps/dota2/images/dota_react/items/holy_locket.png"
+   "img": "/apps/dota2/images/dota_react/items/holy_locket.png",
+   "components": [
+    "magic_wand",
+    "crown"
+   ]
   },
   "recipe_pipe": {
    "name": "Pipe of Insight Recipe",
@@ -5163,7 +5275,12 @@
   },
   "pipe": {
    "name": "Pipe of Insight",
-   "img": "/apps/dota2/images/dota_react/items/pipe.png"
+   "img": "/apps/dota2/images/dota_react/items/pipe.png",
+   "components": [
+    "ring_of_tarrasque",
+    "cloak",
+    "shawl"
+   ]
   },
   "recipe_urn_of_shadows": {
    "name": "Urn of Shadows Recipe",
@@ -5171,7 +5288,12 @@
   },
   "urn_of_shadows": {
    "name": "Urn of Shadows",
-   "img": "/apps/dota2/images/dota_react/items/urn_of_shadows.png"
+   "img": "/apps/dota2/images/dota_react/items/urn_of_shadows.png",
+   "components": [
+    "sobi_mask",
+    "ring_of_protection",
+    "circlet"
+   ]
   },
   "recipe_headdress": {
    "name": "Headdress Recipe",
@@ -5179,7 +5301,10 @@
   },
   "headdress": {
    "name": "Headdress",
-   "img": "/apps/dota2/images/dota_react/items/headdress.png"
+   "img": "/apps/dota2/images/dota_react/items/headdress.png",
+   "components": [
+    "ring_of_regen"
+   ]
   },
   "recipe_sheepstick": {
    "name": "Scythe of Vyse Recipe",
@@ -5187,7 +5312,11 @@
   },
   "sheepstick": {
    "name": "Scythe of Vyse",
-   "img": "/apps/dota2/images/dota_react/items/sheepstick.png"
+   "img": "/apps/dota2/images/dota_react/items/sheepstick.png",
+   "components": [
+    "mystic_staff",
+    "tiara_of_selemene"
+   ]
   },
   "recipe_orchid": {
    "name": "Orchid Malevolence Recipe",
@@ -5195,7 +5324,11 @@
   },
   "orchid": {
    "name": "Orchid Malevolence",
-   "img": "/apps/dota2/images/dota_react/items/orchid.png"
+   "img": "/apps/dota2/images/dota_react/items/orchid.png",
+   "components": [
+    "oblivion_staff",
+    "claymore"
+   ]
   },
   "recipe_bloodthorn": {
    "name": "Bloodthorn Recipe",
@@ -5203,11 +5336,21 @@
   },
   "bloodthorn": {
    "name": "Bloodthorn",
-   "img": "/apps/dota2/images/dota_react/items/bloodthorn.png"
+   "img": "/apps/dota2/images/dota_react/items/bloodthorn.png",
+   "components": [
+    "orchid",
+    "oblivion_staff",
+    "javelin"
+   ]
   },
   "echo_sabre": {
    "name": "Echo Sabre",
-   "img": "/apps/dota2/images/dota_react/items/echo_sabre.png"
+   "img": "/apps/dota2/images/dota_react/items/echo_sabre.png",
+   "components": [
+    "ogre_axe",
+    "broadsword",
+    "void_stone"
+   ]
   },
   "recipe_cyclone": {
    "name": "Eul's Scepter Recipe",
@@ -5215,7 +5358,12 @@
   },
   "cyclone": {
    "name": "Eul's Scepter of Divinity",
-   "img": "/apps/dota2/images/dota_react/items/cyclone.png"
+   "img": "/apps/dota2/images/dota_react/items/cyclone.png",
+   "components": [
+    "staff_of_wizardry",
+    "void_stone",
+    "wind_lace"
+   ]
   },
   "recipe_wind_waker": {
    "name": "Wind Waker Recipe",
@@ -5223,7 +5371,11 @@
   },
   "wind_waker": {
    "name": "Wind Waker",
-   "img": "/apps/dota2/images/dota_react/items/wind_waker.png"
+   "img": "/apps/dota2/images/dota_react/items/wind_waker.png",
+   "components": [
+    "cyclone",
+    "mystic_staff"
+   ]
   },
   "recipe_aether_lens": {
    "name": "Aether Lens Recipe",
@@ -5231,7 +5383,11 @@
   },
   "aether_lens": {
    "name": "Aether Lens",
-   "img": "/apps/dota2/images/dota_react/items/aether_lens.png"
+   "img": "/apps/dota2/images/dota_react/items/aether_lens.png",
+   "components": [
+    "energy_booster",
+    "void_stone"
+   ]
   },
   "recipe_force_staff": {
    "name": "Force Staff Recipe",
@@ -5239,7 +5395,11 @@
   },
   "force_staff": {
    "name": "Force Staff",
-   "img": "/apps/dota2/images/dota_react/items/force_staff.png"
+   "img": "/apps/dota2/images/dota_react/items/force_staff.png",
+   "components": [
+    "staff_of_wizardry",
+    "fluffy_hat"
+   ]
   },
   "recipe_hurricane_pike": {
    "name": "Hurricane Pike Recipe",
@@ -5247,7 +5407,11 @@
   },
   "hurricane_pike": {
    "name": "Hurricane Pike",
-   "img": "/apps/dota2/images/dota_react/items/hurricane_pike.png"
+   "img": "/apps/dota2/images/dota_react/items/hurricane_pike.png",
+   "components": [
+    "force_staff",
+    "dragon_lance"
+   ]
   },
   "recipe_dagon": {
    "name": "Dagon Recipe",
@@ -5255,7 +5419,12 @@
   },
   "dagon": {
    "name": "Dagon",
-   "img": "/apps/dota2/images/dota_react/items/dagon.png"
+   "img": "/apps/dota2/images/dota_react/items/dagon.png",
+   "components": [
+    "point_booster",
+    "crown",
+    "wizard_hat"
+   ]
   },
   "dagon_2": {
    "name": "Dagon",
@@ -5279,19 +5448,38 @@
   },
   "necronomicon": {
    "name": "Necronomicon",
-   "img": "/apps/dota2/images/dota_react/items/necronomicon.png"
+   "img": "/apps/dota2/images/dota_react/items/necronomicon.png",
+   "components": [
+    "sobi_mask",
+    "sobi_mask",
+    "belt_of_strength"
+   ]
   },
   "necronomicon_2": {
    "name": "Necronomicon",
-   "img": "/apps/dota2/images/dota_react/items/necronomicon_2.png"
+   "img": "/apps/dota2/images/dota_react/items/necronomicon_2.png",
+   "components": [
+    "necronomicon",
+    "recipe_necronomicon"
+   ]
   },
   "necronomicon_3": {
    "name": "Necronomicon",
-   "img": "/apps/dota2/images/dota_react/items/necronomicon_3.png"
+   "img": "/apps/dota2/images/dota_react/items/necronomicon_3.png",
+   "components": [
+    "necronomicon_2",
+    "recipe_necronomicon"
+   ]
   },
   "ultimate_scepter": {
    "name": "Aghanim's Scepter",
-   "img": "/apps/dota2/images/dota_react/items/ultimate_scepter.png"
+   "img": "/apps/dota2/images/dota_react/items/ultimate_scepter.png",
+   "components": [
+    "point_booster",
+    "staff_of_wizardry",
+    "ogre_axe",
+    "blade_of_alacrity"
+   ]
   },
   "recipe_ultimate_scepter_2": {
    "name": "Aghanim's Blessing Recipe",
@@ -5299,7 +5487,10 @@
   },
   "ultimate_scepter_2": {
    "name": "Aghanim's Blessing",
-   "img": "/apps/dota2/images/dota_react/items/ultimate_scepter_2.png"
+   "img": "/apps/dota2/images/dota_react/items/ultimate_scepter_2.png",
+   "components": [
+    "ultimate_scepter"
+   ]
   },
   "ultimate_scepter_roshan": {
    "name": "Aghanim's Blessing - Roshan",
@@ -5323,7 +5514,11 @@
   },
   "refresher": {
    "name": "Refresher Orb",
-   "img": "/apps/dota2/images/dota_react/items/refresher.png"
+   "img": "/apps/dota2/images/dota_react/items/refresher.png",
+   "components": [
+    "ring_of_tarrasque",
+    "tiara_of_selemene"
+   ]
   },
   "recipe_assault": {
    "name": "Assault Cuirass Recipe",
@@ -5331,7 +5526,12 @@
   },
   "assault": {
    "name": "Assault Cuirass",
-   "img": "/apps/dota2/images/dota_react/items/assault.png"
+   "img": "/apps/dota2/images/dota_react/items/assault.png",
+   "components": [
+    "buckler",
+    "hyperstone",
+    "platemail"
+   ]
   },
   "recipe_heart": {
    "name": "Heart of Tarrasque Recipe",
@@ -5339,7 +5539,11 @@
   },
   "heart": {
    "name": "Heart of Tarrasque",
-   "img": "/apps/dota2/images/dota_react/items/heart.png"
+   "img": "/apps/dota2/images/dota_react/items/heart.png",
+   "components": [
+    "reaver",
+    "ring_of_tarrasque"
+   ]
   },
   "recipe_black_king_bar": {
    "name": "Black King Bar Recipe",
@@ -5347,7 +5551,11 @@
   },
   "black_king_bar": {
    "name": "Black King Bar",
-   "img": "/apps/dota2/images/dota_react/items/black_king_bar.png"
+   "img": "/apps/dota2/images/dota_react/items/black_king_bar.png",
+   "components": [
+    "mithril_hammer",
+    "ogre_axe"
+   ]
   },
   "aegis": {
    "name": "Aegis of the Immortal",
@@ -5359,11 +5567,20 @@
   },
   "shivas_guard": {
    "name": "Shiva's Guard",
-   "img": "/apps/dota2/images/dota_react/items/shivas_guard.png"
+   "img": "/apps/dota2/images/dota_react/items/shivas_guard.png",
+   "components": [
+    "platemail",
+    "splintmail",
+    "chasm_stone"
+   ]
   },
   "bloodstone": {
    "name": "Bloodstone",
-   "img": "/apps/dota2/images/dota_react/items/bloodstone.png"
+   "img": "/apps/dota2/images/dota_react/items/bloodstone.png",
+   "components": [
+    "veil_of_discord",
+    "soul_booster"
+   ]
   },
   "recipe_sphere": {
    "name": "Linken's Sphere Recipe",
@@ -5371,7 +5588,11 @@
   },
   "sphere": {
    "name": "Linken's Sphere",
-   "img": "/apps/dota2/images/dota_react/items/sphere.png"
+   "img": "/apps/dota2/images/dota_react/items/sphere.png",
+   "components": [
+    "pers",
+    "ultimate_orb"
+   ]
   },
   "recipe_lotus_orb": {
    "name": "Lotus Orb Recipe",
@@ -5379,7 +5600,12 @@
   },
   "lotus_orb": {
    "name": "Lotus Orb",
-   "img": "/apps/dota2/images/dota_react/items/lotus_orb.png"
+   "img": "/apps/dota2/images/dota_react/items/lotus_orb.png",
+   "components": [
+    "pers",
+    "platemail",
+    "energy_booster"
+   ]
   },
   "recipe_meteor_hammer": {
    "name": "Meteor Hammer Recipe",
@@ -5387,11 +5613,19 @@
   },
   "meteor_hammer": {
    "name": "Meteor Hammer",
-   "img": "/apps/dota2/images/dota_react/items/meteor_hammer.png"
+   "img": "/apps/dota2/images/dota_react/items/meteor_hammer.png",
+   "components": [
+    "kaya",
+    "crown"
+   ]
   },
   "nullifier": {
    "name": "Nullifier",
-   "img": "/apps/dota2/images/dota_react/items/nullifier.png"
+   "img": "/apps/dota2/images/dota_react/items/nullifier.png",
+   "components": [
+    "relic",
+    "splintmail"
+   ]
   },
   "recipe_aeon_disk": {
    "name": "Aeon Disk Recipe",
@@ -5399,7 +5633,11 @@
   },
   "aeon_disk": {
    "name": "Aeon Disk",
-   "img": "/apps/dota2/images/dota_react/items/aeon_disk.png"
+   "img": "/apps/dota2/images/dota_react/items/aeon_disk.png",
+   "components": [
+    "vitality_booster",
+    "energy_booster"
+   ]
   },
   "recipe_kaya": {
    "name": "Kaya Recipe",
@@ -5407,11 +5645,20 @@
   },
   "kaya": {
    "name": "Kaya",
-   "img": "/apps/dota2/images/dota_react/items/kaya.png"
+   "img": "/apps/dota2/images/dota_react/items/kaya.png",
+   "components": [
+    "staff_of_wizardry",
+    "robe"
+   ]
   },
   "trident": {
    "name": "Trident",
-   "img": "/apps/dota2/images/dota_react/items/trident.png"
+   "img": "/apps/dota2/images/dota_react/items/trident.png",
+   "components": [
+    "kaya",
+    "sange",
+    "yasha"
+   ]
   },
   "refresher_shard": {
    "name": "Refresher Shard",
@@ -5423,7 +5670,11 @@
   },
   "spirit_vessel": {
    "name": "Spirit Vessel",
-   "img": "/apps/dota2/images/dota_react/items/spirit_vessel.png"
+   "img": "/apps/dota2/images/dota_react/items/spirit_vessel.png",
+   "components": [
+    "urn_of_shadows",
+    "diadem"
+   ]
   },
   "recipe_essence_distiller": {
    "name": "Essence Distiller Recipe",
@@ -5431,11 +5682,20 @@
   },
   "essence_distiller": {
    "name": "Essence Distiller",
-   "img": "/apps/dota2/images/dota_react/items/essence_distiller.png"
+   "img": "/apps/dota2/images/dota_react/items/essence_distiller.png",
+   "components": [
+    "urn_of_shadows",
+    "chainmail",
+    "wizard_hat"
+   ]
   },
   "vanguard": {
    "name": "Vanguard",
-   "img": "/apps/dota2/images/dota_react/items/vanguard.png"
+   "img": "/apps/dota2/images/dota_react/items/vanguard.png",
+   "components": [
+    "vitality_booster",
+    "ring_of_health"
+   ]
   },
   "recipe_crimson_guard": {
    "name": "Crimson Guard Recipe",
@@ -5443,7 +5703,11 @@
   },
   "crimson_guard": {
    "name": "Crimson Guard",
-   "img": "/apps/dota2/images/dota_react/items/crimson_guard.png"
+   "img": "/apps/dota2/images/dota_react/items/crimson_guard.png",
+   "components": [
+    "vanguard",
+    "helm_of_iron_will"
+   ]
   },
   "recipe_blade_mail": {
    "name": "Blade Mail Recipe",
@@ -5451,11 +5715,20 @@
   },
   "blade_mail": {
    "name": "Blade Mail",
-   "img": "/apps/dota2/images/dota_react/items/blade_mail.png"
+   "img": "/apps/dota2/images/dota_react/items/blade_mail.png",
+   "components": [
+    "broadsword",
+    "splintmail"
+   ]
   },
   "soul_booster": {
    "name": "Soul Booster",
-   "img": "/apps/dota2/images/dota_react/items/soul_booster.png"
+   "img": "/apps/dota2/images/dota_react/items/soul_booster.png",
+   "components": [
+    "point_booster",
+    "vitality_booster",
+    "energy_booster"
+   ]
   },
   "hood_of_defiance": {
    "name": "Hood of Defiance",
@@ -5467,7 +5740,12 @@
   },
   "eternal_shroud": {
    "name": "Eternal Shroud",
-   "img": "/apps/dota2/images/dota_react/items/eternal_shroud.png"
+   "img": "/apps/dota2/images/dota_react/items/eternal_shroud.png",
+   "components": [
+    "cloak",
+    "ogre_axe",
+    "vitality_booster"
+   ]
   },
   "recipe_consecrated_wraps": {
    "name": "Consecrated Wraps Recipe",
@@ -5475,7 +5753,12 @@
   },
   "consecrated_wraps": {
    "name": "Consecrated Wraps",
-   "img": "/apps/dota2/images/dota_react/items/consecrated_wraps.png"
+   "img": "/apps/dota2/images/dota_react/items/consecrated_wraps.png",
+   "components": [
+    "vitality_booster",
+    "shawl",
+    "crown"
+   ]
   },
   "recipe_crellas_crozier": {
    "name": "Crella's Crozier Recipe",
@@ -5483,11 +5766,19 @@
   },
   "crellas_crozier": {
    "name": "Crella's Crozier",
-   "img": "/apps/dota2/images/dota_react/items/crellas_crozier.png"
+   "img": "/apps/dota2/images/dota_react/items/crellas_crozier.png",
+   "components": [
+    "ghost",
+    "soul_booster"
+   ]
   },
   "rapier": {
    "name": "Divine Rapier",
-   "img": "/apps/dota2/images/dota_react/items/rapier.png"
+   "img": "/apps/dota2/images/dota_react/items/rapier.png",
+   "components": [
+    "relic",
+    "demon_edge"
+   ]
   },
   "recipe_monkey_king_bar": {
    "name": "Monkey King Bar Recipe",
@@ -5495,15 +5786,29 @@
   },
   "monkey_king_bar": {
    "name": "Monkey King Bar",
-   "img": "/apps/dota2/images/dota_react/items/monkey_king_bar.png"
+   "img": "/apps/dota2/images/dota_react/items/monkey_king_bar.png",
+   "components": [
+    "demon_edge",
+    "blitz_knuckles",
+    "javelin"
+   ]
   },
   "radiance": {
    "name": "Radiance",
-   "img": "/apps/dota2/images/dota_react/items/radiance.png"
+   "img": "/apps/dota2/images/dota_react/items/radiance.png",
+   "components": [
+    "relic",
+    "talisman_of_evasion"
+   ]
   },
   "butterfly": {
    "name": "Butterfly",
-   "img": "/apps/dota2/images/dota_react/items/butterfly.png"
+   "img": "/apps/dota2/images/dota_react/items/butterfly.png",
+   "components": [
+    "eagle",
+    "claymore",
+    "talisman_of_evasion"
+   ]
   },
   "recipe_greater_crit": {
    "name": "Daedalus Recipe",
@@ -5511,7 +5816,11 @@
   },
   "greater_crit": {
    "name": "Daedalus",
-   "img": "/apps/dota2/images/dota_react/items/greater_crit.png"
+   "img": "/apps/dota2/images/dota_react/items/greater_crit.png",
+   "components": [
+    "lesser_crit",
+    "demon_edge"
+   ]
   },
   "recipe_basher": {
    "name": "Skull Basher Recipe",
@@ -5519,7 +5828,11 @@
   },
   "basher": {
    "name": "Skull Basher",
-   "img": "/apps/dota2/images/dota_react/items/basher.png"
+   "img": "/apps/dota2/images/dota_react/items/basher.png",
+   "components": [
+    "mithril_hammer",
+    "belt_of_strength"
+   ]
   },
   "recipe_bfury": {
    "name": "Battle Fury Recipe",
@@ -5527,7 +5840,13 @@
   },
   "bfury": {
    "name": "Battle Fury",
-   "img": "/apps/dota2/images/dota_react/items/bfury.png"
+   "img": "/apps/dota2/images/dota_react/items/bfury.png",
+   "components": [
+    "pers",
+    "broadsword",
+    "broadsword",
+    "quelling_blade"
+   ]
   },
   "recipe_manta": {
    "name": "Manta Style Recipe",
@@ -5535,7 +5854,11 @@
   },
   "manta": {
    "name": "Manta Style",
-   "img": "/apps/dota2/images/dota_react/items/manta.png"
+   "img": "/apps/dota2/images/dota_react/items/manta.png",
+   "components": [
+    "yasha",
+    "diadem"
+   ]
   },
   "recipe_lesser_crit": {
    "name": "Crystalys Recipe",
@@ -5543,7 +5866,11 @@
   },
   "lesser_crit": {
    "name": "Crystalys",
-   "img": "/apps/dota2/images/dota_react/items/lesser_crit.png"
+   "img": "/apps/dota2/images/dota_react/items/lesser_crit.png",
+   "components": [
+    "claymore",
+    "blades_of_attack"
+   ]
   },
   "recipe_dragon_lance": {
    "name": "Dragon Lance Recipe",
@@ -5551,7 +5878,11 @@
   },
   "dragon_lance": {
    "name": "Dragon Lance",
-   "img": "/apps/dota2/images/dota_react/items/dragon_lance.png"
+   "img": "/apps/dota2/images/dota_react/items/dragon_lance.png",
+   "components": [
+    "blade_of_alacrity",
+    "belt_of_strength"
+   ]
   },
   "recipe_armlet": {
    "name": "Armlet of Mordiggian Recipe",
@@ -5559,11 +5890,21 @@
   },
   "armlet": {
    "name": "Armlet of Mordiggian",
-   "img": "/apps/dota2/images/dota_react/items/armlet.png"
+   "img": "/apps/dota2/images/dota_react/items/armlet.png",
+   "components": [
+    "helm_of_iron_will",
+    "gloves",
+    "blades_of_attack"
+   ]
   },
   "invis_sword": {
    "name": "Shadow Blade",
-   "img": "/apps/dota2/images/dota_react/items/invis_sword.png"
+   "img": "/apps/dota2/images/dota_react/items/invis_sword.png",
+   "components": [
+    "claymore",
+    "blitz_knuckles",
+    "shadow_amulet"
+   ]
   },
   "recipe_silver_edge": {
    "name": "Silver Edge Recipe",
@@ -5571,23 +5912,44 @@
   },
   "silver_edge": {
    "name": "Silver Edge",
-   "img": "/apps/dota2/images/dota_react/items/silver_edge.png"
+   "img": "/apps/dota2/images/dota_react/items/silver_edge.png",
+   "components": [
+    "invis_sword",
+    "demon_edge"
+   ]
   },
   "sange_and_yasha": {
    "name": "Sange and Yasha",
-   "img": "/apps/dota2/images/dota_react/items/sange_and_yasha.png"
+   "img": "/apps/dota2/images/dota_react/items/sange_and_yasha.png",
+   "components": [
+    "sange",
+    "yasha"
+   ]
   },
   "kaya_and_sange": {
    "name": "Kaya and Sange",
-   "img": "/apps/dota2/images/dota_react/items/kaya_and_sange.png"
+   "img": "/apps/dota2/images/dota_react/items/kaya_and_sange.png",
+   "components": [
+    "kaya",
+    "sange"
+   ]
   },
   "yasha_and_kaya": {
    "name": "Yasha and Kaya",
-   "img": "/apps/dota2/images/dota_react/items/yasha_and_kaya.png"
+   "img": "/apps/dota2/images/dota_react/items/yasha_and_kaya.png",
+   "components": [
+    "yasha",
+    "kaya"
+   ]
   },
   "satanic": {
    "name": "Satanic",
-   "img": "/apps/dota2/images/dota_react/items/satanic.png"
+   "img": "/apps/dota2/images/dota_react/items/satanic.png",
+   "components": [
+    "reaver",
+    "claymore",
+    "lifesteal"
+   ]
   },
   "recipe_mjollnir": {
    "name": "Mjollnir Recipe",
@@ -5595,11 +5957,20 @@
   },
   "mjollnir": {
    "name": "Mjollnir",
-   "img": "/apps/dota2/images/dota_react/items/mjollnir.png"
+   "img": "/apps/dota2/images/dota_react/items/mjollnir.png",
+   "components": [
+    "maelstrom",
+    "hyperstone"
+   ]
   },
   "skadi": {
    "name": "Eye of Skadi",
-   "img": "/apps/dota2/images/dota_react/items/skadi.png"
+   "img": "/apps/dota2/images/dota_react/items/skadi.png",
+   "components": [
+    "ultimate_orb",
+    "ultimate_orb",
+    "orb_of_frost"
+   ]
   },
   "recipe_sange": {
    "name": "Sange Recipe",
@@ -5607,7 +5978,11 @@
   },
   "sange": {
    "name": "Sange",
-   "img": "/apps/dota2/images/dota_react/items/sange.png"
+   "img": "/apps/dota2/images/dota_react/items/sange.png",
+   "components": [
+    "ogre_axe",
+    "belt_of_strength"
+   ]
   },
   "recipe_helm_of_the_dominator": {
    "name": "Helm of the Dominator Recipe",
@@ -5615,7 +5990,11 @@
   },
   "helm_of_the_dominator": {
    "name": "Helm of the Dominator",
-   "img": "/apps/dota2/images/dota_react/items/helm_of_the_dominator.png"
+   "img": "/apps/dota2/images/dota_react/items/helm_of_the_dominator.png",
+   "components": [
+    "helm_of_iron_will",
+    "crown"
+   ]
   },
   "recipe_helm_of_the_overlord": {
    "name": "Helm of the Overlord Recipe",
@@ -5623,11 +6002,20 @@
   },
   "helm_of_the_overlord": {
    "name": "Helm of the Overlord",
-   "img": "/apps/dota2/images/dota_react/items/helm_of_the_overlord.png"
+   "img": "/apps/dota2/images/dota_react/items/helm_of_the_overlord.png",
+   "components": [
+    "helm_of_the_dominator",
+    "ultimate_orb"
+   ]
   },
   "maelstrom": {
    "name": "Maelstrom",
-   "img": "/apps/dota2/images/dota_react/items/maelstrom.png"
+   "img": "/apps/dota2/images/dota_react/items/maelstrom.png",
+   "components": [
+    "mithril_hammer",
+    "javelin",
+    "gloves"
+   ]
   },
   "recipe_gungir": {
    "name": "Gleipnir Recipe",
@@ -5635,11 +6023,21 @@
   },
   "gungir": {
    "name": "Gleipnir",
-   "img": "/apps/dota2/images/dota_react/items/gungir.png"
+   "img": "/apps/dota2/images/dota_react/items/gungir.png",
+   "components": [
+    "rod_of_atos",
+    "point_booster",
+    "chasm_stone"
+   ]
   },
   "desolator": {
    "name": "Desolator",
-   "img": "/apps/dota2/images/dota_react/items/desolator.png"
+   "img": "/apps/dota2/images/dota_react/items/desolator.png",
+   "components": [
+    "mithril_hammer",
+    "mithril_hammer",
+    "blight_stone"
+   ]
   },
   "recipe_yasha": {
    "name": "Yasha Recipe",
@@ -5647,11 +6045,19 @@
   },
   "yasha": {
    "name": "Yasha",
-   "img": "/apps/dota2/images/dota_react/items/yasha.png"
+   "img": "/apps/dota2/images/dota_react/items/yasha.png",
+   "components": [
+    "blade_of_alacrity",
+    "boots_of_elves"
+   ]
   },
   "mask_of_madness": {
    "name": "Mask of Madness",
-   "img": "/apps/dota2/images/dota_react/items/mask_of_madness.png"
+   "img": "/apps/dota2/images/dota_react/items/mask_of_madness.png",
+   "components": [
+    "broadsword",
+    "lifesteal"
+   ]
   },
   "recipe_diffusal_blade": {
    "name": "Diffusal Blade Recipe",
@@ -5659,7 +6065,11 @@
   },
   "diffusal_blade": {
    "name": "Diffusal Blade",
-   "img": "/apps/dota2/images/dota_react/items/diffusal_blade.png"
+   "img": "/apps/dota2/images/dota_react/items/diffusal_blade.png",
+   "components": [
+    "blade_of_alacrity",
+    "robe"
+   ]
   },
   "recipe_disperser": {
    "name": "Disperser Recipe",
@@ -5667,7 +6077,11 @@
   },
   "disperser": {
    "name": "Disperser",
-   "img": "/apps/dota2/images/dota_react/items/disperser.png"
+   "img": "/apps/dota2/images/dota_react/items/disperser.png",
+   "components": [
+    "diffusal_blade",
+    "eagle"
+   ]
   },
   "recipe_ethereal_blade": {
    "name": "Ethereal Blade Recipe",
@@ -5675,7 +6089,11 @@
   },
   "ethereal_blade": {
    "name": "Ethereal Blade",
-   "img": "/apps/dota2/images/dota_react/items/ethereal_blade.png"
+   "img": "/apps/dota2/images/dota_react/items/ethereal_blade.png",
+   "components": [
+    "ultimate_orb",
+    "ghost"
+   ]
   },
   "recipe_soul_ring": {
    "name": "Soul Ring Recipe",
@@ -5683,7 +6101,12 @@
   },
   "soul_ring": {
    "name": "Soul Ring",
-   "img": "/apps/dota2/images/dota_react/items/soul_ring.png"
+   "img": "/apps/dota2/images/dota_react/items/soul_ring.png",
+   "components": [
+    "ring_of_protection",
+    "gauntlets",
+    "gauntlets"
+   ]
   },
   "recipe_arcane_boots": {
    "name": "Arcane Boots Recipe",
@@ -5691,7 +6114,12 @@
   },
   "arcane_boots": {
    "name": "Arcane Boots",
-   "img": "/apps/dota2/images/dota_react/items/arcane_boots.png"
+   "img": "/apps/dota2/images/dota_react/items/arcane_boots.png",
+   "components": [
+    "boots",
+    "ring_of_basilius",
+    "wizard_hat"
+   ]
   },
   "recipe_octarine_core": {
    "name": "Octarine Core Recipe",
@@ -5699,7 +6127,11 @@
   },
   "octarine_core": {
    "name": "Octarine Core",
-   "img": "/apps/dota2/images/dota_react/items/octarine_core.png"
+   "img": "/apps/dota2/images/dota_react/items/octarine_core.png",
+   "components": [
+    "soul_booster",
+    "tiara_of_selemene"
+   ]
   },
   "orb_of_venom": {
    "name": "Orb of Venom",
@@ -5711,7 +6143,12 @@
   },
   "orb_of_corrosion": {
    "name": "Orb of Corrosion",
-   "img": "/apps/dota2/images/dota_react/items/orb_of_corrosion.png"
+   "img": "/apps/dota2/images/dota_react/items/orb_of_corrosion.png",
+   "components": [
+    "boots_of_elves",
+    "orb_of_frost",
+    "blight_stone"
+   ]
   },
   "orb_of_frost": {
    "name": "Orb of Frost",
@@ -5723,11 +6160,22 @@
   },
   "falcon_blade": {
    "name": "Falcon Blade",
-   "img": "/apps/dota2/images/dota_react/items/falcon_blade.png"
+   "img": "/apps/dota2/images/dota_react/items/falcon_blade.png",
+   "components": [
+    "blades_of_attack",
+    "fluffy_hat",
+    "sobi_mask"
+   ]
   },
   "mage_slayer": {
    "name": "Mage Slayer",
-   "img": "/apps/dota2/images/dota_react/items/mage_slayer.png"
+   "img": "/apps/dota2/images/dota_react/items/mage_slayer.png",
+   "components": [
+    "pers",
+    "cloak",
+    "blades_of_attack",
+    "orb_of_venom"
+   ]
   },
   "recipe_ancient_janggo": {
    "name": "Drum of Endurance Recipe",
@@ -5735,15 +6183,30 @@
   },
   "ancient_janggo": {
    "name": "Drum of Endurance",
-   "img": "/apps/dota2/images/dota_react/items/ancient_janggo.png"
+   "img": "/apps/dota2/images/dota_react/items/ancient_janggo.png",
+   "components": [
+    "headdress",
+    "belt_of_strength",
+    "wind_lace"
+   ]
   },
   "boots_of_bearing": {
    "name": "Boots of Bearing",
-   "img": "/apps/dota2/images/dota_react/items/boots_of_bearing.png"
+   "img": "/apps/dota2/images/dota_react/items/boots_of_bearing.png",
+   "components": [
+    "tranquil_boots",
+    "ancient_janggo",
+    "ring_of_tarrasque"
+   ]
   },
   "medallion_of_courage": {
    "name": "Medallion of Courage",
-   "img": "/apps/dota2/images/dota_react/items/medallion_of_courage.png"
+   "img": "/apps/dota2/images/dota_react/items/medallion_of_courage.png",
+   "components": [
+    "chainmail",
+    "sobi_mask",
+    "blight_stone"
+   ]
   },
   "recipe_solar_crest": {
    "name": "Solar Crest Recipe",
@@ -5751,7 +6214,12 @@
   },
   "solar_crest": {
    "name": "Solar Crest",
-   "img": "/apps/dota2/images/dota_react/items/solar_crest.png"
+   "img": "/apps/dota2/images/dota_react/items/solar_crest.png",
+   "components": [
+    "pavise",
+    "chainmail",
+    "wind_lace"
+   ]
   },
   "recipe_pavise": {
    "name": "Pavise Recipe",
@@ -5759,7 +6227,12 @@
   },
   "pavise": {
    "name": "Pavise",
-   "img": "/apps/dota2/images/dota_react/items/pavise.png"
+   "img": "/apps/dota2/images/dota_react/items/pavise.png",
+   "components": [
+    "wizard_hat",
+    "fluffy_hat",
+    "ring_of_protection"
+   ]
   },
   "smoke_of_deceit": {
    "name": "Smoke of Deceit",
@@ -5775,7 +6248,12 @@
   },
   "veil_of_discord": {
    "name": "Veil of Discord",
-   "img": "/apps/dota2/images/dota_react/items/veil_of_discord.png"
+   "img": "/apps/dota2/images/dota_react/items/veil_of_discord.png",
+   "components": [
+    "voodoo_mask",
+    "robe",
+    "fluffy_hat"
+   ]
   },
   "recipe_revenants_brooch": {
    "name": "Revenant's Brooch Recipe",
@@ -5783,7 +6261,11 @@
   },
   "revenants_brooch": {
    "name": "Revenant's Brooch",
-   "img": "/apps/dota2/images/dota_react/items/revenants_brooch.png"
+   "img": "/apps/dota2/images/dota_react/items/revenants_brooch.png",
+   "components": [
+    "lesser_crit",
+    "voodoo_mask"
+   ]
   },
   "recipe_devastator": {
    "name": "Parasma Recipe",
@@ -5791,7 +6273,11 @@
   },
   "devastator": {
    "name": "Parasma",
-   "img": "/apps/dota2/images/dota_react/items/devastator.png"
+   "img": "/apps/dota2/images/dota_react/items/devastator.png",
+   "components": [
+    "witch_blade",
+    "mystic_staff"
+   ]
   },
   "recipe_guardian_greaves": {
    "name": "Guardian Greaves Recipe",
@@ -5799,7 +6285,11 @@
   },
   "guardian_greaves": {
    "name": "Guardian Greaves",
-   "img": "/apps/dota2/images/dota_react/items/guardian_greaves.png"
+   "img": "/apps/dota2/images/dota_react/items/guardian_greaves.png",
+   "components": [
+    "arcane_boots",
+    "mekansm"
+   ]
   },
   "recipe_rod_of_atos": {
    "name": "Rod of Atos Recipe",
@@ -5807,7 +6297,11 @@
   },
   "rod_of_atos": {
    "name": "Rod of Atos",
-   "img": "/apps/dota2/images/dota_react/items/rod_of_atos.png"
+   "img": "/apps/dota2/images/dota_react/items/rod_of_atos.png",
+   "components": [
+    "staff_of_wizardry",
+    "vitality_booster"
+   ]
   },
   "recipe_iron_talon": {
    "name": "Iron Talon Recipe",
@@ -5815,7 +6309,11 @@
   },
   "iron_talon": {
    "name": "Iron Talon",
-   "img": "/apps/dota2/images/dota_react/items/iron_talon.png"
+   "img": "/apps/dota2/images/dota_react/items/iron_talon.png",
+   "components": [
+    "quelling_blade",
+    "ring_of_protection"
+   ]
   },
   "recipe_abyssal_blade": {
    "name": "Abyssal Blade Recipe",
@@ -5823,7 +6321,11 @@
   },
   "abyssal_blade": {
    "name": "Abyssal Blade",
-   "img": "/apps/dota2/images/dota_react/items/abyssal_blade.png"
+   "img": "/apps/dota2/images/dota_react/items/abyssal_blade.png",
+   "components": [
+    "basher",
+    "sange"
+   ]
   },
   "recipe_heavens_halberd": {
    "name": "Heaven's Halberd Recipe",
@@ -5831,7 +6333,12 @@
   },
   "heavens_halberd": {
    "name": "Heaven's Halberd",
-   "img": "/apps/dota2/images/dota_react/items/heavens_halberd.png"
+   "img": "/apps/dota2/images/dota_react/items/heavens_halberd.png",
+   "components": [
+    "talisman_of_evasion",
+    "splintmail",
+    "ring_of_health"
+   ]
   },
   "ring_of_aquila": {
    "name": "Ring of Aquila",
@@ -5839,7 +6346,12 @@
   },
   "tranquil_boots": {
    "name": "Tranquil Boots",
-   "img": "/apps/dota2/images/dota_react/items/tranquil_boots.png"
+   "img": "/apps/dota2/images/dota_react/items/tranquil_boots.png",
+   "components": [
+    "boots",
+    "wind_lace",
+    "ring_of_regen"
+   ]
   },
   "shadow_amulet": {
    "name": "Shadow Amulet",
@@ -5851,7 +6363,11 @@
   },
   "glimmer_cape": {
    "name": "Glimmer Cape",
-   "img": "/apps/dota2/images/dota_react/items/glimmer_cape.png"
+   "img": "/apps/dota2/images/dota_react/items/glimmer_cape.png",
+   "components": [
+    "shadow_amulet",
+    "shawl"
+   ]
   },
   "river_painter": {
    "name": "River Vial: Chrome",
@@ -6243,7 +6759,11 @@
   },
   "harpoon": {
    "name": "Harpoon",
-   "img": "/apps/dota2/images/dota_react/items/harpoon.png"
+   "img": "/apps/dota2/images/dota_react/items/harpoon.png",
+   "components": [
+    "echo_sabre",
+    "diadem"
+   ]
   },
   "defiant_shell": {
    "name": "Defiant Shell",
@@ -6543,11 +7063,20 @@
   },
   "specialists_array": {
    "name": "Specialist's Array",
-   "img": "/apps/dota2/images/dota_react/items/specialists_array.png"
+   "img": "/apps/dota2/images/dota_react/items/specialists_array.png",
+   "components": [
+    "blade_of_alacrity",
+    "broadsword"
+   ]
   },
   "hydras_breath": {
    "name": "Hydra's Breath",
-   "img": "/apps/dota2/images/dota_react/items/hydras_breath.png"
+   "img": "/apps/dota2/images/dota_react/items/hydras_breath.png",
+   "components": [
+    "specialists_array",
+    "dragon_lance",
+    "orb_of_venom"
+   ]
   },
   "weighted_dice": {
    "name": "Weighted Dice",
@@ -6643,7 +7172,11 @@
   },
   "diffusal_blade_2": {
    "name": "Diffusal Blade",
-   "img": "/apps/dota2/images/dota_react/items/diffusal_blade_2.png"
+   "img": "/apps/dota2/images/dota_react/items/diffusal_blade_2.png",
+   "components": [
+    "diffusal_blade",
+    "recipe_diffusal_blade"
+   ]
   }
  }
 }

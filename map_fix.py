@@ -1056,8 +1056,7 @@ def fix_piece_lift(w: workshop.Workshop, apply: bool, offset: float = 0.0, types
             if not m or not e: continue
             geos = pieces.get(code)
             if geos is None:
-                # derive from the model file name index when 'pieces' is absent (older records)
-                continue
+                workshop.die('запись о разрезании старой версии: повторите split-model ... --redo --apply, затем эту команду')
             keep = set(geos)
             sz = e['sz'] or 1.0
             # placement z is the ground at the assembly point (what the game uses when it
