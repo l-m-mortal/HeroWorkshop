@@ -995,7 +995,7 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
         for k, c, cx, cy, zmin, code, mpath in plan:
             wx = e['x'] + (cx * ca - cy * sa) * e['sx']; wy = e['y'] + (cx * sa + cy * ca) * e['sy']
             zoff = zmin * e['sz']
-            meta[code] = {'wx': wx, 'wy': wy, 'zoff': zoff}
+            meta[code] = {'wx': wx, 'wy': wy, 'zoff': zoff, 'path': mpath}
             new_entries.append({'type': code, 'variation': 0, 'x': e['x'], 'y': e['y'], 'z': tz(wx, wy) - zoff - sink, 'angle': e['angle'], 'sx': e['sx'], 'sy': e['sy'], 'sz': e['sz'], 'flags': e['flags'], 'life': e['life'], 'item_table': -1, 'item_sets': [], 'editor_id': 0})
     print(f'Новых размещений: {len(new_entries)}; исходные {len(placements)} будут убраны.')
     if not apply: print('\nПлан. Запустите с --apply. Откат: split-model --undo --apply'); return
@@ -1009,7 +1009,7 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     kill = {e['editor_id'] for e in placements}
     cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in kill] + new_entries
     w.changes['war3map.doo'] = doo.serialize(cur); w.changes['war3map.w3d'] = map_audit.serialize_obj_file(w3d); w.commit()
-    w.state.setdefault(rec_key, []).append({'path': path, 'types': [p[5] for p in plan], 'editor_ids': [first_id, nid - 1], 'original': placements, 'meta': meta, 'applied': __import__('time').strftime('%Y-%m-%d %H:%M:%S')})
+    w.state.setdefault(rec_key, []).append({'path': path, 'types': [p[5] for p in plan], 'editor_ids': [first_id, nid - 1], 'original': placements, 'meta': meta, 'pieces': {p[5]: list(p[1]) for p in plan}, 'drop': sorted(dropset), 'applied': __import__('time').strftime('%Y-%m-%d %H:%M:%S')})
     w.save_state()
     print(f'Записано: типов {len(plan)}, размещений {len(new_entries)}. Высота потом: doodads-z --types {",".join(p[5] for p in plan)} --offset N')
 
@@ -1031,6 +1031,46 @@ def fix_compact(w: workshop.Workshop, apply: bool):
         if w.mpq.has(n): assert check.read(n) == w.mpq.read(n), n
     os.replace(tmp, workshop.MAP); w.mpq = check
     print(f'Готово: {workshop.MAP.stat().st_size / 1e6:.1f} МБ.')
+
+def fix_piece_lift(w: workshop.Workshop, apply: bool, offset: float = 0.0, types: str | None = None):
+    """Raise/lower split-model pieces by moving their geometry (the game may ignore the
+    z stored for doodads). Each piece model is regenerated from the source model, so
+    the value is absolute: bottom of the piece = ground under the piece + offset.
+
+    --offset N     height of the piece bottom above the ground (0 = on the ground)
+    --types A,B    only these piece types (default: all pieces of all split models)"""
+    import doo
+    recs = w.state.get('split_models', [])
+    if not recs: workshop.die('нет разрезанных моделей')
+    only = set(types.split(',')) if types else None
+    cur = doo.parse(w.mpq.read('war3map.doo'))
+    by_type = {}
+    for e in cur['entries']: by_type.setdefault(e['type'], e)
+    tz = terrain_z(w); n = 0
+    for rec in recs:
+        src = w.mpq.read(rec['path']); boxes = mdx_geoset_boxes(src)
+        meta = rec.get('meta', {}); pieces = rec.get('pieces') or {}
+        for code in rec['types']:
+            if only and code not in only: continue
+            m = meta.get(code); e = by_type.get(code)
+            if not m or not e: continue
+            geos = pieces.get(code)
+            if geos is None:
+                # derive from the model file name index when 'pieces' is absent (older records)
+                continue
+            keep = set(geos)
+            sz = e['sz'] or 1.0
+            # placement z is the ground at the assembly point (what the game uses when it
+            # ignores stored z); piece bottom must land on ground under the piece + offset
+            dz = (tz(m['wx'], m['wy']) + offset - tz(e['x'], e['y'])) / sz - m['zoff'] / sz
+            part = mdx_drop_geosets(src, set(range(len(boxes))).difference(keep) | set(rec.get('drop', [])))
+            part = mdx_translate(part, 0.0, 0.0, dz)
+            w.changes[m['path']] = part; n += 1
+            print(f'  {code}: сдвиг геометрии по z {dz:+.0f}')
+    print(f'Кусков: {n}')
+    if not n: return
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    w.commit(); print('Записано.')
 
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
@@ -1145,8 +1185,16 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     # command-card position.
     data, ah, arows = w.abil_data
     cool = [c for c in ah if re.match(r'Cool\d+$', c)]
+    # item abilities live in the inventory, not on the command card: never map them there
+    icells, ih, irows = workshop.slk(w.mpq.read('units\\ItemData.slk').decode('latin1', 'replace'))
+    item_abils = set()
+    for r in irows.values():
+        for c in (icells.get((ih['abilList'], r), '') or '').split(','):
+            c = c.strip().strip('"')
+            if len(c) == 4: item_abils.add(c)
+    ids = [c for c in ids if c not in item_abils]
     for code, r in arows.items():
-        if code in ids or not re.match(r'^[0-9A-Za-z]{4}$', code): continue
+        if code in ids or code in item_abils or not re.match(r'^[0-9A-Za-z]{4}$', code): continue
         cd = 0.0
         for col in cool:
             try: cd = max(cd, float(data.get((ah[col], r), '0') or 0))
@@ -1202,7 +1250,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False):
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1246,6 +1294,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
+    elif a.fix == 'piece-lift': FIXES[a.fix](w, a.apply, a.offset, a.types)
     elif a.fix == 'split-model': FIXES[a.fix](w, a.apply, a.path, a.types, a.drop, a.gap, a.sink, a.undo, a.redo)
     elif a.fix == 'model-bounds': FIXES[a.fix](w, a.apply, a.match)
     elif a.fix == 'overlaps': FIXES[a.fix](w, a.apply, a.radius, a.pairs, a.prefer)

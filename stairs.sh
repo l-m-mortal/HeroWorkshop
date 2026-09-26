@@ -1,8 +1,9 @@
 #!/bin/zsh
-# Лестницы (куски разрезанной сборки AshenRock7, типы DS00..DS0M). Высота над землёй, не накапливает.
-#   zsh stairs.sh 100            # все лестницы обеих сторон
+# Лестницы и стены из разрезанной сборки AshenRock7 (куски DS00..DS0M). Высота низа куска над землёй.
+# Значение абсолютное (не накапливается). Меняется и запись в карте, и сама геометрия куска.
+#   zsh stairs.sh 100            # все куски
 #   zsh stairs.sh 100 radiant    # только Radiant (DS00-DS09, DS0E, DS0K)
-#   zsh stairs.sh 100 dire       # только Dire (DS0A-DS0D, DS0F-DS0J, DS0L, DS0M)
+#   zsh stairs.sh 100 dire       # только Dire
 #   zsh stairs.sh 100 DS03       # один кусок
 cd "$(dirname "$0")"
 case "${2:-all}" in
@@ -12,3 +13,4 @@ case "${2:-all}" in
   *)       T=$2 ;;
 esac
 python3 map_fix.py doodads-z --types $T --offset ${1:-0} --apply
+if [ "$T" = 'DS*' ]; then python3 map_fix.py piece-lift --offset ${1:-0} --apply; else python3 map_fix.py piece-lift --offset ${1:-0} --types $T --apply; fi
