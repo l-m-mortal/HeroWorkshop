@@ -432,6 +432,17 @@ class Workshop:
         s = re.sub(r'\s*(level|lvl)\s*\d+\s*$', '', s, flags=re.I)
         s = re.sub(r'\s*-\s*\d+\s*$', '', s)
         return s.strip() or name
+    STATE_WORDS = {'on', 'off', 'agility', 'strength', 'intelligence', 'level', 'lvl', 'charged', 'empty', 'full', 'active', 'inactive', 'used', 'unused', 'melee', 'ranged'}
+    def item_variant_key(self, name: str) -> str:
+        """Cards inside a family: a bracket suffix is a real variant only when it names a
+        state (Power Treads (Agility), Armlet (On), Dagon Level 3); anything else, e.g. a
+        hero name after Aghanim's Scepter, is the same item."""
+        m = re.match(r'^(.*?)\s*\(([^)]*)\)?\s*$', name)
+        if m and m.group(2):
+            words = [w for w in re.split(r'[^a-z0-9]+', m.group(2).strip().lower()) if w]
+            if any(w in self.STATE_WORDS or w.isdigit() for w in words): return norm(name)
+            return norm(m.group(1))
+        return norm(name)
     def item_list(self):
         """Items grouped into families by base name (all Aghanim's Scepters are one
         family). A family joins its shop entry units (what the shop shows) with its
@@ -445,7 +456,11 @@ class Workshop:
             g = family(self.item_base_name(name)); g['codes'].append(code)
             if name not in g['names']: g['names'].append(name)
             info = self.icon_info('item:' + code)
-            v = g['variants'].setdefault(info['art'] or '', {'art': info['art'], 'names': [], 'codes': [], 'icon': info})
+            # one card per distinct full item name (Power Treads (Strength) / (Agility)
+            # stay separate, the 243 Aghanim's Scepters collapse into one); the card's
+            # icon is the first code's art, set-icon applies to every code of the card
+            v = g['variants'].setdefault(self.item_variant_key(name), {'art': info['art'], 'names': [], 'codes': [], 'icon': info})
+            if not v['art'] and info['art']: v['art'] = info['art']; v['icon'] = info
             v['codes'].append(code)
             if name not in v['names']: v['names'].append(name)
             if info['art'] and (g['icon_item'] is None or (g['icon_item']['normal']['where'] in ('none', 'standard') and info['normal']['where'] in ('map', 'disk'))):
@@ -461,7 +476,7 @@ class Workshop:
                 if g['icon'] is None and info['art']: g['icon'] = info
         out = []
         for g in fam.values():
-            variants = [v for v in g['variants'].values() if v['art']]
+            variants = [v for v in g['variants'].values() if v['art'] or v['codes']]
             for v in variants:
                 v['label'] = ', '.join(v['names'][:3]) + (' …' if len(v['names']) > 3 else '')
                 v['keys'] = ','.join('item:' + c for c in v['codes'])
