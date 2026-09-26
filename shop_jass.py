@@ -346,6 +346,7 @@ function HW_ShopChat takes nothing returns nothing
 endfunction
 function HW_ShopBuild takes nothing returns nothing
     local framehandle ui=BlzGetOriginFrame(ORIGIN_FRAME_GAME_UI,0)
+    local framehandle panelParent=BlzGetOriginFrame(HW_SHOP_PARENT_ORIGIN,0)
     local integer i=0
     local integer j
     local integer col
@@ -359,11 +360,13 @@ function HW_ShopBuild takes nothing returns nothing
     call HW_ShopDataInit()
     set HW_shopOwner=Player(PLAYER_NEUTRAL_PASSIVE)
     set HW_shopSlotHT=InitHashtable()
-    set HW_shopPanel=BlzCreateFrameByType("BACKDROP","HWShopPanel",ui,"",0)
+    set HW_shopPanel=BlzCreateFrameByType("BACKDROP","HWShopPanel",panelParent,"",0)
     // right screen edge in 4:3 frame coordinates depends on the client aspect ratio
-    set HW_shopRightX=0.4+0.3*I2R(BlzGetLocalClientWidth())/I2R(BlzGetLocalClientHeight())
+    set HW_shopRightX=0.8
     if HW_SHOP_RIGHT_OVERRIDE>0.0 then
         set HW_shopRightX=HW_SHOP_RIGHT_OVERRIDE
+    elseif HW_SHOP_RIGHT_OVERRIDE<0.0 then
+        set HW_shopRightX=0.4+0.3*I2R(BlzGetLocalClientWidth())/I2R(BlzGetLocalClientHeight())
     endif
     call BlzFrameSetAbsPoint(HW_shopPanel,FRAMEPOINT_TOPRIGHT,HW_shopRightX,HW_SHOP_TOP_Y)
     call BlzFrameSetSize(HW_shopPanel,{PANEL_W:.6f},HW_SHOP_TOP_Y-HW_SHOP_BOTTOM_Y)
@@ -686,7 +689,7 @@ def catalog_function(categories: list[dict]) -> str:
     return '\n'.join(lines)
 
 
-def inject(script: str, categories: list[dict], right: float = 0.0, top: float = None, bottom: float = None) -> str:
+def inject(script: str, categories: list[dict], right: float = 0.0, top: float = None, bottom: float = None, parent: str = 'gameui') -> str:
     """Return the script with the shop-window block added (idempotent). Coexists
     with the HW_COOLDOWN_* block; both are spliced the same way (globals appended
     to the first `globals` block, functions right before `main`, one call at the
@@ -698,6 +701,7 @@ def inject(script: str, categories: list[dict], right: float = 0.0, top: float =
         raise ValueError(f'{len(categories)} shop categories, HW_SHOP_MAX_SHOPS={HW_SHOP_MAX_SHOPS} is too small')
     script = remove(script)
     funcs = (FUNCTIONS.replace('// HW_SHOP_BEGIN', '// HW_SHOP_BEGIN\n' + catalog_function(categories))
+             .replace('HW_SHOP_PARENT_ORIGIN', 'ORIGIN_FRAME_WORLD_FRAME' if parent == 'world' else 'ORIGIN_FRAME_GAME_UI')
              .replace('HW_SHOP_RIGHT_OVERRIDE', f'{right:.6f}')
              .replace('HW_SHOP_TOP_Y', f'{(top if top is not None else PANEL_TOP_Y):.6f}')
              .replace('HW_SHOP_BOTTOM_Y', f'{(bottom if bottom is not None else PANEL_BOTTOM_Y):.6f}'))

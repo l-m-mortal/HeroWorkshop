@@ -1441,7 +1441,7 @@ def fix_cooldown_numbers(w: workshop.Workshop, apply: bool, undo: bool = False, 
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py cooldown-numbers --undo --apply')
 
-def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: float = 0.0, top: float = None, bottom: float = None):
+def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: float = 0.0, top: float = None, bottom: float = None, parent: str = 'gameui'):
     """Dota 2-style shop window (JASS block in war3map.j, pure JASS/frames).
 
     Collects the base category shops (workshop.py shops()/item_list(), excluding
@@ -1471,7 +1471,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: fl
         print(f'Категорий: {len(categories)}, товаров: {total}')
         for c in categories:
             print(f"  {c['name']:30s} {len(c['items']):2d} товаров, коды лавки: {','.join(c['shop_codes'])}")
-        new = shop_jass.inject(script, categories, right, top, bottom)
+        new = shop_jass.inject(script, categories, right, top, bottom, parent)
     present = 'HW_SHOP_BEGIN' in script
     print(f'Сейчас блок {"есть" if present else "отсутствует"}; после: {"удалён" if undo else "добавлен"} ({len(new) - len(script):+d} байт).')
     if not apply: print('План. Запустите с --apply.'); return
@@ -1493,7 +1493,7 @@ def main():
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
     ap.add_argument('--events', help='model-events: СОБЫТИЕ@КАДР через запятую')
-    ap.add_argument('--right', type=float, default=0.0, help='shop-ui: правый край панели (0 = по размеру окна)')
+    ap.add_argument('--right', type=float, default=0.0, help='shop-ui: правый край панели (0 = 0.8, -1 = по размеру окна, число = вручную)')
     ap.add_argument('--top', type=float, default=None, help='shop-ui: верх панели (0.555)')
     ap.add_argument('--bottom', type=float, default=None, help='shop-ui: низ панели (0.20)')
     ap.add_argument('--parts', help='model-lift: номера частей через запятую или all')
@@ -1514,7 +1514,7 @@ def main():
     ap.add_argument('--undo', action='store_true', help='doodads: удалить ранее добавленные размещения')
     ap.add_argument('--into', choices=['map', 'root'], default='map', help='hq-doodads: куда класть файлы')
     ap.add_argument('--font', type=float, default=0.016, help='cooldown-numbers: высота шрифта')
-    ap.add_argument('--parent', choices=['gameui', 'button'], default='gameui', help='cooldown-numbers: к чему крепить текст')
+    ap.add_argument('--parent', choices=['gameui', 'button', 'world'], default='gameui', help='cooldown-numbers: к чему крепить текст; shop-ui: gameui|world (world = во всю ширину экрана)')
     ap.add_argument('--debug', action='store_true', help='cooldown-numbers: отладочный режим (номера ячеек и строка состояния)')
     ap.add_argument('--textures', action='store_true', help='hq-doodads: показать текстуры каждой модели и их статус')
     ap.add_argument('--match', help='hq-doodads: только пути, содержащие текст')
@@ -1544,7 +1544,7 @@ def main():
     elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures, a.models)
     elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font, a.parent, a.debug)
-    elif a.fix == 'shop-ui': FIXES[a.fix](w, a.apply, a.undo, a.right, a.top, a.bottom)
+    elif a.fix == 'shop-ui': FIXES[a.fix](w, a.apply, a.undo, a.right, a.top, a.bottom, a.parent)
     else: FIXES[a.fix](w, a.apply)
 
 if __name__ == '__main__':
