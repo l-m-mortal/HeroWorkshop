@@ -96,19 +96,6 @@ function HW_cdTick takes nothing returns nothing
         return
     endif
     set dbg="HW cd: "+GetUnitName(HW_cdUnit)+" abils="+I2S(HW_cdUnitN)
-    if HW_cdIsDebug then
-        set dbg=dbg+" vis="
-        set i=0
-        loop
-            exitwhen i>11
-            if BlzFrameIsVisible(BlzGetOriginFrame(ORIGIN_FRAME_COMMAND_BUTTON,i)) then
-                set dbg=dbg+"1"
-            else
-                set dbg=dbg+"0"
-            endif
-            set i=i+1
-        endloop
-    endif
     set i=0
     loop
         exitwhen i>=HW_cdUnitN

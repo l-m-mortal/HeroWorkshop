@@ -200,8 +200,30 @@ def _ref_map(ref):
     candidates = [p if p.is_absolute() else workshop.GAME / p for p in candidates]
     return next((p for p in candidates if p.is_file()), None)
 
+def mdx_bounds(data: bytes):
+    """(radius, min, max) over every geoset's vertices; None when there are none."""
+    import struct
+    o = 4; pts = []
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; o += 8
+        if tag == b'GEOS':
+            q = o
+            while q < o + size:
+                gs = struct.unpack_from('<I', data, q)[0]
+                if gs <= 0 or data[q + 4:q + 8] != b'VRTX': break
+                n = struct.unpack_from('<I', data, q + 8)[0]
+                pts.extend(struct.iter_unpack('<3f', data[q + 12:q + 12 + n * 12]))
+                q += gs
+        o += size
+    if not pts: return None
+    mn = tuple(min(p[i] for p in pts) for i in range(3)); mx = tuple(max(p[i] for p in pts) for i in range(3))
+    radius = max((x * x + y * y + z * z) ** 0.5 for x, y, z in pts)
+    return radius, mn, mx
+
 def mdx_add_stand(data: bytes) -> bytes | None:
-    """Give a sequence-less MDX one 'Stand' sequence (0..1000 ms) so the game renders it.
+    """Give a sequence-less MDX one 'Stand' sequence (0..1000 ms) so the game treats it
+    like any other doodad. Extents are computed from the vertices (converted models
+    often carry zero bounds in the header, which makes the game cull them at random).
     Returns None when the model already has sequences or is not an MDX."""
     import struct
     if data[:4] != b'MDLX': return None
@@ -210,16 +232,16 @@ def mdx_add_stand(data: bytes) -> bytes | None:
         tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]
         chunks.append((tag, o, size)); o += 8 + size
     if any(t == b'SEQS' and sz for t, _, sz in chunks): return None
-    # extents from MODL (bounds radius + min/max), fall back to zeros
-    radius, mn, mx = 0.0, (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
+    b = mdx_bounds(data)
+    if b is None: return None
+    radius, mn, mx = b
+    out = bytearray(data)
     for t, off, sz in chunks:
-        if t == b'MODL' and sz >= 372:
-            radius = struct.unpack_from('<f', data, off + 8 + 80 + 260)[0]
-            mn = struct.unpack_from('<3f', data, off + 8 + 80 + 264); mx = struct.unpack_from('<3f', data, off + 8 + 80 + 276)
+        if t == b'MODL' and sz >= 372:  # fix header extents too when they are empty
+            if struct.unpack_from('<f', out, off + 8 + 340)[0] == 0.0:
+                struct.pack_into('<f3f3f', out, off + 8 + 340, radius, *mn, *mx)
     seq = b'Stand'.ljust(80, b'\0') + struct.pack('<IIfIfI', 0, 1000, 0.0, 0, 0.0, 0) + struct.pack('<f3f3f', radius, *mn, *mx)
     seqs = b'SEQS' + struct.pack('<I', len(seq)) + seq
-    out = bytearray(data)
-    # drop an empty SEQS chunk if present, then insert after MODL (or after VERS)
     for t, off, sz in reversed(chunks):
         if t == b'SEQS': del out[off:off + 8 + sz]
     o = 4; ins = None
@@ -230,6 +252,25 @@ def mdx_add_stand(data: bytes) -> bytes | None:
         o += 8 + size
     if ins is None: return None
     out[ins:ins] = seqs
+    return bytes(out)
+
+def _hw_stand_zero_bounds(data: bytes) -> bool:
+    import struct
+    o = 4
+    while o + 8 <= len(data):
+        tag = data[o:o + 4]; size = struct.unpack_from('<I', data, o + 4)[0]; o += 8
+        if tag == b'SEQS' and size == 132 and data[o:o + 5] == b'Stand' and struct.unpack_from('<f', data, o + 104)[0] == 0.0:
+            return True
+        o += size
+    return False
+
+def _strip_seqs(data: bytes) -> bytes:
+    import struct
+    out = bytearray(data); o = 4
+    while o + 8 <= len(out):
+        tag = out[o:o + 4]; size = struct.unpack_from('<I', out, o + 4)[0]
+        if tag == b'SEQS': del out[o:o + 8 + size]; continue
+        o += 8 + size
     return bytes(out)
 
 def fix_static_models(w: workshop.Workshop, apply: bool, match: str | None = None):
@@ -243,7 +284,10 @@ def fix_static_models(w: workshop.Workshop, apply: bool, match: str | None = Non
         if match and match.lower() not in name.lower(): continue
         data = w.mpq.read(name)
         mi = mdx_info(data)
-        if not mi['ok'] or mi['sequences']: continue
+        if not mi['ok']: continue
+        if mi['sequences']:
+            if not _hw_stand_zero_bounds(data): continue
+            data = _strip_seqs(data)  # our earlier Stand with empty bounds: rebuild it
         fixed = mdx_add_stand(data)
         if fixed: plan.append((name, mi['geosets'], fixed))
         else: print(f'  {name}: не удалось исправить')
@@ -253,13 +297,15 @@ def fix_static_models(w: workshop.Workshop, apply: bool, match: str | None = Non
     for name, _, fixed in plan: w.changes[name] = fixed
     w.commit(); print(f'Исправлено {len(plan)} моделей.')
 
-def fix_repack_textures(w: workshop.Workshop, apply: bool, match: str | None = None, folders: str = 'Doodads'):
+def fix_repack_textures(w: workshop.Workshop, apply: bool, match: str | None = None, folders: str = 'Doodads', opaque: bool = False):
     """Re-encode JPEG BLP textures used by the HQ doodad models in the map as paletted
     BLP1 with mipmaps (JPEG BLPs converted from other games can show up white in
     1.31). Only textures referenced by MDX files under the given folders are touched.
 
     --match text   only models whose path contains text
-    --folders A,B  model folders inside the map (default Doodads)"""
+    --folders A,B  model folders inside the map (default Doodads)
+    --opaque       drop the alpha plane (a model whose texture is fully transparent
+                   is invisible; try this when a model does not show at all)"""
     import blp, struct
     tops = tuple(f.strip().lower() + '\\' for f in folders.split(','))
     seen = {}
@@ -278,8 +324,10 @@ def fix_repack_textures(w: workshop.Workshop, apply: bool, match: str | None = N
     for t, data, model in seen.values():
         try:
             im = blp.decode(data)
+            lo, hi = im.getchannel('A').getextrema()
+            if opaque: im.putalpha(255)
             out[t] = blp.encode(im)
-            print(f'  {t}: JPEG {im.size[0]}x{im.size[1]} -> палитра, {len(data)} -> {len(out[t])} байт   ({model.split(chr(92))[-1]})')
+            print(f'  {t}: JPEG {im.size[0]}x{im.size[1]}, альфа {lo}..{hi}{" -> 255" if opaque else ""} -> палитра, {len(data)} -> {len(out[t])} байт   ({model.split(chr(92))[-1]})')
         except Exception as e:
             print(f'  {t}: не удалось декодировать ({e})')
     if not apply: print(f'\nПлан: перепаковать {len(out)} текстур. Запустите с --apply. Вернуть исходные: hq-doodads --apply.'); return
@@ -414,6 +462,7 @@ def main():
     ap.add_argument('--types', help='список типов декораций через запятую для doodads')
     ap.add_argument('--near', help='doodads: X,Y,R — только размещения в радиусе R от точки')
     ap.add_argument('--at', help='probe: X,Y,R — точка и радиус')
+    ap.add_argument('--opaque', action='store_true', help='repack-textures: убрать альфа-канал')
     ap.add_argument('--models', action='store_true', help='hq-doodads: проверить каждую модель и её текстуры')
     ap.add_argument('--undo', action='store_true', help='doodads: удалить ранее добавленные размещения')
     ap.add_argument('--into', choices=['map', 'root'], default='map', help='hq-doodads: куда класть файлы')
@@ -432,7 +481,7 @@ def main():
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
     elif a.fix == 'static-models': FIXES[a.fix](w, a.apply, a.match)
-    elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders)
+    elif a.fix == 'repack-textures': FIXES[a.fix](w, a.apply, a.match, a.folders, a.opaque)
     elif a.fix == 'hq-doodads': FIXES[a.fix](w, a.apply, a.into, a.match, a.folders, a.textures, a.models)
     elif a.fix == 'cooldown-numbers': FIXES[a.fix](w, a.apply, a.undo, a.font, a.parent, a.debug)
     else: FIXES[a.fix](w, a.apply)
