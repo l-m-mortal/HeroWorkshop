@@ -100,6 +100,7 @@ python3 map_fix.py model-cut --path "Doodads\\...\\X.mdx" --drop 17,18,19 --appl
 python3 map_fix.py script-tints [--undo] --apply              # окраска из скрипта (Войд после Time Walk)
 python3 map_fix.py untint [--types UC18] --apply            # убрать окраску (затемнение) с моделей героев
 python3 map_fix.py trees [--which ashenvale|northrend|all] [--undo] --apply   # HQ-деревья (модели + текстуры) в карту
+python3 map_fix.py cliffs [--scan] [--split] [--radiant F --dire F] [--ground] [--undo] --apply   # склоны по сторонам + текстуры склонов/земли
 python3 map_fix.py compact --apply                        # уплотнить архив карты (убрать мёртвый груз от прошлых записей)
 python3 map_fix.py remove --ids 5254,5244 [--undo] --apply   # убрать отдельные размещения по номерам
 python3 map_fix.py move-doodads --types DH01 --from=2448,-528 --to=4208,-2288 [--rotate 90] --apply  # перенести группу

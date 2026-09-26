@@ -73,8 +73,21 @@
    Подтвердить сборку составных предметов.
 7. **Деревья**: `python3 map_fix.py trees --apply` (HQ Ashenvale-ёлки: модели AshenTree0-4[,D,S] и
    текстуры AshenvaleTree в карту по стандартным путям; `--which northrend` для Dire, `--undo` убрать).
-   Написано, в игре не проверено. См. `docs/AUDIT_ranged_and_trees.md`.
-8. Столбы с цепями у фонтана Dire родные, не трогать.
+   Лес Radiant = `ATtr` (варианты 0-4, путь стандартный, в w3b только тон 190 и масштаб 1.1),
+   Dire = `NTtw`. Модель HQ использует replaceable-текстуру 32 (AshenvaleTree), поэтому вместе
+   с моделями нужна `ReplaceableTextures\AshenvaleTree\AshenTree.blp`. Если после `--apply`
+   деревья прежние: убедиться, что команда напечатала «Записано в карту» и файлы есть в
+   `WC3DotaHQTest/A/Doodads/Terrain/AshenTree/`; матч перезапускать.
+8. **Текстуры пригорков (склонов)**: `python3 map_fix.py cliffs`. В карте два типа склонов,
+   `CCgr` (трава) и `CCdi` (земля); игра красит склон текстурой типа. `--split --apply`
+   переводит все клетки склонов половины Radiant (x+y<0) в CCgr, половины Dire в CCdi
+   (сейчас 723 клетки «чужого» типа). Текстуры: `--radiant ФАЙЛ --dire ФАЙЛ` (png/blp,
+   кладутся в карту как `ReplaceableTextures\Cliff\<texFile>.blp`), `--ground` добавляет все
+   `TerrainArt\...` из HQ-папки. **Неизвестно точное имя texFile для CCgr/CCdi в 1.31**
+   (угадано Cliff1/Cliff0): `cliffs --scan` ищет CliffTypes.slk и текстуры склонов в HQ-папке,
+   паках и Build; если найден CliffTypes.slk, имена берутся из него, иначе задать
+   `--names CCdi=...,CCgr=...`. Откат: `cliffs --undo --apply`.
+9. Столбы с цепями у фонтана Dire родные, не трогать.
 
 ## Команды
 
@@ -88,4 +101,6 @@ zsh walls.sh N [radiant|dire|тип]            # только число z в �
 zsh parts_probe.sh DS02 DS03                 # опознание частей сборки
 zsh labels.sh [off]
 python3 workshop.py add-icon item:I0B4 icon.png
+python3 map_fix.py cliffs --scan          # где на диске текстуры склонов/земли
+python3 map_fix.py cliffs --split --radiant r.png --dire d.png --ground --apply
 ```

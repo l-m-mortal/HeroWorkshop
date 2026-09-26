@@ -1425,6 +1425,139 @@ def fix_trees(w: workshop.Workshop, apply: bool, undo: bool = False, which: str 
     for r, p in files.items(): w.changes[r] = None if undo else p.read_bytes()
     w.commit(); print('Удалено из карты.' if undo else 'Записано в карту. Деревья видны после нового запуска матча.')
 
+def _w3e_parse(b: bytes):
+    import struct
+    o = 13
+    ng = struct.unpack_from('<I', b, o)[0]; ground = [b[o + 4 + i * 4:o + 8 + i * 4].decode() for i in range(ng)]; o += 4 + ng * 4
+    nc = struct.unpack_from('<I', b, o)[0]; cliffs = [b[o + 4 + i * 4:o + 8 + i * 4].decode() for i in range(nc)]; o += 4 + nc * 4
+    width, height = struct.unpack_from('<II', b, o); o += 8
+    ox, oy = struct.unpack_from('<ff', b, o); o += 8
+    return {'head': b[:o], 'ground': ground, 'cliffs': cliffs, 'w': width, 'h': height, 'ox': ox, 'oy': oy, 'cells': bytearray(b[o:])}
+
+def _cliff_tex_names(names: str | None) -> dict:
+    """cliffID -> texture path the game loads for that cliff type
+    (ReplaceableTextures\\Cliff\\<texFile>.blp). Taken from a CliffTypes.slk found next to
+    the game (Build\\..., packs), else from --names, else guessed."""
+    out = {}
+    roots = [workshop.GAME / d for d in ('Build', 'WC3DotaHQTest', 'WC3Dota2Test', 'WC3WardotaTest', 'Dota Mod Project/Sources')]
+    for r in roots:
+        if not r.is_dir(): continue
+        for p in r.rglob('CliffTypes.slk'):
+            cols = {}; rows = {}
+            for line in p.read_text(errors='replace').splitlines():
+                m = re.match(r'C;(?:Y(\d+);)?X(\d+);K(.*)', line)
+                if not m: continue
+                if m.group(1): row = int(m.group(1))
+                val = m.group(3).strip('"')
+                if row == 1: cols[val] = int(m.group(2))
+                else: rows.setdefault(row, {})[int(m.group(2))] = val
+            for row in rows.values():
+                cid = row.get(cols.get('cliffID', -1)); td = row.get(cols.get('texDir', -1), 'ReplaceableTextures\\Cliff'); tf = row.get(cols.get('texFile', -1))
+                if cid and tf: out[cid] = f'{td}\\{tf}.blp'
+            if out: print(f'CliffTypes.slk: {p}'); return out
+    if names:
+        for kv in names.split(','):
+            k, v = kv.split('='); out[k.strip()] = f'ReplaceableTextures\\Cliff\\{v.strip()}.blp'
+        return out
+    print('WARN: CliffTypes.slk не найден, имена текстур склонов угаданы (Cliff0/Cliff1); '
+          'проверьте `cliffs --scan` и задайте --names CCdi=...,CCgr=...')
+    return {'CCdi': 'ReplaceableTextures\\Cliff\\Cliff0.blp', 'CCgr': 'ReplaceableTextures\\Cliff\\Cliff1.blp',
+            'CLdi': 'ReplaceableTextures\\Cliff\\Cliff0.blp', 'CLgr': 'ReplaceableTextures\\Cliff\\Cliff1.blp'}
+
+def _blp_size(p):
+    import struct
+    try:
+        b = open(p, 'rb').read(28)
+        if b[:4] == b'BLP1': return struct.unpack_from('<II', b, 12)
+        if b[:4] == b'BLP2': return struct.unpack_from('<II', b, 12)
+        from PIL import Image; im = Image.open(p); return im.size
+    except Exception: return None
+
+def fix_cliffs(w: workshop.Workshop, apply: bool, undo: bool = False, split: bool = False, radiant: str | None = None, dire: str | None = None, names: str | None = None, scan: bool = False, ground: bool = False):
+    r"""Hill sides (cliffs) toned per team: Radiant hills = grass cliff type, Dire hills = dirt
+    cliff type, and the two cliff textures (plus ground textures) taken from the HQ pack.
+
+    Without options: report cliff cells per side and which texture files the game will load.
+    --scan            list cliff/terrain textures found on disk (HQ folder, packs, Build)
+    --split           rewrite war3map.w3e: cliff cells on the Radiant half (x+y<0) -> grass type
+                      (CCgr), Dire half -> dirt type (CCdi)
+    --radiant FILE    texture (blp/png/tga) for the Radiant (grass) cliff type
+    --dire FILE       texture for the Dire (dirt) cliff type
+                      (without these: WC3DotaHQTest\A\ReplaceableTextures\Cliff\<name>.blp if present)
+    --ground          also import every TerrainArt\... texture found under WC3DotaHQTest\A
+    --names CCdi=Cliff0,CCgr=Cliff1   texture file names if CliffTypes.slk is not found
+    --undo            restore cliff types and remove imported textures"""
+    import base64, zlib, blp
+    a_root = workshop.GAME / 'WC3DotaHQTest' / 'A'
+    if scan:
+        roots = [workshop.GAME / d for d in ('WC3DotaHQTest', 'WC3Dota2Test', 'WC3WardotaTest', 'Build', 'Dota Mod Project/Sources')]
+        n = 0
+        for r in roots:
+            if not r.is_dir(): continue
+            for p in r.rglob('*'):
+                if not p.is_file() or p.name.startswith('._'): continue
+                s = str(p.relative_to(workshop.GAME)).lower()
+                if ('cliff' in s or 'terrainart' in s or p.name in ('CliffTypes.slk', 'Terrain.slk') or s.endswith('.mpq')) and not s.endswith(('.w3x', '.w3m')):
+                    print(f'{_blp_size(p) or "":>12}  {p.stat().st_size:>8}  {p.relative_to(workshop.GAME)}'); n += 1
+        print(f'Найдено: {n}'); return
+    t = _w3e_parse(w.mpq.read('war3map.w3e'))
+    cl = t['cliffs']; cells = t['cells']; W, H, ox, oy = t['w'], t['h'], t['ox'], t['oy']
+    grass = next((i for i, c in enumerate(cl) if c.endswith('gr')), None); dirt = next((i for i, c in enumerate(cl) if c.endswith('di')), None)
+    if grass is None or dirt is None: workshop.die(f'типы склонов в карте: {cl}, нужен один *gr и один *di')
+    side_of = lambda i, j: 'R' if (ox + i * 128) + (oy + j * 128) < 0 else 'D'
+    from collections import Counter
+    cnt = Counter(); changes = []
+    for j in range(H):
+        for i in range(W):
+            k = (j * W + i) * 7; ct = cells[k + 6] >> 4
+            if ct == 15: continue
+            s = side_of(i, j); cnt[(s, cl[ct])] += 1
+            want = grass if s == 'R' else dirt
+            if ct != want: changes.append((k, want))
+    print('Склоны по сторонам (R = Radiant x+y<0, D = Dire):', ', '.join(f'{s} {c}: {n}' for (s, c), n in sorted(cnt.items())))
+    print(f'Клеток сменить при --split: {len(changes)}')
+    tex = _cliff_tex_names(names)
+    paths = {cl[grass]: tex.get(cl[grass]), cl[dirt]: tex.get(cl[dirt])}
+    for c, p in paths.items(): print(f'  {c}: {p or "?"}  {"(в карте)" if p and w.mpq.has(p) else ""}')
+    st = w.state.get('cliffs', {})
+    if undo:
+        if not st: print('Нечего откатывать.'); return
+        if not apply: print('План: откат. Запустите с --apply.'); return
+        if st.get('w3e_cliff'):
+            orig = zlib.decompress(base64.b64decode(st['w3e_cliff']))
+            for k in range(W * H): cells[k * 7 + 6] = (orig[k] << 4) | (cells[k * 7 + 6] & 0xF)
+            w.changes['war3map.w3e'] = bytes(t['head']) + bytes(cells)
+        for r in st.get('files', []): w.changes[r] = None
+        w.commit(); w.state.pop('cliffs', None); w.save_state(); print('Откат сделан.'); return
+    files = {}
+    def pick(c, explicit):
+        p = paths.get(c)
+        if not p: return
+        if explicit:
+            q = Path(explicit)
+            if not q.is_file(): workshop.die(f'нет файла {q}')
+            files[p] = q.read_bytes() if q.suffix.lower() == '.blp' else blp.to_texture_blp(q)
+            print(f'  {c} <- {q}'); return
+        q = _hq_file(a_root, p)
+        if q: files[p] = q.read_bytes(); print(f'  {c} <- {q}')
+        else: print(f'  {c}: в HQ-папке нет {p}; укажите --radiant/--dire ФАЙЛ')
+    pick(cl[grass], radiant); pick(cl[dirt], dire)
+    if ground and a_root.is_dir():
+        for p in (a_root / 'TerrainArt').rglob('*') if (a_root / 'TerrainArt').is_dir() else []:
+            if p.is_file() and p.suffix.lower() in ('.blp', '.tga') and not p.name.startswith('._'):
+                files[str(p.relative_to(a_root)).replace('/', '\\')] = p.read_bytes()
+        print(f'  земля: {sum(1 for r in files if r.lower().startswith("terrainart"))} файлов TerrainArt из HQ-папки')
+    if not split and not files: print('\nНичего не выбрано: добавьте --split, --radiant/--dire, --ground.'); return
+    if not apply: print('\nПлан. Запустите с --apply.'); return
+    if split and changes:
+        if 'w3e_cliff' not in st: st['w3e_cliff'] = base64.b64encode(zlib.compress(bytes(cells[k * 7 + 6] >> 4 for k in range(W * H)))).decode()
+        for k, want in changes: cells[k + 6] = (want << 4) | (cells[k + 6] & 0xF)
+        w.changes['war3map.w3e'] = bytes(t['head']) + bytes(cells)
+    for r, data in files.items(): w.changes[r] = data
+    st['files'] = sorted(set(st.get('files', [])) | set(files)); w.state['cliffs'] = st
+    w.commit(); w.save_state()
+    print(f'Записано: клеток {len(changes) if split else 0}, файлов {len(files)}. Откат: map_fix.py cliffs --undo --apply')
+
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
     the map at their standard paths, so the map shows them without a root overlay.
@@ -1619,7 +1752,7 @@ def fix_shop_ui(w: workshop.Workshop, apply: bool, undo: bool = False, right: fl
     w.script = new; w.changes['war3map.j'] = new.encode('latin1', 'replace'); w.commit()
     print('Записано. Откат: map_fix.py shop-ui --undo --apply')
 
-FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels, 'part-probe': fix_part_probe, 'model-shift': fix_model_shift, 'trees': fix_trees}
+FIXES = {'shops': fix_shops, 'doodads': fix_doodads, 'hq-doodads': fix_hq_doodads, 'cooldown-numbers': fix_cooldown_numbers, 'shop-ui': fix_shop_ui, 'probe': probe, 'static-models': fix_static_models, 'repack-textures': fix_repack_textures, 'custom-doodads': fix_custom_doodads, 'move-doodads': fix_move_doodads, 'doodads-z': fix_doodads_z, 'dump': fix_dump, 'remove': fix_remove, 'model-cut': fix_model_cut, 'overlaps': fix_overlaps, 'model-bounds': fix_model_bounds, 'split-model': fix_split_model, 'compact': fix_compact, 'piece-lift': fix_piece_lift, 'untint': fix_untint, 'script-tints': fix_script_tints, 'model-lift': fix_model_lift, 'model-events': fix_model_events, 'part-labels': fix_part_labels, 'part-probe': fix_part_probe, 'model-shift': fix_model_shift, 'trees': fix_trees, 'cliffs': fix_cliffs}
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1633,6 +1766,12 @@ def main():
     ap.add_argument('--radius', type=float, default=64.0, help='overlaps: радиус совпадения')
     ap.add_argument('--pairs', help='overlaps: пары типов перенесённый:родной через запятую')
     ap.add_argument('--prefer', choices=['native', 'ported'], default='native', help='overlaps: какую копию оставить')
+    ap.add_argument('--split', action='store_true', help='cliffs: развести типы склонов по сторонам')
+    ap.add_argument('--scan', action='store_true', help='cliffs: найти текстуры склонов/земли на диске')
+    ap.add_argument('--ground', action='store_true', help='cliffs: импортировать текстуры земли TerrainArt из HQ-папки')
+    ap.add_argument('--radiant', help='cliffs: файл текстуры склона Radiant')
+    ap.add_argument('--dire', help='cliffs: файл текстуры склона Dire')
+    ap.add_argument('--names', help='cliffs: имена текстур склонов CCdi=Cliff0,CCgr=Cliff1')
     ap.add_argument('--which', default='ashenvale', help='trees: ashenvale|northrend|lordaeron|all')
     ap.add_argument('--dz', type=float, default=0.0, help='model-shift: сдвиг по вертикали')
     ap.add_argument('--events', help='model-events: СОБЫТИЕ@КАДР через запятую')
@@ -1671,6 +1810,7 @@ def main():
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
     elif a.fix == 'trees': FIXES[a.fix](w, a.apply, a.undo, a.which)
+    elif a.fix == 'cliffs': FIXES[a.fix](w, a.apply, a.undo, a.split, a.radiant, a.dire, a.names, a.scan, a.ground)
     elif a.fix == 'model-shift': FIXES[a.fix](w, a.apply, a.match, a.dz, a.undo)
     elif a.fix == 'part-probe': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset or 800.0)
     elif a.fix == 'part-labels': FIXES[a.fix](w, a.apply, a.path, a.types, a.undo)
