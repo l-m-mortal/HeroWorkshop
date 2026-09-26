@@ -1255,14 +1255,17 @@ def mdx_add_events(data: bytes, events) -> bytes:
         chunks.insert(pos, [b'EVTS', bytes(evts)])
     return b'MDLX' + b''.join(t + struct.pack('<I', len(b)) + b for t, b in chunks)
 
-def fix_model_events(w: workshop.Workshop, apply: bool, path: str | None = None, source: str | None = None, events: str | None = None, undo: bool = False):
+def fix_model_events(w: workshop.Workshop, apply: bool, path: str | None = None, source: str | None = None, events: str | None = None, undo: bool = False, into: str = 'map'):
     """Attack sounds live inside the model as event objects (SNDx....). Models from
     other packs often lack them, so the hero attacks in silence. Add events:
 
     --path P            model path inside the map (as in unitUI.slk 'file' + .mdx)
     --source FILE|hq    start from this file (or the HQ/game copy); default: the map's copy
     --events LIST       e.g. "SNDxKRIF@370,SNDxKRIF@800": event name and frame
-    --undo              restore the model from --source (or the game folder copy)"""
+    --undo              restore the model from --source (or the game folder copy)
+    --into map|root     write into the map (default) or over the loose file next to the
+                        game: loose files (WC3WardotaTest\\..., WC3Dota2Test\\...) take priority
+                        over the map, so models living there must be patched on disk"""
     from pathlib import Path
     if not path: workshop.die('нужен --path')
     if source == 'hq' or (undo and not source):
@@ -1280,9 +1283,16 @@ def fix_model_events(w: workshop.Workshop, apply: bool, path: str | None = None,
             cand = workshop.GAME / path.replace('\\', '/')
             if not cand.is_file(): workshop.die(f'в карте нет {path} и на диске тоже; укажите --source')
             data = cand.read_bytes()
+    disk = workshop.GAME / path.replace('\\', '/')
     if undo:
-        print(f'Восстановить {path} из {src}')
-        if apply: w.changes[path] = data; w.commit()
+        bak = disk.with_suffix(disk.suffix + '.hw_orig')
+        if into == 'root':
+            if not bak.is_file(): workshop.die(f'нет резервной копии {bak}')
+            print(f'Восстановить {disk} из {bak.name}')
+            if apply: disk.write_bytes(bak.read_bytes()); bak.unlink()
+        else:
+            print(f'Восстановить {path} в карте из {src}')
+            if apply: w.changes[path] = data; w.commit()
         return
     if not events: workshop.die('нужен --events ИМЯ@КАДР,...')
     ev = {}
@@ -1292,7 +1302,12 @@ def fix_model_events(w: workshop.Workshop, apply: bool, path: str | None = None,
     out = mdx_add_events(data, list(ev.items()))
     print(f'{path}: узлов было {len(before)}, событий добавлено {len(ev)}: ' + ', '.join(f'{k}@{v}' for k, v in ev.items()))
     if not apply: print('\nПлан. Запустите с --apply.'); return
-    w.changes[path] = out; w.commit(); print('Записано.')
+    if into == 'root':
+        bak = disk.with_suffix(disk.suffix + '.hw_orig')
+        if not bak.is_file(): bak.write_bytes(disk.read_bytes())
+        disk.write_bytes(out); print(f'Записано на диск: {disk} (оригинал в {bak.name})')
+    else:
+        w.changes[path] = out; w.commit(); print('Записано в карту.')
 
 def fix_hq_doodads(w: workshop.Workshop, apply: bool, into: str = 'map', match: str | None = None, folders: str = 'Doodads', textures: bool = False, models: bool = False):
     r"""Bring the HQ replacements of standard doodads (WC3DotaHQTest\A\Doodads\...) into
@@ -1534,7 +1549,7 @@ def main():
     if a.fix == 'doodads' and a.undo: undo_doodads(w, a.apply, a.types, a.ported)
     elif a.fix == 'doodads': FIXES[a.fix](w, a.apply, a.ref, a.types, a.near)
     elif a.fix == 'probe': FIXES[a.fix](w, a.apply, a.at, a.ref)
-    elif a.fix == 'model-events': FIXES[a.fix](w, a.apply, a.path, a.source, a.events, a.undo)
+    elif a.fix == 'model-events': FIXES[a.fix](w, a.apply, a.path, a.source, a.events, a.undo, a.into)
     elif a.fix == 'model-lift': FIXES[a.fix](w, a.apply, a.path, a.types, a.parts, a.offset, a.drop, a.undo)
     elif a.fix == 'script-tints': FIXES[a.fix](w, a.apply, a.undo)
     elif a.fix == 'untint': FIXES[a.fix](w, a.apply, a.types)
