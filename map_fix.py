@@ -553,12 +553,18 @@ def fix_doodads_z(w: workshop.Workshop, apply: bool, ref: str | None = None, typ
         for rec in w.state.get('doodads_added', []) + w.state.get('custom_doodads_added', []) + w.state.get('split_models', []):
             ids.update(range(rec['editor_ids'][0], rec['editor_ids'][1] + 1))
         victims = [e for e in cur['entries'] if e['editor_id'] in ids]
+    pieces = {}
+    for rec in w.state.get('split_models', []): pieces.update(rec.get('meta', {}))
     changed = 0; by_type = {}
     for e in victims:
-        rel = 0.0
-        for s_ in by_xy.get((round(e['x']), round(e['y'])), []):
-            rel = s_['z'] - tz_ref(s_['x'], s_['y']); break
-        nz = tz_here(e['x'], e['y']) + rel + offset
+        if e['type'] in pieces:
+            m = pieces[e['type']]
+            nz = tz_here(m['wx'], m['wy']) - m['zoff'] + offset
+        else:
+            rel = 0.0
+            for s_ in by_xy.get((round(e['x']), round(e['y'])), []):
+                rel = s_['z'] - tz_ref(s_['x'], s_['y']); break
+            nz = tz_here(e['x'], e['y']) + rel + offset
         if abs(nz - e['z']) < 0.5: continue
         by_type.setdefault(e['type'], []).append((e['z'], nz))
         if apply: e['z'] = nz
@@ -979,20 +985,23 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
         mpath = f'war3mapImported\\HW_{t}{var}_{k:02d}.mdx'
         plan.append((k, c, cx, cy, zmin, code, mpath))
         print(f'  кластер {k:2d} -> {code} {mpath}: геосеты {c}, центр ({cx:.0f}, {cy:.0f}), низ z {zmin:.0f}')
-    new_entries = []
+    # Pieces keep their geometry where it is inside the model (moving vertices or
+    # nodes broke rendering): every piece is placed at the ORIGINAL point with the
+    # original angle, and only its z is chosen so that the piece's own bottom sits on
+    # the ground under the piece's real position.
+    new_entries = []; meta = {}
     for e in placements:
         ca, sa = math.cos(e['angle']), math.sin(e['angle'])
         for k, c, cx, cy, zmin, code, mpath in plan:
             wx = e['x'] + (cx * ca - cy * sa) * e['sx']; wy = e['y'] + (cx * sa + cy * ca) * e['sy']
-            new_entries.append({'type': code, 'variation': 0, 'x': wx, 'y': wy, 'z': tz(wx, wy), 'angle': e['angle'], 'sx': e['sx'], 'sy': e['sy'], 'sz': e['sz'], 'flags': e['flags'], 'life': e['life'], 'item_table': -1, 'item_sets': [], 'editor_id': 0})
+            zoff = zmin * e['sz']
+            meta[code] = {'wx': wx, 'wy': wy, 'zoff': zoff}
+            new_entries.append({'type': code, 'variation': 0, 'x': e['x'], 'y': e['y'], 'z': tz(wx, wy) - zoff - sink, 'angle': e['angle'], 'sx': e['sx'], 'sy': e['sy'], 'sz': e['sz'], 'flags': e['flags'], 'life': e['life'], 'item_table': -1, 'item_sets': [], 'editor_id': 0})
     print(f'Новых размещений: {len(new_entries)}; исходные {len(placements)} будут убраны.')
     if not apply: print('\nПлан. Запустите с --apply. Откат: split-model --undo --apply'); return
     keep_all = set(idx)
     for k, c, cx, cy, zmin, code, mpath in plan:
-        part = mdx_drop_geosets(data, keep_all.difference(c) | dropset)
-        part = mdx_drop_nodes(part)
-        part = mdx_translate(part, -cx, -cy, -zmin - sink)
-        w.changes[mpath] = part
+        w.changes[mpath] = mdx_drop_geosets(data, keep_all.difference(c) | dropset)
         w3d['custom'].append({'old': t, 'new': code, 'mods': [('dfil', 3, mpath), ('dvar', 0, 1), ('dptx', 3, ''), ('dnam', 3, f'HW {t}{var} part {k}')], 'raw': None})
     first_id = max((e['editor_id'] for e in cur['entries']), default=0) + 1
     nid = first_id
@@ -1000,7 +1009,7 @@ def fix_split_model(w: workshop.Workshop, apply: bool, path: str | None = None, 
     kill = {e['editor_id'] for e in placements}
     cur['entries'] = [e for e in cur['entries'] if e['editor_id'] not in kill] + new_entries
     w.changes['war3map.doo'] = doo.serialize(cur); w.changes['war3map.w3d'] = map_audit.serialize_obj_file(w3d); w.commit()
-    w.state.setdefault(rec_key, []).append({'path': path, 'types': [p[5] for p in plan], 'editor_ids': [first_id, nid - 1], 'original': placements, 'applied': __import__('time').strftime('%Y-%m-%d %H:%M:%S')})
+    w.state.setdefault(rec_key, []).append({'path': path, 'types': [p[5] for p in plan], 'editor_ids': [first_id, nid - 1], 'original': placements, 'meta': meta, 'applied': __import__('time').strftime('%Y-%m-%d %H:%M:%S')})
     w.save_state()
     print(f'Записано: типов {len(plan)}, размещений {len(new_entries)}. Высота потом: doodads-z --types {",".join(p[5] for p in plan)} --offset N')
 
